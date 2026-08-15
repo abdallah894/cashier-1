@@ -1,0 +1,21 @@
+import { requireAdmin } from "@/lib/supabase/queries/profiles";
+import { setRequestLocale, getTranslations } from "next-intl/server";
+import { getCategories } from "@/lib/supabase/queries/categories";
+import { CsvImport } from "@/components/products/csv-import";
+
+export default async function ImportPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  await requireAdmin();
+  const [t, categories] = await Promise.all([getTranslations("import"), getCategories()]);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+      </div>
+      <CsvImport categories={categories} />
+    </div>
+  );
+}
