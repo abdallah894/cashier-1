@@ -117,8 +117,10 @@ export default async function ReportsPage({
       ) : (
         <>
           {/* Summary cards */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard title={t("revenue")} value={formatEgp(summary!.revenue, locale)} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <StatCard title={t("grossSales")} value={formatEgp(summary!.revenue, locale)} />
+            <StatCard title={t("refunds")} value={`-${formatEgp(summary!.refunds, locale)}`} />
+            <StatCard title={t("netSales")} value={formatEgp(summary!.netRevenue, locale)} />
             <StatCard
               title={t("saleCount")}
               value={format.number(summary!.saleCount)}

@@ -30,7 +30,7 @@ export function defaultRange(): DateRange {
   return { from: iso(start), to: iso(today) };
 }
 
-export type Summary = { revenue: number; saleCount: number; avgBasket: number };
+export type Summary = { revenue: number; refunds: number; netRevenue: number; saleCount: number; avgBasket: number };
 export type TimePoint = { bucketStart: string; revenue: number; saleCount: number; avgBasket: number };
 export type TopProduct = { productId: string; nameAr: string; nameEn: string; qty: number; revenue: number };
 export type CategoryRow = {
@@ -50,6 +50,8 @@ export async function getSummary(range: DateRange): Promise<Summary> {
   const row = data?.[0];
   return {
     revenue: Number(row?.revenue ?? 0),
+    refunds: Number(row?.refunds ?? 0),
+    netRevenue: Number(row?.net_revenue ?? 0),
     saleCount: Number(row?.sale_count ?? 0),
     avgBasket: Number(row?.avg_basket ?? 0),
   };

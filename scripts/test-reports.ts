@@ -76,6 +76,8 @@ async function main() {
   {
     const [r] = await call(`select * from public.report_summary($1, $2)`);
     check("summary revenue = 59200", n(r.revenue) === 59200, String(r.revenue));
+    check("summary refunds = 0", n(r.refunds) === 0, String(r.refunds));
+    check("summary net_revenue = 59200", n(r.net_revenue) === 59200, String(r.net_revenue));
     check("summary sale_count = 3", n(r.sale_count) === 3, String(r.sale_count));
     check("summary avg_basket = 19733", n(r.avg_basket) === 19733, String(r.avg_basket));
   }

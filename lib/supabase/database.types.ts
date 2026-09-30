@@ -595,6 +595,8 @@ export type Database = {
         Args: { p_from: string; p_to: string }
         Returns: {
           avg_basket: number
+          net_revenue: number
+          refunds: number
           revenue: number
           sale_count: number
         }[]
