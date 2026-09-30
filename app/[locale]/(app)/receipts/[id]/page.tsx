@@ -4,6 +4,7 @@ import { getSaleWithItems } from "@/lib/supabase/queries/sales";
 import { buildReceipt } from "@/lib/receipts/build";
 import { Receipt80mm } from "@/components/receipts/receipt-80mm";
 import { ReceiptActions } from "@/components/receipts/receipt-actions";
+import { ReturnDialog } from "@/components/receipts/return-dialog";
 
 export default async function ReceiptPage({
   params,
@@ -28,7 +29,20 @@ export default async function ReceiptPage({
       <h1 className="text-2xl font-semibold tracking-tight">
         {t("title", { number: receipt.saleNumber })}
       </h1>
-      <ReceiptActions receipt={receipt} justCompleted={sp.new === "1"} />
+      <div className="flex flex-wrap gap-2">
+        <ReceiptActions receipt={receipt} justCompleted={sp.new === "1"} />
+        <ReturnDialog
+          saleId={sale.id}
+          paymentMethod={sale.payment_method}
+          lines={sale.sale_items.map((item) => ({
+            id: item.id,
+            name_ar: item.name_ar,
+            name_en: item.name_en,
+            qty: Number(item.qty),
+            line_total: Number(item.line_total),
+          }))}
+        />
+      </div>
       <div className="receipt-print-area self-center overflow-hidden rounded-md border shadow-sm">
         <Receipt80mm receipt={receipt} />
       </div>

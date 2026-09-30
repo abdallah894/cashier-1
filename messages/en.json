@@ -426,6 +426,19 @@
     "downloadPdf": "Download PDF",
     "autoPrint": "Auto-print after checkout"
   },
+  "returns": {
+    "start": "Return items",
+    "title": "Return items",
+    "description": "Returns are recorded as a separate audited document; the original receipt is unchanged.",
+    "soldQty": "Sold: {qty}",
+    "refundTotal": "Refund total",
+    "restock": "Return items to stock",
+    "noRestockWarning": "Inventory will not be restored for this return.",
+    "reason": "Reason",
+    "managerPinOptional": "Manager PIN, if approval is required",
+    "confirm": "Record return",
+    "completed": "Return #{number} recorded."
+  },
   "errors": {
     "insufficientStock": "Not enough stock for one of the items. Check the highlighted quantities.",
     "tenderedTooLow": "The received amount is less than the total.",
@@ -449,6 +462,9 @@
     "noOpenShift": "No open shift — open a shift before selling.",
     "shiftAlreadyOpen": "You already have an open shift.",
     "shiftCloseFailed": "Could not close the shift. Try again.",
+    "managerApprovalRequired": "A manager PIN is required for this return.",
+    "invalidReturn": "This return is no longer valid. Review the selected quantities and payment method.",
+    "returnFailed": "The return could not be recorded. Please try again.",
     "emptyFile": "The file has no data rows.",
     "tooManyRows": "Too many rows — import at most 500 at a time.",
     "unknown": "Something went wrong. Please try again."
