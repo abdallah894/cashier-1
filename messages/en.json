@@ -53,6 +53,7 @@
     "errors": {
       "invalidInput": "Enter a valid email and password.",
       "invalidCredentials": "Wrong email or password.",
+      "signInUnavailable": "Sign-in could not be completed. Please try again later or contact your administrator.",
       "accountDisabled": "This account has been deactivated. Ask an admin."
     }
   },

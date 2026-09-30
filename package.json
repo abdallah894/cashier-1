@@ -20,6 +20,7 @@
     "test:reports": "tsx scripts/test-reports.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.24.0",
     "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-direction": "^1.1.2",
     "@supabase/ssr": "^0.12.0",

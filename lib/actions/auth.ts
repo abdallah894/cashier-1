@@ -17,7 +17,9 @@ const credentialsSchema = z.object({
   password: z.string().min(6),
 });
 
-export type AuthState = { error?: "invalidInput" | "invalidCredentials" | "accountDisabled" };
+export type AuthState = {
+  error?: "invalidInput" | "invalidCredentials" | "accountDisabled" | "signInUnavailable";
+};
 
 export async function signIn(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = credentialsSchema.safeParse({
@@ -31,7 +33,9 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   const supabase = await createClient();
   const { data: signedIn, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
-    return { error: "invalidCredentials" };
+    return {
+      error: error.code === "invalid_credentials" ? "invalidCredentials" : "signInUnavailable",
+    };
   }
 
   const { data: profile } = await supabase
