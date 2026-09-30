@@ -60,7 +60,15 @@ async function main() {
   await sell(JSON.stringify([{ product_id: PROD_B, qty: 5 }]), "50000"); // total 25000
   // Expected: revenue 59200, count 3; A qty 3 rev 34200; B qty 5 rev 25000
 
+  // `create_sale` intentionally stamps facts with now(); pin test-only data
+  // to the fixed report window so this suite is independent of the clock.
   await asAdminService(db);
+  await db.exec(`
+    update public.sales
+    set created_at = '2026-07-10T10:00:00Z'
+    where shift_id = '${SHIFT}';
+  `);
+
   await asUser(db, ADMIN);
   const call = async (sql: string) => (await db.query(sql, [FROM, TO])).rows as Record<string, unknown>[];
 
