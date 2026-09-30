@@ -5,6 +5,7 @@ import { buildReceipt } from "@/lib/receipts/build";
 import { Receipt80mm } from "@/components/receipts/receipt-80mm";
 import { ReceiptActions } from "@/components/receipts/receipt-actions";
 import { ReturnDialog } from "@/components/receipts/return-dialog";
+import { ReturnHistory } from "@/components/receipts/return-history";
 
 export default async function ReceiptPage({
   params,
@@ -46,6 +47,7 @@ export default async function ReceiptPage({
       <div className="receipt-print-area self-center overflow-hidden rounded-md border shadow-sm">
         <Receipt80mm receipt={receipt} />
       </div>
+      <ReturnHistory returns={sale.returns ?? []} />
     </div>
   );
 }

@@ -438,6 +438,10 @@
     "managerPinOptional": "Manager PIN, if approval is required",
     "confirm": "Record return",
     "completed": "Return #{number} recorded."
+    ,"history": "Return history",
+    "historyNumber": "Return #{number}",
+    "historyRestocked": "Returned to stock",
+    "historyNotRestocked": "Not returned to stock"
   },
   "errors": {
     "insufficientStock": "Not enough stock for one of the items. Check the highlighted quantities.",

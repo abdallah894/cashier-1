@@ -438,6 +438,10 @@
     "managerPinOptional": "رمز المدير إذا كانت الموافقة مطلوبة",
     "confirm": "تسجيل المرتجع",
     "completed": "تم تسجيل المرتجع #{number}."
+    ,"history": "سجل المرتجعات",
+    "historyNumber": "مرتجع رقم {number}",
+    "historyRestocked": "تمت إعادته إلى المخزون",
+    "historyNotRestocked": "لم تتم إعادته إلى المخزون"
   },
   "errors": {
     "insufficientStock": "المخزون لا يكفي لأحد الأصناف. راجع الكميات المحددة.",

@@ -6,15 +6,22 @@ import type { SaleForReceipt } from "@/lib/receipts/types";
 
 export type SaleWithItems = SaleForReceipt;
 
-export async function getSaleWithItems(id: string): Promise<SaleWithItems | null> {
+export type SaleReturn = Tables<"returns"> & {
+  return_items: Tables<"return_items">[];
+  profiles: Pick<Tables<"profiles">, "full_name"> | null;
+};
+
+export type SaleWithReturnHistory = SaleForReceipt & { returns: SaleReturn[] };
+
+export async function getSaleWithItems(id: string): Promise<SaleWithReturnHistory | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sales")
-    .select("*, sale_items(*), profiles(full_name)")
+    .select("*, sale_items(*), profiles(full_name), returns(*, return_items(*), profiles(full_name))")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
-  return data as SaleWithItems | null;
+  return data as SaleWithReturnHistory | null;
 }
 
 export const SALES_PAGE_SIZE = 20;
