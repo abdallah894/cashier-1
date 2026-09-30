@@ -133,6 +133,149 @@ export type Database = {
         }
         Relationships: []
       }
+      return_items: {
+        Row: {
+          created_at: string
+          id: string
+          line_refund_total: number
+          name_ar: string
+          name_en: string
+          product_id: string
+          qty: number
+          return_id: string
+          sale_item_id: string
+          tax_rate: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          line_refund_total: number
+          name_ar: string
+          name_en: string
+          product_id: string
+          qty: number
+          return_id: string
+          sale_item_id: string
+          tax_rate: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          line_refund_total?: number
+          name_ar?: string
+          name_en?: string
+          product_id?: string
+          qty?: number
+          return_id?: string
+          sale_item_id?: string
+          tax_rate?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "return_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_items_return_id_fkey"
+            columns: ["return_id"]
+            isOneToOne: false
+            referencedRelation: "returns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "return_items_sale_item_id_fkey"
+            columns: ["sale_item_id"]
+            isOneToOne: false
+            referencedRelation: "sale_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      return_settings: {
+        Row: {
+          id: boolean
+          manager_approval_threshold: number | null
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          manager_approval_threshold?: number | null
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          manager_approval_threshold?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      returns: {
+        Row: {
+          actor_id: string
+          created_at: string
+          id: string
+          manager_approved_by: string | null
+          reason: string
+          refund_tender: Database["public"]["Enums"]["payment_method"]
+          refund_total: number
+          restock: boolean
+          return_number: number
+          sale_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          id?: string
+          manager_approved_by?: string | null
+          reason: string
+          refund_tender: Database["public"]["Enums"]["payment_method"]
+          refund_total: number
+          restock: boolean
+          return_number?: number
+          sale_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          id?: string
+          manager_approved_by?: string | null
+          reason?: string
+          refund_tender?: Database["public"]["Enums"]["payment_method"]
+          refund_total?: number
+          restock?: boolean
+          return_number?: number
+          sale_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_manager_approved_by_fkey"
+            columns: ["manager_approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sale_items: {
         Row: {
           created_at: string
@@ -390,6 +533,22 @@ export type Database = {
           total: number
         }[]
       }
+      create_return: {
+        Args: {
+          p_items: Json
+          p_manager_pin?: string | null
+          p_reason: string
+          p_refund_tender: Database["public"]["Enums"]["payment_method"]
+          p_restock: boolean
+          p_sale_id: string
+        }
+        Returns: {
+          created_at: string
+          refund_total: number
+          return_id: string
+          return_number: number
+        }[]
+      }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
@@ -463,7 +622,7 @@ export type Database = {
     Enums: {
       payment_method: "cash" | "card"
       product_unit: "piece" | "kg"
-      stock_movement_reason: "sale" | "received" | "damaged" | "correction"
+      stock_movement_reason: "sale" | "received" | "damaged" | "correction" | "return"
       user_role: "admin" | "cashier"
     }
     CompositeTypes: {
@@ -594,7 +753,7 @@ export const Constants = {
     Enums: {
       payment_method: ["cash", "card"],
       product_unit: ["piece", "kg"],
-      stock_movement_reason: ["sale", "received", "damaged", "correction"],
+      stock_movement_reason: ["sale", "received", "damaged", "correction", "return"],
       user_role: ["admin", "cashier"],
     },
   },

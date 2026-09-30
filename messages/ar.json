@@ -147,7 +147,8 @@
       "received": "استلام بضاعة",
       "damaged": "تالف / منتهي الصلاحية",
       "correction": "تصحيح جرد",
-      "sale": "بيع"
+      "sale": "بيع",
+      "return": "مرتجع عميل"
     },
     "direction": "الاتجاه",
     "directionAdd": "إضافة للمخزون",

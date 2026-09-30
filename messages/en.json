@@ -147,7 +147,8 @@
       "received": "Goods received",
       "damaged": "Damaged / expired",
       "correction": "Count correction",
-      "sale": "Sale"
+      "sale": "Sale",
+      "return": "Customer return"
     },
     "direction": "Direction",
     "directionAdd": "Add to stock",

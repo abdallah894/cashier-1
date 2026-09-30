@@ -15,6 +15,7 @@ const reasonVariant = {
   received: "default",
   damaged: "destructive",
   correction: "outline",
+  return: "default",
 } as const;
 
 // Server Component: pure display, dates formatted with next-intl's
