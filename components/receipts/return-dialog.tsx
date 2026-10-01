@@ -26,6 +26,7 @@ type ReturnableLine = {
   name_ar: string;
   name_en: string;
   qty: number;
+  remainingQty: number;
   line_total: number;
 };
 
@@ -107,15 +108,16 @@ export function ReturnDialog({
               <Label htmlFor={`return-${line.id}`}>
                 {locale === "ar" ? line.name_ar : line.name_en}
                 <span className="block text-xs font-normal text-muted-foreground">
-                  {t("soldQty", { qty: line.qty })}
+                  {t("remainingQty", { qty: line.remainingQty })}
                 </span>
               </Label>
               <Input
                 id={`return-${line.id}`}
                 type="number"
                 min="0"
-                max={line.qty}
+                max={line.remainingQty}
                 step="0.001"
+                disabled={line.remainingQty <= 0}
                 value={quantities[line.id] ?? ""}
                 onChange={(event) =>
                   setQuantities((current) => ({ ...current, [line.id]: event.target.value }))

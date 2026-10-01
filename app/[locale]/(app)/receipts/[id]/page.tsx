@@ -35,13 +35,19 @@ export default async function ReceiptPage({
         <ReturnDialog
           saleId={sale.id}
           paymentMethod={sale.payment_method}
-          lines={sale.sale_items.map((item) => ({
-            id: item.id,
-            name_ar: item.name_ar,
-            name_en: item.name_en,
-            qty: Number(item.qty),
-            line_total: Number(item.line_total),
-          }))}
+          lines={sale.sale_items.map((item) => {
+            const returnedQty = (sale.returns ?? []).flatMap((entry) => entry.return_items)
+              .filter((returnItem) => returnItem.sale_item_id === item.id)
+              .reduce((total, returnItem) => total + Number(returnItem.qty), 0);
+            return {
+              id: item.id,
+              name_ar: item.name_ar,
+              name_en: item.name_en,
+              qty: Number(item.qty),
+              remainingQty: Math.max(0, Number(item.qty) - returnedQty),
+              line_total: Number(item.line_total),
+            };
+          })}
         />
       </div>
       <div className="receipt-print-area self-center overflow-hidden rounded-md border shadow-sm">

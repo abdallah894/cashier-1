@@ -434,6 +434,7 @@
     "title": "Return items",
     "description": "Returns are recorded as a separate audited document; the original receipt is unchanged.",
     "soldQty": "Sold: {qty}",
+    "remainingQty": "Available to return: {qty}",
     "refundTotal": "Refund total",
     "restock": "Return items to stock",
     "noRestockWarning": "Inventory will not be restored for this return.",
