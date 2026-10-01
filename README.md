@@ -58,3 +58,9 @@ Money convention: **all amounts are integer piasters** (EGP 48.95 → `4895`) �
 ## Checkout invariant
 
 `create_sale(p_items, p_payment_method, …)` is a single Postgres transaction: it validates stock (row-locked), inserts the sale + snapshot items, decrements stock and logs `stock_movements` — all or nothing. Receipts are immutable (no UPDATE/DELETE policies on `sales`/`sale_items`), and product name/price/tax are snapshotted per line so editing a product never changes history.
+
+## Returns, refunds, exchanges, and voids
+
+Completed sales are never edited or deleted. A return creates its own immutable document linked to the original receipt and records the actor, reason, refund tender, item snapshots, timestamp, and stock disposition. A restocked return adds stock through a positive `stock_movements` entry; a no-restock return leaves stock unchanged. Cashiers must provide a manager PIN for returns at or above the configured threshold.
+
+Use **Record return & start exchange** to save the return first, then create the replacement sale through normal checkout. A **void** cancels an unpaid in-progress cart only; once a sale is completed, use a return/refund instead.
