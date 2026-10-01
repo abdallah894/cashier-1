@@ -441,6 +441,7 @@
     "reason": "السبب",
     "managerPinOptional": "رمز المدير إذا كانت الموافقة مطلوبة",
     "confirm": "تسجيل المرتجع",
+    "startExchange": "تسجيل المرتجع وبدء الاستبدال",
     "completed": "تم تسجيل المرتجع #{number}."
     ,"history": "سجل المرتجعات",
     "historyNumber": "مرتجع رقم {number}",

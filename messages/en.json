@@ -441,6 +441,7 @@
     "reason": "Reason",
     "managerPinOptional": "Manager PIN, if approval is required",
     "confirm": "Record return",
+    "startExchange": "Record return & start exchange",
     "completed": "Return #{number} recorded."
     ,"history": "Return history",
     "historyNumber": "Return #{number}",

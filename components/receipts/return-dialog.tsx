@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { RotateCcw } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -48,6 +49,7 @@ export function ReturnDialog({
   const [managerPin, setManagerPin] = useState("");
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   const refundTotal = useMemo(
     () =>
@@ -65,7 +67,7 @@ export function ReturnDialog({
     setRestock(true);
   }
 
-  function save() {
+  function save(startExchange = false) {
     const items = lines.flatMap((line) => {
       const qty = Number(quantities[line.id] ?? 0);
       return Number.isFinite(qty) && qty > 0 ? [{ saleItemId: line.id, qty }] : [];
@@ -86,6 +88,7 @@ export function ReturnDialog({
       toast.success(t("completed", { number: result.data.returnNumber }));
       setOpen(false);
       reset();
+      if (startExchange) router.push("/register");
     });
   }
 
@@ -150,7 +153,10 @@ export function ReturnDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={save} disabled={pending || refundTotal <= 0 || !reason.trim()}>
+          <Button variant="outline" onClick={() => save(true)} disabled={pending || refundTotal <= 0 || !reason.trim()}>
+            {t("startExchange")}
+          </Button>
+          <Button onClick={() => save(false)} disabled={pending || refundTotal <= 0 || !reason.trim()}>
             {t("confirm")}
           </Button>
         </DialogFooter>
