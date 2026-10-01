@@ -69,6 +69,14 @@ async function main() {
   const { rows: partial } = await createReturn(1, true);
   check("partial return refunds the snapshot line total", Number(partial[0].refund_total) === 6300);
 
+  const { rows: drawerRefunds } = await db.query<{ amount: string; event_type: string }>(
+    `select amount, event_type from public.cash_drawer_events where return_id = '${partial[0].return_id}'`
+  );
+  check(
+    "cash return records a negative drawer event",
+    drawerRefunds.length === 1 && drawerRefunds[0].event_type === "cash_refund" && Number(drawerRefunds[0].amount) === -6300
+  );
+
   const { rows: stockAfterRestock } = await db.query<{ stock_qty: string }>(
     `select stock_qty from public.products where id = '${PRODUCT}'`
   );
