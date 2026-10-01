@@ -1,6 +1,7 @@
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { formatEgp } from "@/lib/money";
 import type { SaleReturn } from "@/lib/supabase/queries/sales";
+import { Link } from "@/i18n/navigation";
 
 export async function ReturnHistory({ returns }: { returns: SaleReturn[] }) {
   const t = await getTranslations("returns");
@@ -15,7 +16,9 @@ export async function ReturnHistory({ returns }: { returns: SaleReturn[] }) {
         {returns.map((entry) => (
           <div key={entry.id} className="rounded-md bg-muted/50 p-3 text-sm">
             <div className="flex justify-between gap-3 font-medium">
-              <span>{t("historyNumber", { number: entry.return_number })}</span>
+              <Link className="underline underline-offset-2" href={`/receipts/returns/${entry.id}`}>
+                {t("historyNumber", { number: entry.return_number })}
+              </Link>
               <span dir="ltr">{formatEgp(Number(entry.refund_total), locale)}</span>
             </div>
             <p className="mt-1 text-muted-foreground">

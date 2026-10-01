@@ -446,6 +446,9 @@
     "historyNumber": "مرتجع رقم {number}",
     "historyRestocked": "تمت إعادته إلى المخزون",
     "historyNotRestocked": "لم تتم إعادته إلى المخزون"
+    ,"receiptTitle": "إيصال مرتجع",
+    "originalReceipt": "الفاتورة الأصلية #{number}",
+    "receiptDate": "التاريخ"
   },
   "errors": {
     "insufficientStock": "المخزون لا يكفي لأحد الأصناف. راجع الكميات المحددة.",

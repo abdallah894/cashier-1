@@ -24,6 +24,26 @@ export async function getSaleWithItems(id: string): Promise<SaleWithReturnHistor
   return data as SaleWithReturnHistory | null;
 }
 
+export type ReturnForReceipt = Tables<"returns"> & {
+  sales: Pick<Tables<"sales">, "sale_number">;
+  profiles: Pick<Tables<"profiles">, "full_name"> | null;
+  return_items: Pick<
+    Tables<"return_items">,
+    "name_ar" | "name_en" | "qty" | "unit_price" | "line_refund_total"
+  >[];
+};
+
+export async function getReturnWithItems(id: string): Promise<ReturnForReceipt | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("returns")
+    .select("*, sales(sale_number), profiles(full_name), return_items(name_ar, name_en, qty, unit_price, line_refund_total)")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data as ReturnForReceipt | null;
+}
+
 export const SALES_PAGE_SIZE = 20;
 
 export type SalesListParams = {
