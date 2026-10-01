@@ -434,6 +434,12 @@ export type Database = {
           },
         ]
       }
+      cash_drawer_events: {
+        Row: { actor_id: string; amount: number; created_at: string; event_type: "paid_in" | "paid_out" | "safe_drop" | "cash_refund"; id: string; reason: string; return_id: string | null; shift_id: string }
+        Insert: { actor_id: string; amount: number; created_at?: string; event_type: "paid_in" | "paid_out" | "safe_drop" | "cash_refund"; id?: string; reason: string; return_id?: string | null; shift_id: string }
+        Update: { actor_id?: string; amount?: number; created_at?: string; event_type?: "paid_in" | "paid_out" | "safe_drop" | "cash_refund"; id?: string; reason?: string; return_id?: string | null; shift_id?: string }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           created_at: string
@@ -514,6 +520,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      record_cash_drawer_event: {
+        Args: { p_amount: number; p_reason: string; p_shift_id: string; p_type: "paid_in" | "paid_out" | "safe_drop" }
+        Returns: Database["public"]["Tables"]["cash_drawer_events"]["Row"]
       }
       create_sale: {
         Args: {

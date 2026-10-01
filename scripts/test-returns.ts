@@ -58,7 +58,7 @@ async function main() {
   const saleItemId = saleItemRows[0].id;
 
   const createReturn = (quantity: number, restock: boolean, managerPin: string | null = null) =>
-    db.query<{ refund_total: string }>(
+    db.query<{ refund_total: string; return_id: string }>(
       `select * from public.create_return(
         '${saleId}',
         '[{"sale_item_id":"${saleItemId}","qty":${quantity}}]'::jsonb,
