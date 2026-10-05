@@ -3,7 +3,9 @@
     "appName": "Cachier POS",
     "loading": "Loading…",
     "error": "Something went wrong. Please try again.",
-    "kg": "kg"
+    "kg": "kg",
+    "errorTitle": "Something went wrong",
+    "retry": "Try again"
   },
   "nav": {
     "register": "Register",
