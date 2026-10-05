@@ -20,6 +20,12 @@ export type Database = {
         Update: { action?: string; actor_id?: string; approved_by?: string | null; created_at?: string; id?: string; metadata?: Json; request_id?: string | null; target_id?: string | null; target_type?: string }
         Relationships: []
       }
+      manager_approvals: {
+        Row: { action: string; approved_by: string; created_at: string; expires_at: string; id: string; request_hash: string; requested_by: string; used_at: string | null }
+        Insert: { action: string; approved_by: string; created_at?: string; expires_at?: string; id?: string; request_hash: string; requested_by: string; used_at?: string | null }
+        Update: { action?: string; approved_by?: string; created_at?: string; expires_at?: string; id?: string; request_hash?: string; requested_by?: string; used_at?: string | null }
+        Relationships: []
+      }
       staff_capabilities: {
         Row: { capability: Database["public"]["Enums"]["capability"]; created_at: string; granted_by: string; staff_id: string }
         Insert: { capability: Database["public"]["Enums"]["capability"]; created_at?: string; granted_by: string; staff_id: string }
@@ -577,6 +583,8 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       has_capability: { Args: { p_capability: Database["public"]["Enums"]["capability"] }; Returns: boolean }
+      create_manager_approval: { Args: { p_action: string; p_pin: string; p_request_hash: string }; Returns: string }
+      consume_manager_approval: { Args: { p_action: string; p_approval_id: string; p_request_hash: string }; Returns: string }
       report_profit: {
         Args: { p_from: string; p_to: string }
         Returns: {
