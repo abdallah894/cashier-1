@@ -17,7 +17,9 @@
     "test:shifts": "tsx scripts/test-shifts.ts",
     "test:rls": "tsx scripts/test-rls.ts",
     "test:zreport": "tsx scripts/test-zreport.ts",
-    "test:reports": "tsx scripts/test-reports.ts"
+    "test:reports": "tsx scripts/test-reports.ts",
+    "test:hardening": "tsx scripts/test-hardening.ts",
+    "test:all": "tsx scripts/run-all-tests.ts"
   },
   "dependencies": {
     "@google/genai": "^2.24.0",

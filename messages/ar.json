@@ -242,6 +242,14 @@
       "manualEntryPlaceholder": "رقم الباركود",
       "manualEntrySubmit": "استخدام هذا الرقم"
     },
+    "voidCart": {
+      "trigger": "تفريغ",
+      "title": "تفريغ السلة؟",
+      "description": "يتم تسجيل تفريغ سلة تحتوي على أصناف في سجل التدقيق. إذا لم تكن مخولاً بالإلغاء، أدخل رمز PIN للمدير.",
+      "pinPlaceholder": "رمز PIN للمدير (عند الحاجة)",
+      "cancel": "إلغاء",
+      "confirm": "تفريغ السلة"
+    },
     "checkoutDialog": {
       "title": "الدفع",
       "amountDue": "المطلوب",
@@ -254,7 +262,8 @@
       "cardHint": "سيتم تسجيل الدفع كمعاملة بطاقة. استخدم جهاز البنك كالمعتاد.",
       "cancel": "إلغاء",
       "confirm": "إتمام البيع",
-      "saleDone": "تمت عملية البيع رقم {number}."
+      "saleDone": "تمت عملية البيع رقم {number}.",
+      "managerPinOptional": "رمز PIN للمدير، إذا كان الخصم الكبير يحتاج موافقة"
     },
     "shortcuts": {
       "focusSearch": "بحث",
@@ -331,7 +340,10 @@
     "colStatus": "الحالة",
     "colPin": "الرقم السري",
     "colCreated": "تاريخ الإنشاء",
-    "roles": { "admin": "مدير", "cashier": "كاشير" },
+    "roles": {
+      "admin": "مدير",
+      "cashier": "كاشير"
+    },
     "you": "(أنت)",
     "active": "نشط",
     "inactive": "موقوف",
@@ -350,7 +362,14 @@
     "activated": "تم تفعيل الحساب",
     "created": "تم إنشاء المستخدم"
   },
-  "audit": { "title": "سجل التدقيق", "when": "التوقيت", "action": "الإجراء", "target": "الهدف", "details": "تفاصيل آمنة", "empty": "لا توجد أحداث تدقيق بعد." },
+  "audit": {
+    "title": "سجل التدقيق",
+    "when": "التوقيت",
+    "action": "الإجراء",
+    "target": "الهدف",
+    "details": "تفاصيل آمنة",
+    "empty": "لا توجد أحداث تدقيق بعد."
+  },
   "pinSwitch": {
     "title": "تبديل الكاشير",
     "pinFor": "الرقم السري لـ {name}",
@@ -457,12 +476,12 @@
     "managerPinOptional": "رمز المدير إذا كانت الموافقة مطلوبة",
     "confirm": "تسجيل المرتجع",
     "startExchange": "تسجيل المرتجع وبدء الاستبدال",
-    "completed": "تم تسجيل المرتجع #{number}."
-    ,"history": "سجل المرتجعات",
+    "completed": "تم تسجيل المرتجع #{number}.",
+    "history": "سجل المرتجعات",
     "historyNumber": "مرتجع رقم {number}",
     "historyRestocked": "تمت إعادته إلى المخزون",
-    "historyNotRestocked": "لم تتم إعادته إلى المخزون"
-    ,"receiptTitle": "إيصال مرتجع",
+    "historyNotRestocked": "لم تتم إعادته إلى المخزون",
+    "receiptTitle": "إيصال مرتجع",
     "originalReceipt": "الفاتورة الأصلية #{number}",
     "receiptDate": "التاريخ"
   },

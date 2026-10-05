@@ -242,6 +242,14 @@
       "manualEntryPlaceholder": "Barcode number",
       "manualEntrySubmit": "Use this code"
     },
+    "voidCart": {
+      "trigger": "Clear",
+      "title": "Clear the cart?",
+      "description": "Clearing a cart with items is recorded in the audit log. If you are not authorized to void, enter a manager PIN.",
+      "pinPlaceholder": "Manager PIN (if required)",
+      "cancel": "Cancel",
+      "confirm": "Clear cart"
+    },
     "checkoutDialog": {
       "title": "Checkout",
       "amountDue": "Amount due",
@@ -254,7 +262,8 @@
       "cardHint": "The payment is recorded as a card transaction. Use the bank terminal as usual.",
       "cancel": "Cancel",
       "confirm": "Complete sale",
-      "saleDone": "Sale #{number} completed."
+      "saleDone": "Sale #{number} completed.",
+      "managerPinOptional": "Manager PIN, if a large discount needs approval"
     },
     "shortcuts": {
       "focusSearch": "search",
@@ -331,7 +340,10 @@
     "colStatus": "Status",
     "colPin": "PIN",
     "colCreated": "Created",
-    "roles": { "admin": "Admin", "cashier": "Cashier" },
+    "roles": {
+      "admin": "Admin",
+      "cashier": "Cashier"
+    },
     "you": "(you)",
     "active": "Active",
     "inactive": "Deactivated",
@@ -350,7 +362,14 @@
     "activated": "Account activated",
     "created": "User created"
   },
-  "audit": { "title": "Audit log", "when": "When", "action": "Action", "target": "Target", "details": "Safe details", "empty": "No audit events yet." },
+  "audit": {
+    "title": "Audit log",
+    "when": "When",
+    "action": "Action",
+    "target": "Target",
+    "details": "Safe details",
+    "empty": "No audit events yet."
+  },
   "pinSwitch": {
     "title": "Switch cashier",
     "pinFor": "PIN for {name}",
@@ -457,12 +476,12 @@
     "managerPinOptional": "Manager PIN, if approval is required",
     "confirm": "Record return",
     "startExchange": "Record return & start exchange",
-    "completed": "Return #{number} recorded."
-    ,"history": "Return history",
+    "completed": "Return #{number} recorded.",
+    "history": "Return history",
     "historyNumber": "Return #{number}",
     "historyRestocked": "Returned to stock",
-    "historyNotRestocked": "Not returned to stock"
-    ,"receiptTitle": "Return receipt",
+    "historyNotRestocked": "Not returned to stock",
+    "receiptTitle": "Return receipt",
     "originalReceipt": "Original receipt #{number}",
     "receiptDate": "Date"
   },

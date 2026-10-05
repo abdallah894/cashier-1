@@ -17,6 +17,7 @@ export type SaleReceipt = {
 };
 
 function mapSaleError(message: string): string {
+  if (message.includes("manager approval") || message.includes("approval:")) return "managerApprovalRequired";
   if (message.includes("insufficient stock")) return "insufficientStock";
   if (message.includes("tendered")) return "tenderedTooLow";
   if (message.includes("not found or inactive")) return "productUnavailable";
@@ -55,6 +56,7 @@ export async function createSale(input: unknown): Promise<ActionResult<SaleRecei
     p_shift_id: shift.id,
     p_amount_tendered:
       parsed.data.payment_method === "cash" ? (parsed.data.amount_tendered ?? undefined) : undefined,
+    p_approval_id: parsed.data.approvalId,
   });
 
   if (error) return { ok: false, error: mapSaleError(error.message) };

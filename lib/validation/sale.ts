@@ -11,6 +11,7 @@ export const checkoutSchema = z
     items: z.array(saleItemSchema).min(1).max(200),
     payment_method: z.enum(["cash", "card"]),
     amount_tendered: z.number().int().min(0).nullable(),
+    approvalId: z.uuid().optional(),
   })
   .refine((v) => v.payment_method !== "cash" || v.amount_tendered !== null, {
     message: "tenderedRequired",

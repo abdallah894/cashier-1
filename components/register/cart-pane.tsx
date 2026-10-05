@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { DiscountPopover } from "./discount-popover";
+import { VoidCartDialog } from "./void-cart-dialog";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -23,7 +24,6 @@ type Props = {
 export function CartPane({ totals, selectedIndex, onSelect, onQtyChange, onRemove }: Props) {
   const t = useTranslations("register");
   const locale = useLocale();
-  const clear = useCart((s) => s.clear);
   const saleDiscount = useCart((s) => s.saleDiscount);
   const setSaleDiscount = useCart((s) => s.setSaleDiscount);
   const listRef = useRef<HTMLDivElement>(null);
@@ -44,9 +44,7 @@ export function CartPane({ totals, selectedIndex, onSelect, onQtyChange, onRemov
           {totals.itemCount > 0 && <Badge variant="secondary">{totals.itemCount}</Badge>}
         </h2>
         {totals.itemCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={clear}>
-            {t("clearCart")}
-          </Button>
+          <VoidCartDialog totals={totals} />
         )}
       </div>
 

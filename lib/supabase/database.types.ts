@@ -544,9 +544,14 @@ export type Database = {
         Args: { p_amount: number; p_approval_id?: string; p_reason: string; p_shift_id: string; p_type: "paid_in" | "paid_out" | "safe_drop" }
         Returns: Database["public"]["Tables"]["cash_drawer_events"]["Row"]
       }
+      record_cart_void: {
+        Args: { p_approval_id?: string; p_item_count: number; p_value: number }
+        Returns: undefined
+      }
       create_sale: {
         Args: {
           p_amount_tendered?: number
+          p_approval_id?: string
           p_cashier_id?: string
           p_items: Json
           p_payment_method: Database["public"]["Enums"]["payment_method"]

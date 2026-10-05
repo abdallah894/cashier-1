@@ -5,7 +5,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Banknote, CreditCard, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
+import { createManagerApproval } from "@/lib/actions/approvals";
 import { createSale } from "@/lib/actions/sales";
+import { approvalRequestHash } from "@/lib/approvals/hash";
 import { formatEgp, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
 import { useCart, toSaleItems, type CartTotals } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,7 @@ export function CheckoutDialog({
   const [method, setMethod] = useState<"cash" | "card">("cash");
   const [tenderedInput, setTenderedInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [managerPin, setManagerPin] = useState("");
 
   // reset on close so the next checkout starts fresh
   function handleOpenChange(next: boolean) {
@@ -48,6 +51,7 @@ export function CheckoutDialog({
     if (!next) {
       setMethod("cash");
       setTenderedInput("");
+      setManagerPin("");
     }
     onOpenChange(next);
   }
@@ -61,11 +65,24 @@ export function CheckoutDialog({
     if (method === "cash" && cashInvalid) return;
     setSubmitting(true);
     try {
-      const result = await createSale({
+      const payload = {
         items: toSaleItems(totals),
         payment_method: method,
         amount_tendered: method === "cash" ? tendered : null,
-      });
+      };
+      let result = await createSale(payload);
+      if (!result.ok && result.error === "managerApprovalRequired" && /^\d{4}$/.test(managerPin)) {
+        // Large discounts need a one-time manager approval bound to these amounts.
+        const requestHash = await approvalRequestHash(
+          `sale_discount|${totals.baseTotal}|${totals.discountTotal}`
+        );
+        const approval = await createManagerApproval({ action: "sale_discount", requestHash, pin: managerPin });
+        if (!approval.ok) {
+          toast.error(tErrors(approval.error));
+          return;
+        }
+        result = await createSale({ ...payload, approvalId: approval.data.approvalId });
+      }
       if (!result.ok) {
         toast.error(tErrors(result.error));
         return; // cart stays intact — fix and retry
@@ -74,6 +91,7 @@ export function CheckoutDialog({
       toast.success(t("saleDone", { number: result.data.saleNumber }));
       setMethod("cash");
       setTenderedInput("");
+      setManagerPin("");
       onOpenChange(false);
       router.push(`/receipts/${result.data.saleId}?new=1`);
     } finally {
@@ -160,6 +178,20 @@ export function CheckoutDialog({
           </div>
         ) : (
           <p className="text-muted-foreground py-2 text-sm">{t("cardHint")}</p>
+        )}
+
+        {totals.discountTotal > 0 && (
+          <Input
+            dir="ltr"
+            type="password"
+            inputMode="numeric"
+            maxLength={4}
+            value={managerPin}
+            onChange={(e) => setManagerPin(e.target.value.replace(/\D/g, ""))}
+            onKeyDown={(e) => e.key === "Enter" && confirm()}
+            placeholder={t("managerPinOptional")}
+            aria-label={t("managerPinOptional")}
+          />
         )}
 
         <DialogFooter>

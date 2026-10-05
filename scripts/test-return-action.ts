@@ -27,8 +27,14 @@ const badQty = returnInputSchema.safeParse({
 });
 check("rejects quantities with more than three decimal places", !badQty.success);
 
-const badPin = returnInputSchema.safeParse({ ...validReturnInput, managerPin: "12a4" });
-check("rejects a non-numeric manager PIN", !badPin.success);
+const badApproval = returnInputSchema.safeParse({ ...validReturnInput, approvalId: "12a4" });
+check("rejects a malformed approval id", !badApproval.success);
+
+const goodApproval = returnInputSchema.safeParse({
+  ...validReturnInput,
+  approvalId: "33333333-3333-4333-8333-333333333333",
+});
+check("accepts a bound approval id", goodApproval.success);
 
 if (failures > 0) process.exit(1);
 console.log("All return-action validation tests passed.");

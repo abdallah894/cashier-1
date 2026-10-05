@@ -98,8 +98,10 @@ async function main() {
     `select public.create_manager_approval('cash_drawer_event', '${"c".repeat(64)}', '1234') as approval_id`
   );
   await asAdminService(db);
+  await db.exec(`set session_replication_role = replica`); // fixture time-travel; ledger triggers stay armed in production
   await db.query(`update public.manager_approvals set expires_at = now() - interval '1 second'
     where id = '${expiredApprovals[0].approval_id}'`);
+  await db.exec(`set session_replication_role = origin`);
   await asUser(db, CASHIER);
   await expectError(
     db.query(`select public.consume_manager_approval('${expiredApprovals[0].approval_id}',

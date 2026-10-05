@@ -64,9 +64,11 @@ async function main() {
   // to the fixed report window so this suite is independent of the clock.
   await asAdminService(db);
   await db.exec(`
+    set session_replication_role = replica;
     update public.sales
     set created_at = '2026-07-10T10:00:00Z'
     where shift_id = '${SHIFT}';
+    set session_replication_role = origin;
   `);
 
   await asUser(db, ADMIN);
