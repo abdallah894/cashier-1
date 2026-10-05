@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { createScanDetector } from "@/lib/barcode/scan-detector";
 
 type Options = {
   /** pause detection (e.g. while the checkout dialog is open) */
@@ -40,35 +41,23 @@ export function useBarcodeScanner(
   useEffect(() => {
     if (!enabled) return;
 
-    let buffer = "";
-    let lastTime = 0;
+    // the burst-vs-typing decision lives in a pure, unit-tested module
+    const detector = createScanDetector({ minLength, maxIntervalMs });
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
-      const now = performance.now();
-
-      if (event.key === "Enter") {
-        if (buffer.length >= minLength && now - lastTime <= maxIntervalMs) {
-          const barcode = buffer;
-          buffer = "";
-          // don't submit whatever form the burst landed in
-          event.preventDefault();
-          event.stopPropagation();
-          onScanRef.current(barcode);
-        } else {
-          buffer = "";
-        }
-        return;
+      const result = detector.handleKey({
+        key: event.key,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        altKey: event.altKey,
+        now: performance.now(),
+      });
+      if (result.scan !== undefined) {
+        // don't submit whatever form the burst landed in
+        event.preventDefault();
+        event.stopPropagation();
+        onScanRef.current(result.scan);
       }
-
-      if (event.key.length !== 1) return; // ignore F-keys, arrows, etc.
-
-      if (now - lastTime > maxIntervalMs) {
-        buffer = event.key; // too slow — start over from this key
-      } else {
-        buffer += event.key;
-      }
-      lastTime = now;
     }
 
     // capture phase so we run even when an input has focus

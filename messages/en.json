@@ -20,7 +20,8 @@
     "purchaseOrders": "Purchase orders",
     "customers": "Customers",
     "promotions": "Promotions",
-    "payments": "Payments"
+    "payments": "Payments",
+    "devices": "Devices"
   },
   "shell": {
     "toggleTheme": "Toggle theme",
@@ -524,7 +525,26 @@
     "print": "Print",
     "downloadPdf": "Download PDF",
     "autoPrint": "Auto-print after checkout",
-    "provisional": "PROVISIONAL - NOT A FINAL INVOICE"
+    "provisional": "PROVISIONAL - NOT A FINAL INVOICE",
+    "giftTitle": "GIFT RECEIPT",
+    "giftNote": "Prices are not shown",
+    "copyNumber": "COPY {n}",
+    "reprint": "Reprint",
+    "reprintTitle": "Reprint this receipt",
+    "reprintDescription": "Reprints are logged with who printed them and why. The copy is marked COPY.",
+    "reprintReason": "Reason (for example: customer lost the receipt)",
+    "printGift": "Print gift receipt",
+    "giftReceipt": "Gift receipt",
+    "backToReceipt": "Back to receipt",
+    "printedOnPrinter": "Receipt sent to the printer.",
+    "printedInBrowser": "Receipt sent to the browser print dialog.",
+    "printFailed": "Printing failed: {error}",
+    "retryPrint": "Retry print",
+    "usingPrinter": "Printer: {name}",
+    "usingBrowser": "No receipt printer paired on this browser: using the browser print dialog.",
+    "printedAlready": "Already printed once; further prints are reprints.",
+    "drawerFailed": "The cash drawer did not open: {error}",
+    "cancel": "Cancel"
   },
   "returns": {
     "start": "Return items",
@@ -614,7 +634,14 @@
     "paymentReferenceInvalid": "That is not a valid approval code. Use the code printed by the terminal (4-40 letters or digits), never a card number.",
     "paymentReferenceUsed": "This approval code was already used for another payment.",
     "paymentWrongState": "That payment can no longer change in this way. Refresh the page.",
-    "paymentFailed": "The payment action failed. Please try again."
+    "paymentFailed": "The payment action failed. Please try again.",
+    "printAlreadyPrinted": "This receipt was already printed. Use Reprint and give a reason.",
+    "printReasonRequired": "A reason is required for a reprint.",
+    "drawerNotCash": "The drawer only opens for cash sales and cash refunds.",
+    "drawerTooOld": "This sale is too old to open the drawer for.",
+    "drawerAlreadyOpened": "The drawer was already opened for this event.",
+    "deviceProfileInvalid": "That hardware profile is not supported in this release.",
+    "deviceFailed": "The device action failed. Please try again."
   },
   "fieldErrors": {
     "required": "Required.",
@@ -1002,5 +1029,75 @@
     "recentTitle": "Recent payments",
     "recentEmpty": "No payments yet.",
     "exportCsv": "Export CSV"
+  },
+  "devices": {
+    "title": "Devices",
+    "description": "Declare the hardware at each till. Printing and drawer actions are logged with the staff member and till. Browser printing always works as a fallback.",
+    "noWebUsb": "This browser does not support WebUSB, so a thermal printer cannot be driven. Use Chrome or Edge over HTTPS; the browser print dialog still works.",
+    "failedJobs": "{count} recent print job(s) failed. They can be retried from the receipt.",
+    "devicesTitle": "Devices at {till}",
+    "add": "Add device",
+    "addDescription": "Only profiles marked as supported can be added.",
+    "colName": "Name",
+    "colKind": "Type",
+    "colProfile": "Profile",
+    "colHealth": "Health",
+    "colWhen": "When",
+    "colDocument": "Document",
+    "colCopy": "Copy",
+    "colStatus": "Status",
+    "colDetail": "Detail",
+    "kind": {
+      "printer": "Printer",
+      "scanner": "Scanner",
+      "cash_drawer": "Cash drawer"
+    },
+    "health": {
+      "unknown": "Unknown",
+      "ok": "OK",
+      "degraded": "Degraded",
+      "offline": "Offline"
+    },
+    "inactive": "Inactive",
+    "pair": "Pair USB printer",
+    "repair": "Re-pair",
+    "check": "Check",
+    "paired": "Printer paired.",
+    "pairFailed": "Pairing was cancelled or failed.",
+    "notPaired": "No paired USB printer found in this browser.",
+    "checkFailed": "The printer check failed.",
+    "healthOk": "Printer responded.",
+    "healthOffline": "Printer did not respond.",
+    "empty": "No devices declared for this till yet.",
+    "pickProfile": "Choose a profile",
+    "save": "Save",
+    "saved": "Device saved.",
+    "cancel": "Cancel",
+    "openDrawer": "Open drawer (no sale)",
+    "openDrawerDescription": "A manual opening is audited. Give a reason; without the cash-drawer permission a manager PIN is needed.",
+    "drawerReason": "Reason",
+    "managerPinOptional": "Manager PIN (if required)",
+    "drawerOpened": "Drawer opened.",
+    "drawerFailed": "The drawer did not open: {error}",
+    "jobsTitle": "Recent print jobs",
+    "noJobs": "No print jobs yet.",
+    "document": {
+      "sale_receipt": "Sale receipt",
+      "return_receipt": "Return receipt",
+      "z_report": "Z report"
+    },
+    "jobKind": {
+      "original": "original",
+      "reprint": "reprint",
+      "gift": "gift"
+    },
+    "jobStatus": {
+      "queued": "Queued",
+      "printed": "Printed",
+      "failed": "Failed"
+    },
+    "profilesTitle": "Declared hardware support",
+    "supported": "Supported",
+    "notSupported": "Not supported yet"
   }
 }

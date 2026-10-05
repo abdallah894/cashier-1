@@ -19,6 +19,7 @@ function fakeShift(over: Partial<ShiftForZReport>): ShiftForZReport {
     opening_float: 50000,
     closing_counted: 156000,
     expected_cash: 156300,
+    till_id: "00000000-0000-0000-0000-0000000000a1",
     created_at: "2026-07-06T08:00:00Z",
     profiles: { full_name: "Test Cashier" },
     ...over,

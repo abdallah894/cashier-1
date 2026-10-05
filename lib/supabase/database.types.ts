@@ -428,6 +428,7 @@ export type Database = {
       }
       shifts: {
         Row: {
+          till_id: string
           cashier_id: string
           closed_at: string | null
           closing_counted: number | null
@@ -438,6 +439,7 @@ export type Database = {
           opening_float: number
         }
         Insert: {
+          till_id?: string
           cashier_id: string
           closed_at?: string | null
           closing_counted?: number | null
@@ -448,6 +450,7 @@ export type Database = {
           opening_float?: number
         }
         Update: {
+          till_id?: string
           cashier_id?: string
           closed_at?: string | null
           closing_counted?: number | null
@@ -727,6 +730,94 @@ export type Database = {
         Update: { [_ in never]: never }
         Relationships: []
       }
+      tills: {
+        Row: { active: boolean; created_at: string; id: string; name: string }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      device_profiles: {
+        Row: { key: string; kind: Database["public"]["Enums"]["device_kind"]; label: string; notes: string | null; supported: boolean }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      devices: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          health: string
+          health_detail: string | null
+          id: string
+          kind: Database["public"]["Enums"]["device_kind"]
+          last_seen_at: string | null
+          name: string
+          profile: string
+          settings: Json
+          till_id: string
+          updated_at: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      device_events: {
+        Row: {
+          actor_id: string
+          created_at: string
+          detail: string | null
+          device_id: string | null
+          document_id: string | null
+          document_type: string | null
+          event_type: string
+          id: string
+          till_id: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      print_jobs: {
+        Row: {
+          completed_at: string | null
+          copy_number: number
+          created_at: string
+          device_id: string | null
+          document_id: string
+          document_type: string
+          error: string | null
+          id: string
+          kind: string
+          reason: string | null
+          requested_by: string
+          status: string
+          till_id: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      drawer_openings: {
+        Row: {
+          actor_id: string
+          approved_by: string | null
+          completed_at: string | null
+          created_at: string
+          device_id: string | null
+          error: string | null
+          id: string
+          note: string | null
+          reason: Database["public"]["Enums"]["drawer_reason"]
+          reference_id: string | null
+          shift_id: string
+          status: string
+          till_id: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           created_at: string
@@ -780,6 +871,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      upsert_device: { Args: { p: Json }; Returns: string }
+      report_device_health: { Args: { p_detail?: string; p_device_id: string; p_health: string }; Returns: undefined }
+      request_print: {
+        Args: { p_document_id: string; p_document_type: string; p_kind: string; p_reason?: string }
+        Returns: string
+      }
+      complete_print_job: { Args: { p_device_id?: string; p_error?: string; p_job_id: string; p_ok: boolean }; Returns: undefined }
+      authorize_drawer_open: {
+        Args: {
+          p_approval_id?: string
+          p_note?: string
+          p_reason: Database["public"]["Enums"]["drawer_reason"]
+          p_reference_id?: string
+        }
+        Returns: string
+      }
+      complete_drawer_opening: { Args: { p_device_id?: string; p_error?: string; p_id: string; p_ok: boolean }; Returns: undefined }
       begin_payment: {
         Args: {
           p_amount: number
@@ -1108,6 +1216,8 @@ export type Database = {
     }
     Enums: {
       capability: "return.approve" | "cart.void" | "discount.override" | "stock.correct" | "cash.drawer.adjust" | "shift.close.override" | "customer.manage"
+      device_kind: "printer" | "scanner" | "cash_drawer"
+      drawer_reason: "cash_sale" | "cash_refund" | "cash_drawer_event" | "no_sale"
       payment_direction: "charge" | "refund"
       payment_method: "cash" | "card" | "split"
       payment_status: "pending" | "authorized" | "captured" | "declined" | "failed" | "voided"
@@ -1247,6 +1357,8 @@ export const Constants = {
   public: {
     Enums: {
       capability: ["return.approve", "cart.void", "discount.override", "stock.correct", "cash.drawer.adjust", "shift.close.override", "customer.manage"],
+      device_kind: ["printer", "scanner", "cash_drawer"],
+      drawer_reason: ["cash_sale", "cash_refund", "cash_drawer_event", "no_sale"],
       payment_direction: ["charge", "refund"],
       payment_method: ["cash", "card", "split"],
       payment_status: ["pending", "authorized", "captured", "declined", "failed", "voided"],

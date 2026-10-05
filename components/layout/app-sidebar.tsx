@@ -18,6 +18,7 @@ import {
   Contact,
   Percent,
   Wallet,
+  Printer,
 } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection, type Locale } from "@/i18n/routing";
@@ -46,6 +47,7 @@ const navItems = [
   { key: "customers", href: "/customers", icon: Contact, adminOnly: true },
   { key: "promotions", href: "/promotions", icon: Percent, adminOnly: true },
   { key: "reports", href: "/reports", icon: BarChart3, adminOnly: true },
+  { key: "devices", href: "/devices", icon: Printer, adminOnly: true },
   { key: "users", href: "/users", icon: UsersRound, adminOnly: true },
   { key: "audit", href: "/audit", icon: ShieldCheck, adminOnly: true },
 ] as const;

@@ -20,7 +20,8 @@
     "purchaseOrders": "أوامر الشراء",
     "customers": "العملاء",
     "promotions": "العروض",
-    "payments": "المدفوعات"
+    "payments": "المدفوعات",
+    "devices": "الأجهزة"
   },
   "shell": {
     "toggleTheme": "تبديل المظهر",
@@ -524,7 +525,26 @@
     "print": "طباعة",
     "downloadPdf": "تحميل PDF",
     "autoPrint": "طباعة تلقائية بعد الدفع",
-    "provisional": "مؤقت - ليس فاتورة نهائية"
+    "provisional": "مؤقت - ليس فاتورة نهائية",
+    "giftTitle": "إيصال هدية",
+    "giftNote": "الأسعار غير معروضة",
+    "copyNumber": "نسخة {n}",
+    "reprint": "إعادة طباعة",
+    "reprintTitle": "إعادة طباعة هذا الإيصال",
+    "reprintDescription": "تُسجل إعادة الطباعة باسم من طبعها ولماذا. وتُعلَّم النسخة بكلمة نسخة.",
+    "reprintReason": "السبب (مثلاً: العميل فقد الإيصال)",
+    "printGift": "طباعة إيصال الهدية",
+    "giftReceipt": "إيصال هدية",
+    "backToReceipt": "العودة إلى الإيصال",
+    "printedOnPrinter": "تم إرسال الإيصال إلى الطابعة.",
+    "printedInBrowser": "تم إرسال الإيصال إلى نافذة الطباعة بالمتصفح.",
+    "printFailed": "فشلت الطباعة: {error}",
+    "retryPrint": "إعادة محاولة الطباعة",
+    "usingPrinter": "الطابعة: {name}",
+    "usingBrowser": "لا توجد طابعة إيصالات مقترنة بهذا المتصفح: تُستخدم نافذة الطباعة بالمتصفح.",
+    "printedAlready": "طُبع مرة بالفعل؛ أي طباعة أخرى هي إعادة طباعة.",
+    "drawerFailed": "لم يُفتح درج النقود: {error}",
+    "cancel": "إلغاء"
   },
   "returns": {
     "start": "إرجاع أصناف",
@@ -614,7 +634,14 @@
     "paymentReferenceInvalid": "هذا ليس رمز موافقة صالحاً. استخدم الرمز المطبوع من الجهاز (4-40 حرفاً أو رقماً) وليس رقم البطاقة أبداً.",
     "paymentReferenceUsed": "رمز الموافقة هذا استُخدم بالفعل لدفعة أخرى.",
     "paymentWrongState": "لا يمكن تغيير هذه الدفعة بهذه الطريقة الآن. حدّث الصفحة.",
-    "paymentFailed": "فشل إجراء الدفع. حاول مرة أخرى."
+    "paymentFailed": "فشل إجراء الدفع. حاول مرة أخرى.",
+    "printAlreadyPrinted": "تمت طباعة هذا الإيصال بالفعل. استخدم إعادة الطباعة مع ذكر السبب.",
+    "printReasonRequired": "السبب مطلوب لإعادة الطباعة.",
+    "drawerNotCash": "الدرج يُفتح فقط للمبيعات النقدية والاستردادات النقدية.",
+    "drawerTooOld": "هذه العملية قديمة جداً لفتح الدرج.",
+    "drawerAlreadyOpened": "تم فتح الدرج بالفعل لهذا الحدث.",
+    "deviceProfileInvalid": "ملف الجهاز هذا غير مدعوم في هذا الإصدار.",
+    "deviceFailed": "فشل إجراء الجهاز. حاول مرة أخرى."
   },
   "fieldErrors": {
     "required": "مطلوب.",
@@ -1002,5 +1029,75 @@
     "recentTitle": "آخر المدفوعات",
     "recentEmpty": "لا توجد مدفوعات بعد.",
     "exportCsv": "تصدير CSV"
+  },
+  "devices": {
+    "title": "الأجهزة",
+    "description": "حدّد الأجهزة عند كل نقطة بيع. تُسجل إجراءات الطباعة والدرج باسم الموظف ونقطة البيع. وتعمل الطباعة من المتصفح دائماً كبديل.",
+    "noWebUsb": "هذا المتصفح لا يدعم WebUSB فلا يمكن تشغيل طابعة حرارية. استخدم Chrome أو Edge عبر HTTPS؛ وتظل نافذة الطباعة بالمتصفح تعمل.",
+    "failedJobs": "فشلت {count} مهمة طباعة حديثة. يمكن إعادة محاولتها من الإيصال.",
+    "devicesTitle": "الأجهزة في {till}",
+    "add": "إضافة جهاز",
+    "addDescription": "يمكن فقط إضافة الملفات المعلَّمة كمدعومة.",
+    "colName": "الاسم",
+    "colKind": "النوع",
+    "colProfile": "الملف",
+    "colHealth": "الحالة الصحية",
+    "colWhen": "الوقت",
+    "colDocument": "المستند",
+    "colCopy": "النسخة",
+    "colStatus": "الحالة",
+    "colDetail": "التفاصيل",
+    "kind": {
+      "printer": "طابعة",
+      "scanner": "قارئ باركود",
+      "cash_drawer": "درج نقود"
+    },
+    "health": {
+      "unknown": "غير معروف",
+      "ok": "سليم",
+      "degraded": "متدهور",
+      "offline": "غير متصل"
+    },
+    "inactive": "غير نشط",
+    "pair": "اقتران طابعة USB",
+    "repair": "إعادة الاقتران",
+    "check": "فحص",
+    "paired": "تم اقتران الطابعة.",
+    "pairFailed": "تم إلغاء الاقتران أو فشل.",
+    "notPaired": "لا توجد طابعة USB مقترنة في هذا المتصفح.",
+    "checkFailed": "فشل فحص الطابعة.",
+    "healthOk": "استجابت الطابعة.",
+    "healthOffline": "لم تستجب الطابعة.",
+    "empty": "لا توجد أجهزة معرّفة لنقطة البيع هذه بعد.",
+    "pickProfile": "اختر ملفاً",
+    "save": "حفظ",
+    "saved": "تم حفظ الجهاز.",
+    "cancel": "إلغاء",
+    "openDrawer": "فتح الدرج (بدون بيع)",
+    "openDrawerDescription": "الفتح اليدوي مُسجَّل. اذكر السبب؛ وبدون صلاحية الدرج يلزم رمز PIN للمدير.",
+    "drawerReason": "السبب",
+    "managerPinOptional": "رمز PIN للمدير (عند الحاجة)",
+    "drawerOpened": "تم فتح الدرج.",
+    "drawerFailed": "لم يُفتح الدرج: {error}",
+    "jobsTitle": "آخر مهام الطباعة",
+    "noJobs": "لا توجد مهام طباعة بعد.",
+    "document": {
+      "sale_receipt": "إيصال بيع",
+      "return_receipt": "إيصال مرتجع",
+      "z_report": "تقرير Z"
+    },
+    "jobKind": {
+      "original": "أصل",
+      "reprint": "إعادة طباعة",
+      "gift": "هدية"
+    },
+    "jobStatus": {
+      "queued": "في الانتظار",
+      "printed": "تمت الطباعة",
+      "failed": "فشلت"
+    },
+    "profilesTitle": "الدعم المعلن للأجهزة",
+    "supported": "مدعوم",
+    "notSupported": "غير مدعوم بعد"
   }
 }
