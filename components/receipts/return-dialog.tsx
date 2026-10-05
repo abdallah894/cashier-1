@@ -21,6 +21,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { formatEgp } from "@/lib/money";
+import { approvalRequestHash } from "@/lib/approvals/hash";
+import { createManagerApproval } from "@/lib/actions/approvals";
 
 type ReturnableLine = {
   id: string;
@@ -73,14 +75,25 @@ export function ReturnDialog({
       return Number.isFinite(qty) && qty > 0 ? [{ saleItemId: line.id, qty }] : [];
     });
     startTransition(async () => {
-      const result = await submitReturn({
+      let result = await submitReturn({
         saleId,
         items,
         refundTender: paymentMethod,
         reason,
         restock,
-        managerPin: managerPin || undefined,
       });
+      if (!result.ok && result.error === "managerApprovalRequired" && managerPin) {
+        const requestHash = await approvalRequestHash(
+          `return|${saleId}|${paymentMethod}|${reason.trim()}|${restock}|${refundTotal}`
+        );
+        const approval = await createManagerApproval({ action: "return", requestHash, pin: managerPin });
+        if (approval.ok) {
+          result = await submitReturn({ saleId, items, refundTender: paymentMethod, reason, restock, approvalId: approval.data.approvalId });
+        } else {
+          toast.error(tErrors(approval.error));
+          return;
+        }
+      }
       if (!result.ok) {
         toast.error(tErrors(result.error));
         return;
