@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/card";
 import { TimeSeriesChart, CategoricalBarChart } from "@/components/reports/charts";
 import { ExportButton } from "@/components/reports/export-button";
+import { ReportsNav } from "@/components/reports/reports-nav";
 
 type SearchParams = { from?: string; to?: string; bucket?: string };
 
@@ -45,7 +46,7 @@ export default async function ReportsPage({
   const name = (ar: string | null, en: string | null) => (isAr ? ar : en) ?? en ?? ar ?? "—";
 
   const sp = await searchParams;
-  const fallback = defaultRange();
+  const fallback = await defaultRange();
   const from = sp.from || fallback.from;
   const to = sp.to || fallback.to;
   const bucket: Bucket = sp.bucket === "week" || sp.bucket === "month" ? sp.bucket : "day";
@@ -54,9 +55,10 @@ export default async function ReportsPage({
 
   const bucketLabel = (iso: string) => {
     const d = new Date(iso);
+    // bucket_start is a business DATE stored at 00:00 UTC, so format it in UTC
     return bucket === "month"
-      ? format.dateTime(d, { year: "numeric", month: "short" })
-      : format.dateTime(d, { day: "2-digit", month: "short" });
+      ? format.dateTime(d, { year: "numeric", month: "short", timeZone: "UTC" })
+      : format.dateTime(d, { day: "2-digit", month: "short", timeZone: "UTC" });
   };
 
   // Fetch everything in parallel (SQL does the aggregation).
@@ -82,6 +84,8 @@ export default async function ReportsPage({
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
       </div>
+
+      <ReportsNav active="overview" />
 
       <form method="get" className="flex flex-wrap items-end gap-2">
         <label className="text-muted-foreground flex items-center gap-1 text-sm">

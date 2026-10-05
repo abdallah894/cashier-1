@@ -818,6 +818,74 @@ export type Database = {
         Update: { [_ in never]: never }
         Relationships: []
       }
+      store_settings: {
+        Row: {
+          business_day_cutoff_minutes: number
+          default_lead_time_days: number
+          id: boolean
+          reorder_cover_days: number
+          reorder_lookback_days: number
+          timezone: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      business_days: {
+        Row: {
+          card_net: number
+          cash_net: number
+          closed_at: string
+          closed_by: string
+          day: string
+          discount_total: number
+          gross_sales: number
+          net_sales_ex_vat: number
+          refund_count: number
+          refunds_gross: number
+          sale_count: number
+          vat_on_sales: number
+          void_count: number
+          void_value: number
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      product_suppliers: {
+        Row: {
+          is_preferred: boolean
+          lead_time_days: number | null
+          min_order_qty: number
+          pack_size: number
+          product_id: string
+          supplier_id: string
+          supplier_sku: string | null
+          unit_cost: number | null
+          updated_at: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      reorder_alerts: {
+        Row: {
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          note: string | null
+          opened_at: string
+          po_id: string | null
+          product_id: string
+          resolved_at: string | null
+          status: string
+          stock_qty_at_alert: number
+          threshold: number
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           created_at: string
@@ -871,6 +939,145 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      store_tz: { Args: Record<PropertyKey, never>; Returns: string }
+      business_day: { Args: { ts: string }; Returns: string }
+      business_day_range: {
+        Args: { p_from_day: string; p_to_day: string }
+        Returns: { range_end: string; range_start: string }[]
+      }
+      update_store_settings: { Args: { p: Json }; Returns: undefined }
+      close_business_day: { Args: { p_day: string }; Returns: undefined }
+      report_daily_summary: {
+        Args: { p_from_day: string; p_to_day: string }
+        Returns: {
+          card_net: number
+          cash_net: number
+          closed: boolean
+          day: string
+          discount_total: number
+          gross_sales: number
+          net_after_refunds_gross: number
+          net_sales_ex_vat: number
+          override_count: number
+          promo_discount: number
+          refund_count: number
+          refunds_gross: number
+          sale_count: number
+          vat_on_sales: number
+          void_count: number
+          void_value: number
+        }[]
+      }
+      report_vat: {
+        Args: { p_from_day: string; p_to_day: string }
+        Returns: {
+          gross_sales: number
+          input_vat_purchases: number
+          net_sales: number
+          net_vat: number
+          rate_bp: number
+          refund_gross: number
+          refund_net: number
+          refund_vat: number
+          vat_sales: number
+        }[]
+      }
+      report_refunds_detail: {
+        Args: { p_from_day: string; p_to_day: string }
+        Returns: {
+          actor_name: string
+          created_at: string
+          day: string
+          reason: string
+          refund_total: number
+          restock: boolean
+          return_id: string
+          return_number: number
+          sale_number: number
+          tender: Database["public"]["Enums"]["payment_method"]
+        }[]
+      }
+      report_voids_detail: {
+        Args: { p_from_day: string; p_to_day: string }
+        Returns: { actor_name: string; amount: number; created_at: string; day: string; event_id: string; item_count: number }[]
+      }
+      report_stock_movements: {
+        Args: { p_from_day: string; p_to_day: string }
+        Returns: {
+          adjusted_qty: number
+          barcode: string
+          closing_qty: number
+          name_ar: string
+          name_en: string
+          opening_qty: number
+          product_id: string
+          received_qty: number
+          returned_qty: number
+          sold_qty: number
+        }[]
+      }
+      report_stock_valuation: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          barcode: string
+          category_id: string | null
+          category_name_ar: string | null
+          category_name_en: string | null
+          name_ar: string
+          name_en: string
+          product_id: string
+          qty: number
+          retail_value_gross: number
+          retail_value_net: number
+          unit_cost: number
+          unit_price: number
+          value_at_cost: number
+        }[]
+      }
+      report_stock_aging: {
+        Args: { p_as_of_day?: string }
+        Returns: {
+          barcode: string
+          bucket: string
+          days_since_last_sale: number | null
+          last_received_at: string | null
+          last_sold_at: string | null
+          name_ar: string
+          name_en: string
+          product_id: string
+          qty: number
+          value_at_cost: number
+        }[]
+      }
+      set_product_supplier: { Args: { p: Json }; Returns: undefined }
+      refresh_reorder_alerts: { Args: Record<PropertyKey, never>; Returns: number }
+      handle_reorder_alert: { Args: { p_action: string; p_id: string; p_note?: string; p_po_id?: string }; Returns: undefined }
+      report_reorder_suggestions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          alert_id: string | null
+          avg_daily_sales: number
+          barcode: string
+          cover_days: number
+          days_of_cover: number | null
+          explanation: string
+          lead_time_days: number
+          lookback_days: number
+          low_stock_threshold: number
+          min_order_qty: number
+          name_ar: string
+          name_en: string
+          on_order_qty: number
+          pack_size: number
+          product_id: string
+          stock_qty: number
+          suggested_qty: number
+          supplier_id: string | null
+          supplier_name: string | null
+          unit: Database["public"]["Enums"]["product_unit"]
+          unit_cost: number
+        }[]
+      }
       upsert_device: { Args: { p: Json }; Returns: string }
       report_device_health: { Args: { p_detail?: string; p_device_id: string; p_health: string }; Returns: undefined }
       request_print: {

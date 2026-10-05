@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { normalizeDigits } from "@/lib/money";
+import { boundsFor } from "@/lib/supabase/queries/reports";
 import type { Tables } from "@/lib/supabase/database.types";
 import type { SaleForReceipt } from "@/lib/receipts/types";
 
@@ -49,8 +50,7 @@ export const SALES_PAGE_SIZE = 20;
 export type SalesListParams = {
   /** sale_number search — digits, Arabic-Indic accepted */
   q?: string;
-  /** inclusive YYYY-MM-DD bounds. UTC day edges — good enough until a
-   *  store-timezone setting exists (Cairo is UTC+2/+3). */
+  /** inclusive YYYY-MM-DD business-day bounds (store timezone, DST-aware). */
   from?: string;
   to?: string;
   cashierId?: string;
@@ -73,8 +73,8 @@ export async function getSales({ q, from, to, cashierId, page = 1 }: SalesListPa
     // a non-numeric query can never match a sale_number
     query = query.eq("sale_number", Number.isSafeInteger(n) && n > 0 ? n : -1);
   }
-  if (from) query = query.gte("created_at", `${from}T00:00:00Z`);
-  if (to) query = query.lte("created_at", `${to}T23:59:59.999Z`);
+  if (from) query = query.gte("created_at", (await boundsFor({ from, to: from })).p_from);
+  if (to) query = query.lte("created_at", (await boundsFor({ from: to, to })).p_to);
   if (cashierId) query = query.eq("cashier_id", cashierId);
 
   const fromRow = (page - 1) * SALES_PAGE_SIZE;

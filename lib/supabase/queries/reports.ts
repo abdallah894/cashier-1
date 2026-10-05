@@ -7,27 +7,40 @@ import { createClient } from "@/lib/supabase/server";
  * work stays in Postgres; these just pass the date range and return typed
  * rows. RLS/guard: the RPCs raise 42501 for non-admins.
  *
- * Range: `from`/`to` are YYYY-MM-DD (from the URL). We widen them to
- * inclusive UTC day edges, exactly like lib/supabase/queries/sales.ts —
- * good enough until a store-timezone setting exists (Cairo is UTC+2/+3).
+ * Range: `from`/`to` are YYYY-MM-DD business days (from the URL). The
+ * database turns them into exact instants in the store timezone
+ * (Africa/Cairo by default, DST-aware; see business_day_range), so a sale at
+ * 00:30 Cairo time belongs to the right day.
  */
 
 export type DateRange = { from: string; to: string };
 export type Bucket = "day" | "week" | "month";
 export type TopBy = "revenue" | "qty";
 
-/** YYYY-MM-DD → inclusive UTC bounds as ISO timestamps. */
-export function toUtcBounds({ from, to }: DateRange): { p_from: string; p_to: string } {
-  return { p_from: `${from}T00:00:00Z`, p_to: `${to}T23:59:59.999Z` };
+/** Business days (YYYY-MM-DD) → the exact inclusive instants they cover in the store timezone. */
+export async function boundsFor({ from, to }: DateRange): Promise<{ p_from: string; p_to: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("business_day_range", { p_from_day: from, p_to_day: to });
+  if (error) throw error;
+  const row = data?.[0];
+  if (!row) throw new Error("business_day_range returned nothing");
+  return { p_from: row.range_start, p_to: row.range_end };
 }
 
-/** Default range: the last 30 days ending today, in UTC. */
-export function defaultRange(): DateRange {
-  const today = new Date();
-  const start = new Date(today);
+/** The store's current business day (YYYY-MM-DD). */
+export async function businessToday(): Promise<string> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("business_day", { ts: new Date().toISOString() });
+  if (error) throw error;
+  return String(data).slice(0, 10);
+}
+
+/** Default range: the last 30 business days ending today. */
+export async function defaultRange(): Promise<DateRange> {
+  const today = await businessToday();
+  const start = new Date(`${today}T00:00:00Z`);
   start.setUTCDate(start.getUTCDate() - 29);
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
-  return { from: iso(start), to: iso(today) };
+  return { from: start.toISOString().slice(0, 10), to: today };
 }
 
 export type Summary = { revenue: number; refunds: number; netRevenue: number; saleCount: number; avgBasket: number };
@@ -45,7 +58,7 @@ export type Profit = { netRevenue: number; cost: number; profit: number; margin:
 
 export async function getSummary(range: DateRange): Promise<Summary> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("report_summary", toUtcBounds(range));
+  const { data, error } = await supabase.rpc("report_summary", await boundsFor(range));
   if (error) throw error;
   const row = data?.[0];
   return {
@@ -60,7 +73,7 @@ export async function getSummary(range: DateRange): Promise<Summary> {
 export async function getSalesOverTime(range: DateRange, bucket: Bucket): Promise<TimePoint[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("report_sales_over_time", {
-    ...toUtcBounds(range),
+    ...(await boundsFor(range)),
     p_bucket: bucket,
   });
   if (error) throw error;
@@ -75,7 +88,7 @@ export async function getSalesOverTime(range: DateRange, bucket: Bucket): Promis
 export async function getTopProducts(range: DateRange, by: TopBy, limit = 10): Promise<TopProduct[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("report_top_products", {
-    ...toUtcBounds(range),
+    ...(await boundsFor(range)),
     p_by: by,
     p_limit: limit,
   });
@@ -91,7 +104,7 @@ export async function getTopProducts(range: DateRange, by: TopBy, limit = 10): P
 
 export async function getSalesByCategory(range: DateRange): Promise<CategoryRow[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("report_sales_by_category", toUtcBounds(range));
+  const { data, error } = await supabase.rpc("report_sales_by_category", await boundsFor(range));
   if (error) throw error;
   return (data ?? []).map((r) => ({
     categoryId: r.category_id,
@@ -104,7 +117,7 @@ export async function getSalesByCategory(range: DateRange): Promise<CategoryRow[
 
 export async function getSalesByCashier(range: DateRange): Promise<CashierRow[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("report_sales_by_cashier", toUtcBounds(range));
+  const { data, error } = await supabase.rpc("report_sales_by_cashier", await boundsFor(range));
   if (error) throw error;
   return (data ?? []).map((r) => ({
     cashierId: r.cashier_id,
@@ -116,7 +129,7 @@ export async function getSalesByCashier(range: DateRange): Promise<CashierRow[]>
 
 export async function getProfit(range: DateRange): Promise<Profit> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("report_profit", toUtcBounds(range));
+  const { data, error } = await supabase.rpc("report_profit", await boundsFor(range));
   if (error) throw error;
   const row = data?.[0];
   return {
