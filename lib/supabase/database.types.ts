@@ -14,6 +14,18 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_events: {
+        Row: { action: string; actor_id: string; approved_by: string | null; created_at: string; id: string; metadata: Json; request_id: string | null; target_id: string | null; target_type: string }
+        Insert: { action: string; actor_id: string; approved_by?: string | null; created_at?: string; id?: string; metadata?: Json; request_id?: string | null; target_id?: string | null; target_type: string }
+        Update: { action?: string; actor_id?: string; approved_by?: string | null; created_at?: string; id?: string; metadata?: Json; request_id?: string | null; target_id?: string | null; target_type?: string }
+        Relationships: []
+      }
+      staff_capabilities: {
+        Row: { capability: Database["public"]["Enums"]["capability"]; created_at: string; granted_by: string; staff_id: string }
+        Insert: { capability: Database["public"]["Enums"]["capability"]; created_at?: string; granted_by: string; staff_id: string }
+        Update: { capability?: Database["public"]["Enums"]["capability"]; created_at?: string; granted_by?: string; staff_id?: string }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -564,6 +576,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       is_admin: { Args: never; Returns: boolean }
+      has_capability: { Args: { p_capability: Database["public"]["Enums"]["capability"] }; Returns: boolean }
       report_profit: {
         Args: { p_from: string; p_to: string }
         Returns: {
@@ -632,6 +645,7 @@ export type Database = {
       }
     }
     Enums: {
+      capability: "return.approve" | "cart.void" | "discount.override" | "stock.correct" | "cash.drawer.adjust" | "shift.close.override"
       payment_method: "cash" | "card"
       product_unit: "piece" | "kg"
       stock_movement_reason: "sale" | "received" | "damaged" | "correction" | "return"
@@ -763,6 +777,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      capability: ["return.approve", "cart.void", "discount.override", "stock.correct", "cash.drawer.adjust", "shift.close.override"],
       payment_method: ["cash", "card"],
       product_unit: ["piece", "kg"],
       stock_movement_reason: ["sale", "received", "damaged", "correction", "return"],
