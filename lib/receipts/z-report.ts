@@ -18,6 +18,10 @@ export type ZReportData = {
   openingFloat: number; // piasters
   cashSales: number;
   cardSales: number;
+  paidIn: number;
+  paidOut: number;
+  safeDrops: number;
+  cashRefunds: number;
   totalSales: number;
   expectedCash: number | null; // set by close_shift; null while open
   counted: number | null;
@@ -27,10 +31,17 @@ export type ZReportData = {
 
 export function buildZReport(
   shift: ShiftForZReport,
-  agg: { cashSales: number; cardSales: number; saleCount: number }
+  agg: {
+    cashSales: number;
+    cardSales: number;
+    saleCount: number;
+    drawerEvents?: Array<{ event_type: "paid_in" | "paid_out" | "safe_drop" | "cash_refund" | "cash_sale"; amount: number }>;
+  }
 ): ZReportData {
   const expected = shift.expected_cash === null ? null : Number(shift.expected_cash);
   const counted = shift.closing_counted === null ? null : Number(shift.closing_counted);
+  const totals = { paid_in: 0, paid_out: 0, safe_drop: 0, cash_refund: 0, cash_sale: 0 };
+  for (const event of agg.drawerEvents ?? []) totals[event.event_type] += event.amount;
   return {
     store: STORE_INFO,
     shiftId: shift.id,
@@ -41,6 +52,10 @@ export function buildZReport(
     openingFloat: Number(shift.opening_float),
     cashSales: agg.cashSales,
     cardSales: agg.cardSales,
+    paidIn: totals.paid_in,
+    paidOut: totals.paid_out,
+    safeDrops: totals.safe_drop,
+    cashRefunds: totals.cash_refund,
     totalSales: agg.cashSales + agg.cardSales,
     expectedCash: expected,
     counted,

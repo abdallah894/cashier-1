@@ -435,9 +435,9 @@ export type Database = {
         ]
       }
       cash_drawer_events: {
-        Row: { actor_id: string; amount: number; created_at: string; event_type: "paid_in" | "paid_out" | "safe_drop" | "cash_refund"; id: string; reason: string; return_id: string | null; shift_id: string }
-        Insert: { actor_id: string; amount: number; created_at?: string; event_type: "paid_in" | "paid_out" | "safe_drop" | "cash_refund"; id?: string; reason: string; return_id?: string | null; shift_id: string }
-        Update: { actor_id?: string; amount?: number; created_at?: string; event_type?: "paid_in" | "paid_out" | "safe_drop" | "cash_refund"; id?: string; reason?: string; return_id?: string | null; shift_id?: string }
+        Row: { actor_id: string; amount: number; created_at: string; event_type: "paid_in" | "paid_out" | "safe_drop" | "cash_refund" | "cash_sale"; id: string; reason: string; return_id: string | null; sale_id: string | null; shift_id: string }
+        Insert: { actor_id: string; amount: number; created_at?: string; event_type: "paid_in" | "paid_out" | "safe_drop" | "cash_refund" | "cash_sale"; id?: string; reason: string; return_id?: string | null; sale_id?: string | null; shift_id: string }
+        Update: { actor_id?: string; amount?: number; created_at?: string; event_type?: "paid_in" | "paid_out" | "safe_drop" | "cash_refund" | "cash_sale"; id?: string; reason?: string; return_id?: string | null; sale_id?: string | null; shift_id?: string }
         Relationships: []
       }
       stock_movements: {
@@ -503,7 +503,7 @@ export type Database = {
         Returns: number
       }
       close_shift: {
-        Args: { p_counted: number; p_shift_id: string }
+        Args: { p_counted: number; p_manager_pin?: string | null; p_shift_id: string }
         Returns: {
           cashier_id: string
           closed_at: string | null

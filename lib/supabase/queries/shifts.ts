@@ -53,6 +53,7 @@ export async function getShiftWithSales(id: string): Promise<{
   cashSales: number;
   cardSales: number;
   saleCount: number;
+  drawerEvents: Array<{ event_type: "paid_in" | "paid_out" | "safe_drop" | "cash_refund" | "cash_sale"; amount: number }>;
 } | null> {
   const supabase = await createClient();
   const { data: shift, error } = await supabase
@@ -69,6 +70,13 @@ export async function getShiftWithSales(id: string): Promise<{
     .eq("shift_id", id);
   if (salesError) throw salesError;
 
+  const { data: drawerEvents, error: drawerEventsError } = await supabase
+    .from("cash_drawer_events")
+    .select("event_type, amount")
+    .eq("shift_id", id)
+    .order("created_at");
+  if (drawerEventsError) throw drawerEventsError;
+
   let cashSales = 0;
   let cardSales = 0;
   for (const sale of sales ?? []) {
@@ -80,5 +88,9 @@ export async function getShiftWithSales(id: string): Promise<{
     cashSales,
     cardSales,
     saleCount: (sales ?? []).length,
+    drawerEvents: (drawerEvents ?? []).map((event) => ({
+      event_type: event.event_type,
+      amount: Number(event.amount),
+    })),
   };
 }

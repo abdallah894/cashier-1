@@ -64,3 +64,9 @@ Money convention: **all amounts are integer piasters** (EGP 48.95 â†’ `4895`) â€
 Completed sales are never edited or deleted. A return creates its own immutable document linked to the original receipt and records the actor, reason, refund tender, item snapshots, timestamp, and stock disposition. A restocked return adds stock through a positive `stock_movements` entry; a no-restock return leaves stock unchanged. Cashiers must provide a manager PIN for returns at or above the configured threshold.
 
 Use **Record return & start exchange** to save the return first, then create the replacement sale through normal checkout. A **void** cancels an unpaid in-progress cart only; once a sale is completed, use a return/refund instead.
+
+## Cash drawer reconciliation
+
+Each shift uses the fixed **Main Register** drawer. Cash sales and cash refunds are recorded automatically in its immutable event ledger. A cashier can also record a **paid-in**, **paid-out**, or **safe drop** from the Shifts page; every manual movement needs a reason and cannot be edited or removed later.
+
+At close, expected cash is the opening float plus all signed cash-drawer events. Enter the physical count to record the over/short variance. If the configured threshold is met or exceeded, an active manager must approve the close with their PIN. The Z-report retains the tender totals and each cash-movement category for the closed shift.

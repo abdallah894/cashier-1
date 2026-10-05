@@ -35,6 +35,10 @@ export function ZReport80mm({ report }: { report: ZReportData }) {
 
       <Row label={t("openingFloat")} value={money(report.openingFloat)} />
       <Row label={t("cashSales")} value={money(report.cashSales)} />
+      {report.paidIn !== 0 && <Row label={t("paid_in")} value={money(report.paidIn)} />}
+      {report.paidOut !== 0 && <Row label={t("paid_out")} value={money(report.paidOut)} />}
+      {report.safeDrops !== 0 && <Row label={t("safe_drop")} value={money(report.safeDrops)} />}
+      {report.cashRefunds !== 0 && <Row label={t("cashRefunds")} value={money(report.cashRefunds)} />}
       <Row label={t("cardSales")} value={money(report.cardSales)} />
       <Row label={t("totalSales")} value={money(report.totalSales)} />
 

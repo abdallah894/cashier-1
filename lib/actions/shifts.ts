@@ -44,9 +44,13 @@ export async function closeShift(input: unknown): Promise<ActionResult<{ shiftId
   const { error } = await supabase.rpc("close_shift", {
     p_shift_id: parsed.data.shiftId,
     p_counted: parsed.data.counted,
+    p_manager_pin: parsed.data.managerPin ?? null,
   });
   if (error) {
     if (error.message.includes("not your shift")) return { ok: false, error: "notAuthorized" };
+    if (error.message.includes("manager approval")) {
+      return { ok: false, error: "managerApprovalRequired" };
+    }
     return { ok: false, error: "shiftCloseFailed" };
   }
 

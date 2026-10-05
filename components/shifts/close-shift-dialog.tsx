@@ -27,6 +27,7 @@ export function CloseShiftDialog({ shiftId }: { shiftId: string }) {
 
   const [open, setOpen] = useState(false);
   const [countedInput, setCountedInput] = useState("");
+  const [managerPin, setManagerPin] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const counted = parseEgpToPiasters(countedInput);
@@ -41,7 +42,7 @@ export function CloseShiftDialog({ shiftId }: { shiftId: string }) {
     if (submitting || counted === null) return;
     setSubmitting(true);
     try {
-      const result = await closeShift({ shiftId, counted });
+      const result = await closeShift({ shiftId, counted, managerPin: managerPin || undefined });
       if (!result.ok) {
         toast.error(tErrors(result.error));
         return;
@@ -78,6 +79,15 @@ export function CloseShiftDialog({ shiftId }: { shiftId: string }) {
             aria-label={t("countedCash")}
           />
           <Numpad onKey={pressKey} />
+          <Input
+            dir="ltr"
+            inputMode="numeric"
+            type="password"
+            value={managerPin}
+            onChange={(e) => setManagerPin(e.target.value)}
+            placeholder={t("managerPinOptional")}
+            aria-label={t("managerPinOptional")}
+          />
         </div>
         <DialogFooter>
           <Button onClick={() => void submit()} disabled={submitting || counted === null} className="w-full">

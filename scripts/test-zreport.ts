@@ -27,13 +27,24 @@ function fakeShift(over: Partial<ShiftForZReport>): ShiftForZReport {
 
 // closed shift: over/short is signed (counted − expected → short = negative)
 {
-  const r = buildZReport(fakeShift({}), { cashSales: 106300, cardSales: 40000, saleCount: 12 });
+  const r = buildZReport(fakeShift({}), {
+    cashSales: 106300,
+    cardSales: 40000,
+    saleCount: 12,
+    drawerEvents: [
+      { event_type: "paid_in", amount: 10000 },
+      { event_type: "paid_out", amount: -2000 },
+      { event_type: "safe_drop", amount: -5000 },
+      { event_type: "cash_refund", amount: -3000 },
+    ],
+  });
   check("expected passthrough", r.expectedCash === 156300);
   check("counted passthrough", r.counted === 156000);
   check("overShort = counted − expected (short → negative)", r.overShort === -300);
   check("totalSales = cash + card", r.totalSales === 146300);
   check("saleCount passthrough", r.saleCount === 12);
   check("cashier name from join", r.cashierName === "Test Cashier");
+  check("drawer events are separated by type", r.paidIn === 10000 && r.paidOut === -2000 && r.safeDrops === -5000 && r.cashRefunds === -3000);
   check("store info attached", r.store.nameEn.length > 0);
 }
 

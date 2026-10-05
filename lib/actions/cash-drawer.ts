@@ -17,6 +17,9 @@ export async function recordCashDrawerEvent(input: unknown): Promise<ActionResul
     p_reason: parsed.data.reason,
   });
   if (error) return { ok: false, error: error.message.includes("not your shift") ? "notAuthorized" : "unknown" };
-  for (const locale of routing.locales) revalidatePath(`/${locale}/shifts`);
+  for (const locale of routing.locales) {
+    revalidatePath(`/${locale}/shifts`);
+    revalidatePath(`/${locale}/shifts/${parsed.data.shiftId}`);
+  }
   return { ok: true, data: undefined };
 }

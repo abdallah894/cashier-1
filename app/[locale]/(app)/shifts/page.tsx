@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CloseShiftDialog } from "@/components/shifts/close-shift-dialog";
+import { CashDrawerEventDialog } from "@/components/shifts/cash-drawer-event-dialog";
 import { OpenShiftForm } from "@/components/shifts/open-shift-form";
 
 export default async function ShiftsPage({
@@ -48,7 +49,7 @@ export default async function ShiftsPage({
       <Card>
         <CardHeader className="flex-row items-center justify-between">
           <CardTitle className="text-base">{t("current")}</CardTitle>
-          {active && <CloseShiftDialog shiftId={active.id} />}
+          {active && <div className="flex items-center gap-2"><CashDrawerEventDialog shiftId={active.id} /><CloseShiftDialog shiftId={active.id} /></div>}
         </CardHeader>
         <CardContent>
           {active ? (
