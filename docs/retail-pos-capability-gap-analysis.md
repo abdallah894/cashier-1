@@ -33,3 +33,9 @@
 ## Important exclusions
 
 Restaurant-specific workflows (tables, kitchen routing, modifiers and tipping) and e-commerce fulfillment are not baseline requirements for a supermarket cashier. Payroll/timeclock, accounting integrations, fiscal-device/e-invoicing compliance, scales/weighted-barcode standards, and Egypt-specific tax/payment requirements require separate local legal and hardware discovery before implementation.
+
+## Implementation notes for items 08 (customers, promotions)
+
+Built: optional customer profiles (exact-phone lookup at the register, capability-gated list/history, opt-in marketing consent with an immutable event log, anonymisation instead of deletion), and rule-based promotions evaluated by the server (`evaluate_promotions`, used by both the register preview and `create_sale`). Applied promotions are snapshotted on sale items (`sale_item_promotions`) and redemptions are recorded.
+
+Deliberately **not built** until accounting rules are agreed: loyalty points, gift cards, store credit. Each needs a defined liability account, expiry/escheat policy, refund-to-balance rules and an immutable balance ledger, none of which exist yet. The data model leaves room: `sales.customer_id` and the redemption tables are the attachment points.

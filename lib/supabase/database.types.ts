@@ -367,6 +367,7 @@ export type Database = {
           change_due: number | null
           client_sold_at: string | null
           created_at: string
+          customer_id: string | null
           discount_total: number
           id: string
           idempotency_key: string | null
@@ -383,6 +384,7 @@ export type Database = {
           change_due?: number | null
           client_sold_at?: string | null
           created_at?: string
+          customer_id?: string | null
           discount_total?: number
           id?: string
           idempotency_key?: string | null
@@ -620,6 +622,67 @@ export type Database = {
         Update: { [_ in never]: never }
         Relationships: []
       }
+      customers: {
+        Row: {
+          anonymized_at: string | null
+          consent_marketing: boolean
+          consent_updated_at: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      customer_consent_events: {
+        Row: { consent: boolean; customer_id: string; id: string; recorded_at: string; recorded_by: string; source: string }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      promotions: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          code: string | null
+          created_at: string
+          created_by: string
+          customer_required: boolean
+          discount_kind: Database["public"]["Enums"]["promotion_discount_kind"]
+          ends_at: string | null
+          fixed_amount: number | null
+          id: string
+          max_per_customer: number | null
+          max_redemptions: number | null
+          min_spend: number
+          name_ar: string
+          name_en: string
+          percent_bp: number | null
+          priority: number
+          scope: Database["public"]["Enums"]["promotion_scope"]
+          stackable: boolean
+          starts_at: string | null
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      promotion_redemptions: {
+        Row: { amount: number; code: string | null; created_at: string; customer_id: string | null; id: string; promotion_id: string; sale_id: string }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      sale_item_promotions: {
+        Row: { code: string | null; discount: number; id: string; name_ar: string; name_en: string; promotion_id: string; sale_item_id: string }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           created_at: string
@@ -673,6 +736,44 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      set_staff_capabilities: {
+        Args: { p_capabilities: Database["public"]["Enums"]["capability"][]; p_staff_id: string }
+        Returns: undefined
+      }
+      create_customer: {
+        Args: { p_consent_source?: string; p_email?: string; p_marketing_consent?: boolean; p_name: string; p_phone: string }
+        Returns: string
+      }
+      find_customer: {
+        Args: { p_phone: string }
+        Returns: { id: string; name: string; phone_last4: string }[]
+      }
+      set_customer_consent: { Args: { p_consent: boolean; p_customer_id: string; p_source?: string }; Returns: undefined }
+      anonymize_customer: { Args: { p_customer_id: string }; Returns: undefined }
+      customer_purchase_history: {
+        Args: { p_customer_id: string }
+        Returns: {
+          created_at: string
+          item_count: number
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          sale_id: string
+          sale_number: number
+          total: number
+        }[]
+      }
+      create_promotion: { Args: { p: Json }; Returns: string }
+      set_promotion_active: { Args: { p_active: boolean; p_promotion_id: string }; Returns: undefined }
+      preview_promotions: {
+        Args: { p_codes?: string[]; p_customer_id?: string; p_lines: Json }
+        Returns: {
+          code: string | null
+          discount: number
+          line_idx: number
+          name_ar: string
+          name_en: string
+          promotion_id: string
+        }[]
+      }
       create_purchase_order: {
         Args: { p_expected_date?: string; p_lines: Json; p_note?: string; p_supplier_id: string }
         Returns: string
@@ -797,8 +898,12 @@ export type Database = {
           p_amount_tendered?: number
           p_approval_id?: string
           p_cashier_id?: string
+          p_apply_promotions?: boolean
           p_client_sold_at?: string
+          p_customer_id?: string
+          p_expected_total?: number
           p_idempotency_key?: string
+          p_promotion_codes?: string[]
           p_items: Json
           p_payment_method: Database["public"]["Enums"]["payment_method"]
           p_shift_id?: string
@@ -905,10 +1010,12 @@ export type Database = {
       }
     }
     Enums: {
-      capability: "return.approve" | "cart.void" | "discount.override" | "stock.correct" | "cash.drawer.adjust" | "shift.close.override"
+      capability: "return.approve" | "cart.void" | "discount.override" | "stock.correct" | "cash.drawer.adjust" | "shift.close.override" | "customer.manage"
       payment_method: "cash" | "card"
       product_unit: "piece" | "kg"
       stock_movement_reason: "sale" | "received" | "damaged" | "correction" | "return"
+      promotion_discount_kind: "percent" | "fixed"
+      promotion_scope: "items" | "order"
       purchase_order_status: "draft" | "ordered" | "partially_received" | "received" | "closed" | "cancelled"
       stocktake_scope: "full" | "cycle"
       stocktake_status: "open" | "submitted" | "approved" | "cancelled"
@@ -1040,10 +1147,12 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      capability: ["return.approve", "cart.void", "discount.override", "stock.correct", "cash.drawer.adjust", "shift.close.override"],
+      capability: ["return.approve", "cart.void", "discount.override", "stock.correct", "cash.drawer.adjust", "shift.close.override", "customer.manage"],
       payment_method: ["cash", "card"],
       product_unit: ["piece", "kg"],
       stock_movement_reason: ["sale", "received", "damaged", "correction", "return"],
+      promotion_discount_kind: ["percent", "fixed"],
+      promotion_scope: ["items", "order"],
       purchase_order_status: ["draft", "ordered", "partially_received", "received", "closed", "cancelled"],
       stocktake_scope: ["full", "cycle"],
       stocktake_status: ["open", "submitted", "approved", "cancelled"],

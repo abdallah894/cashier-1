@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useRouter } from "@/i18n/navigation";
 import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
+import { useOnline } from "@/hooks/use-online";
+import { usePromotionPreview } from "@/hooks/use-promotion-preview";
 import { lookupBarcode } from "@/lib/offline/register-data";
 import { useCart, computeTotals } from "@/lib/store/cart";
 import { CartPane } from "./cart-pane";
@@ -41,7 +43,15 @@ export function Register({
 
   // derived, not stored — recomputed on every cart change (Pinia getters
   // would live in the store; the Zustand idiom is useMemo over state)
-  const totals = useMemo(() => computeTotals(items, saleDiscount), [items, saleDiscount]);
+  const online = useOnline();
+  const promo = useCart((s) => s.promo);
+  const baseTotals = useMemo(() => computeTotals(items, saleDiscount), [items, saleDiscount]);
+  // the server evaluates promotions; the preview is only used while it matches the current cart
+  const previewKey = usePromotionPreview(baseTotals, online);
+  const totals = useMemo(
+    () => computeTotals(items, saleDiscount, online && promo?.key === previewKey ? promo.perLine : []),
+    [items, saleDiscount, online, promo, previewKey]
+  );
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);

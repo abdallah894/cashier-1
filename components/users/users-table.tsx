@@ -14,6 +14,7 @@ import {
 import { useRouter } from "@/i18n/navigation";
 import { setStaffRole, toggleStaffActive } from "@/lib/actions/users";
 import type { ActionResult } from "@/lib/actions/result";
+import type { Database } from "@/lib/supabase/database.types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/table";
 import { CreateUserDialog } from "./create-user-dialog";
 import { SetPinDialog } from "./set-pin-dialog";
+import { CapabilitiesDialog } from "./capabilities-dialog";
 
 export type StaffRow = {
   id: string;
@@ -40,6 +42,7 @@ export type StaffRow = {
   active: boolean;
   hasPin: boolean;
   createdAt: string;
+  capabilities: Database["public"]["Enums"]["capability"][];
 };
 
 export function UsersTable({ rows, selfId }: { rows: StaffRow[]; selfId: string }) {
@@ -50,6 +53,7 @@ export function UsersTable({ rows, selfId }: { rows: StaffRow[]; selfId: string 
 
   const [createOpen, setCreateOpen] = useState(false);
   const [pinTarget, setPinTarget] = useState<StaffRow | null>(null);
+  const [capabilityTarget, setCapabilityTarget] = useState<StaffRow | null>(null);
 
   async function run(promise: Promise<ActionResult<void>>, doneKey: string) {
     const result = await promise;
@@ -119,6 +123,12 @@ export function UsersTable({ rows, selfId }: { rows: StaffRow[]; selfId: string 
                         <KeyRound className="size-4" />
                         {t("setPin")}
                       </DropdownMenuItem>
+                      {row.id !== selfId && row.role !== "admin" && (
+                        <DropdownMenuItem onSelect={() => setCapabilityTarget(row)}>
+                          <ShieldCheck className="size-4" />
+                          {t("permissions")}
+                        </DropdownMenuItem>
+                      )}
                       {row.id !== selfId && (
                         <>
                           <DropdownMenuItem
@@ -162,6 +172,10 @@ export function UsersTable({ rows, selfId }: { rows: StaffRow[]; selfId: string 
       </div>
 
       <CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CapabilitiesDialog
+        target={capabilityTarget}
+        onOpenChange={(open) => !open && setCapabilityTarget(null)}
+      />
       <SetPinDialog
         userId={pinTarget?.id ?? null}
         name={pinTarget?.fullName ?? ""}

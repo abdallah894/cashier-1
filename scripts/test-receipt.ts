@@ -27,6 +27,7 @@ function fakeSale(over: Partial<SaleForReceipt>): SaleForReceipt {
     amount_tendered: null,
     change_due: null,
     client_sold_at: null,
+    customer_id: null,
     idempotency_key: null,
     created_at: "2026-07-05T10:30:00Z",
     sale_items: [],

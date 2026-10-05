@@ -15,6 +15,8 @@ import {
   ClipboardList,
   Truck,
   PackageCheck,
+  Contact,
+  Percent,
 } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection, type Locale } from "@/i18n/routing";
@@ -39,6 +41,8 @@ const navItems = [
   { key: "stocktakes", href: "/stocktakes", icon: ClipboardList, adminOnly: true },
   { key: "purchaseOrders", href: "/purchase-orders", icon: PackageCheck, adminOnly: true },
   { key: "suppliers", href: "/suppliers", icon: Truck, adminOnly: true },
+  { key: "customers", href: "/customers", icon: Contact, adminOnly: true },
+  { key: "promotions", href: "/promotions", icon: Percent, adminOnly: true },
   { key: "reports", href: "/reports", icon: BarChart3, adminOnly: true },
   { key: "users", href: "/users", icon: UsersRound, adminOnly: true },
   { key: "audit", href: "/audit", icon: ShieldCheck, adminOnly: true },

@@ -15,6 +15,9 @@ export async function submitQueuedSale(entry: OutboxEntry): Promise<SubmitResult
     idempotencyKey: entry.id,
     shiftId: entry.shiftId ?? undefined,
     soldAt: entry.createdAt,
+    // The till already printed a provisional total without promotions; applying
+    // promotions at sync time would change what the customer paid.
+    applyPromotions: false,
   });
 
   if (result.ok) {

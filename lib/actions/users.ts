@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { routing } from "@/i18n/routing";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/queries/profiles";
 import {
   createStaffSchema,
@@ -118,23 +119,20 @@ export async function toggleStaffActive(input: unknown): Promise<ActionResult<vo
   return { ok: true, data: undefined };
 }
 
-/** Replaces explicit grants; admins inherit all capabilities and need no rows. */
+/** Replaces explicit grants through one audited RPC; admins inherit all capabilities and need no rows. */
 export async function setStaffCapabilities(input: unknown): Promise<ActionResult<void>> {
   const adminId = await currentAdminId();
   if (!adminId) return { ok: false, error: "notAuthorized" };
   const parsed = setStaffCapabilitiesSchema.safeParse(input);
-  if (!parsed.success || parsed.data.userId === adminId) return { ok: false, error: "invalidInput" };
-  const admin = createAdminClient();
-  const { data: profile, error: profileError } = await admin
-    .from("profiles").select("role").eq("id", parsed.data.userId).single();
-  if (profileError || !profile || profile.role === "admin") return { ok: false, error: "invalidInput" };
-  const { error: deleteError } = await admin.from("staff_capabilities").delete().eq("staff_id", parsed.data.userId);
-  if (deleteError) return { ok: false, error: "unknown" };
-  if (parsed.data.capabilities.length) {
-    const { error } = await admin.from("staff_capabilities").insert(
-      parsed.data.capabilities.map((capability) => ({ staff_id: parsed.data.userId, capability, granted_by: adminId }))
-    );
-    if (error) return { ok: false, error: "unknown" };
+  if (!parsed.success) return { ok: false, error: "invalidInput" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_staff_capabilities", {
+    p_staff_id: parsed.data.userId,
+    p_capabilities: parsed.data.capabilities,
+  });
+  if (error) {
+    if (error.message.includes("your own")) return { ok: false, error: "cannotEditSelf" };
+    return { ok: false, error: error.message.includes("admin only") ? "notAuthorized" : "unknown" };
   }
   revalidateUsers();
   return { ok: true, data: undefined };

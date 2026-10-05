@@ -17,7 +17,7 @@ export function buildProvisionalReceipt(
       nameEn: line.item.nameEn,
       qty: line.item.qty,
       unitPrice: line.item.unitPrice,
-      lineDiscount: line.lineDiscount + line.saleDiscountShare,
+      lineDiscount: line.lineDiscount + line.saleDiscountShare + line.promoDiscount,
       lineTotal: line.gross,
     })),
     vatBreakdown: [...totals.vatByRate.entries()]
@@ -35,6 +35,7 @@ export function buildProvisionalReceipt(
 
 /** True when the discount is large enough that the server would demand a manager approval. */
 export function discountNeedsApproval(totals: CartTotals, thresholdBp: number | null): boolean {
+  // A queued sale carries any promotion discount as an ordinary discount, so it counts here too.
   if (totals.discountTotal <= 0) return false;
   return totals.discountTotal * 10000 > totals.baseTotal * (thresholdBp ?? 0);
 }

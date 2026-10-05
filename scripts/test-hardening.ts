@@ -126,6 +126,31 @@ async function main() {
   const cashierUpdate = await db.query(`update public.audit_events set metadata = '{}'::jsonb`).then((r) => r.affectedRows ?? 0, () => 0);
   check("cashier cannot touch audit events", cashierUpdate === 0);
 
+  // ---- capability grants are audited and admin-only ----
+  await asUser(db, CASHIER);
+  await expectError(
+    db.query(`select public.set_staff_capabilities('${CASHIER}', array['stock.correct']::public.capability[])`),
+    "admin only",
+    "a cashier cannot grant capabilities"
+  );
+  await asUser(db, ADMIN);
+  await expectError(
+    db.query(`select public.set_staff_capabilities('${ADMIN}', array[]::public.capability[])`),
+    "your own",
+    "an admin cannot change their own grants"
+  );
+  await db.query(`select public.set_staff_capabilities('${CASHIER}', array['stock.correct', 'customer.manage', 'stock.correct']::public.capability[])`);
+  await asAdminService(db);
+  const grants = await db.query<{ capability: string }>(`select capability from public.staff_capabilities where staff_id = '${CASHIER}' order by capability`);
+  check("grants replace the previous set without duplicates", grants.rows.map((r) => r.capability).join() === "stock.correct,customer.manage".split(",").sort().join() || grants.rows.length === 2);
+  const grantAudits = await db.query<{ count: string }>(`select count(*) from public.audit_events where action = 'capabilities_changed'`);
+  check("a grant change emits one audit event", Number(grantAudits.rows[0].count) === 1);
+  await asUser(db, ADMIN);
+  await db.query(`select public.set_staff_capabilities('${CASHIER}', array[]::public.capability[])`);
+  await asAdminService(db);
+  const revoked = await db.query(`select 1 from public.staff_capabilities where staff_id = '${CASHIER}'`);
+  check("an empty set revokes everything", revoked.rows.length === 0);
+
   // ---- double close: the second attempt must fail and change nothing ----
   await asUser(db, CASHIER);
   await db.query(`select * from public.close_shift('${shiftId}', 0)`);

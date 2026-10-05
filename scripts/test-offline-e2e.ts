@@ -4,7 +4,7 @@ import { createOfflineDb } from "../lib/offline/db";
 import { enqueueSale, listOutbox, resolveRejected } from "../lib/offline/outbox";
 import { drainOutbox, type SubmitResult } from "../lib/offline/sync";
 import { buildProvisionalReceipt, discountNeedsApproval } from "../lib/offline/provisional";
-import { computeTotals, toSaleItems, toCartItem } from "../lib/store/cart";
+import { computeTotals, toSaleItems, toQueuedSaleItems, toCartItem } from "../lib/store/cart";
 import type { Tables } from "../lib/supabase/database.types";
 
 const CASHIER = "00000000-0000-0000-0000-00000000000b";
@@ -116,6 +116,9 @@ async function main() {
   check("a small discount can", !discountNeedsApproval(discounted, 2500));
   check("no cached threshold blocks any discount", discountNeedsApproval(discounted, null));
   check("no discount never needs approval", !discountNeedsApproval(milkTotals, null));
+  const withPromo = computeTotals([{ ...toCartItem(product(MILK, "Milk", 2000, 0.14)), qty: 1, discount: null }], null, [400]);
+  check("a queued sale folds the shown promotion into its line discount", toQueuedSaleItems(withPromo)[0].line_discount === 400 && toSaleItems(withPromo)[0].line_discount === 0);
+  check("a promotion above the threshold blocks queueing", discountNeedsApproval(withPromo, 1000) && !discountNeedsApproval(withPromo, 5000));
 
   if (failures > 0) {
     console.error(`\n${failures} check(s) failing`);

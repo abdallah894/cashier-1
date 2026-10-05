@@ -2,6 +2,16 @@ import { create } from "zustand";
 import { lineBaseAmount, extractNet } from "@/lib/money";
 import type { Tables } from "@/lib/supabase/database.types";
 
+/** Minimal customer reference attached to a sale (never the full profile). */
+export type CartCustomer = { id: string; name: string; phoneLast4: string };
+
+/** Server-evaluated promotions for the cart, valid only for the `key` it was computed for. */
+export type CartPromo = {
+  key: string;
+  perLine: number[];
+  applied: { promotionId: string; nameAr: string; nameEn: string; code: string | null; discount: number }[];
+};
+
 // Zustand ≈ Pinia: `create()` is defineStore, the callback's `set/get`
 // replace `this`, and components subscribe with selectors instead of
 // storeToRefs. State is module-level, so the cart survives client-side
@@ -42,6 +52,14 @@ type CartState = {
   saleDiscount: Discount | null;
   /** index of the keyboard-selected line, -1 = none */
   selectedIndex: number;
+  customer: CartCustomer | null;
+  promoCodes: string[];
+  promo: CartPromo | null;
+  setCustomer: (customer: CartCustomer | null) => void;
+  addPromoCode: (code: string) => void;
+  removePromoCode: (code: string) => void;
+  clearPromoCodes: () => void;
+  setPromo: (promo: CartPromo | null) => void;
   addProduct: (product: Tables<"products">, qty?: number) => void;
   setQty: (productId: string, qty: number) => void;
   setLineDiscount: (productId: string, discount: Discount | null) => void;
@@ -55,6 +73,21 @@ export const useCart = create<CartState>((set) => ({
   items: [],
   saleDiscount: null,
   selectedIndex: -1,
+  customer: null,
+  promoCodes: [],
+  promo: null,
+
+  setCustomer: (customer) => set({ customer, promo: null }),
+  addPromoCode: (code) =>
+    set((state) => {
+      const normalized = code.trim().toUpperCase();
+      if (!normalized || state.promoCodes.includes(normalized)) return state;
+      return { promoCodes: [...state.promoCodes, normalized], promo: null };
+    }),
+  removePromoCode: (code) =>
+    set((state) => ({ promoCodes: state.promoCodes.filter((c) => c !== code), promo: null })),
+  clearPromoCodes: () => set({ promoCodes: [], promo: null }),
+  setPromo: (promo) => set({ promo }),
 
   addProduct: (product, qty) =>
     set((state) => {
@@ -94,7 +127,8 @@ export const useCart = create<CartState>((set) => ({
       return { items, selectedIndex: Math.min(state.selectedIndex, items.length - 1) };
     }),
 
-  clear: () => set({ items: [], saleDiscount: null, selectedIndex: -1 }),
+  clear: () =>
+    set({ items: [], saleDiscount: null, selectedIndex: -1, customer: null, promoCodes: [], promo: null }),
 
   setSelectedIndex: (index) => set({ selectedIndex: index }),
 }));
@@ -111,7 +145,8 @@ export type LineComputed = {
   base: number; // piasters before discounts
   lineDiscount: number; // the cashier's per-line discount, piasters
   saleDiscountShare: number; // this line's slice of the sale discount
-  gross: number; // base - lineDiscount - saleDiscountShare
+  promoDiscount: number; // server-evaluated promotions on this line, piasters
+  gross: number; // base - lineDiscount - saleDiscountShare - promoDiscount
   net: number;
   tax: number;
 };
@@ -120,7 +155,10 @@ export type CartTotals = {
   lines: LineComputed[];
   itemCount: number;
   baseTotal: number;
-  discountTotal: number; // line discounts + sale discount
+  discountTotal: number; // manual + promotion discounts (matches sales.discount_total)
+  /** the cashier's own discounts only: what the manager-approval rule looks at */
+  manualDiscountTotal: number;
+  promoDiscountTotal: number;
   saleDiscountAmount: number;
   subtotal: number; // net of VAT
   taxTotal: number;
@@ -141,7 +179,12 @@ function discountAmount(discount: Discount | null, base: number): number {
  * their gross (largest-remainder method, exact integer piasters), because
  * the create_sale RPC — and the receipt's VAT breakdown — work per line.
  */
-export function computeTotals(items: CartItem[], saleDiscount: Discount | null): CartTotals {
+export function computeTotals(
+  items: CartItem[],
+  saleDiscount: Discount | null,
+  /** per-line promotion discounts from the server preview, aligned with `items` */
+  promoDiscounts: readonly number[] = []
+): CartTotals {
   const prelim = items.map((item) => {
     const base = lineBaseAmount(item.unitPrice, item.qty);
     const lineDiscount = discountAmount(item.discount, base);
@@ -172,13 +215,15 @@ export function computeTotals(items: CartItem[], saleDiscount: Discount | null):
   }
 
   const lines: LineComputed[] = prelim.map((l, i) => {
-    const gross = l.grossBefore - shares[i];
+    const promoDiscount = Math.max(0, Math.min(promoDiscounts[i] ?? 0, l.grossBefore - shares[i]));
+    const gross = l.grossBefore - shares[i] - promoDiscount;
     const net = extractNet(gross, l.item.rateBp);
     return {
       item: l.item,
       base: l.base,
       lineDiscount: l.lineDiscount,
       saleDiscountShare: shares[i],
+      promoDiscount,
       gross,
       net,
       tax: gross - net,
@@ -197,7 +242,12 @@ export function computeTotals(items: CartItem[], saleDiscount: Discount | null):
     lines,
     itemCount: items.length,
     baseTotal: prelim.reduce((acc, l) => acc + l.base, 0),
-    discountTotal: prelim.reduce((acc, l) => acc + l.lineDiscount, 0) + saleDiscountAmount,
+    discountTotal:
+      prelim.reduce((acc, l) => acc + l.lineDiscount, 0) +
+      saleDiscountAmount +
+      lines.reduce((acc, l) => acc + l.promoDiscount, 0),
+    manualDiscountTotal: prelim.reduce((acc, l) => acc + l.lineDiscount, 0) + saleDiscountAmount,
+    promoDiscountTotal: lines.reduce((acc, l) => acc + l.promoDiscount, 0),
     saleDiscountAmount,
     subtotal: lines.reduce((acc, l) => acc + l.net, 0),
     taxTotal: lines.reduce((acc, l) => acc + l.tax, 0),
@@ -212,5 +262,19 @@ export function toSaleItems(totals: CartTotals) {
     product_id: l.item.productId,
     qty: l.item.qty,
     line_discount: l.lineDiscount + l.saleDiscountShare,
+  }));
+}
+
+/**
+ * Payload for a sale queued offline. Promotions are normally applied by the
+ * server, but a queued sale syncs with promotions switched off, so any
+ * promotion discount the customer was already shown is folded into the line
+ * discount to keep what they paid and what is recorded identical.
+ */
+export function toQueuedSaleItems(totals: CartTotals) {
+  return totals.lines.map((l) => ({
+    product_id: l.item.productId,
+    qty: l.item.qty,
+    line_discount: l.lineDiscount + l.saleDiscountShare + l.promoDiscount,
   }));
 }

@@ -17,6 +17,13 @@ export type SaleReceipt = {
 };
 
 function mapSaleError(message: string): string {
+  if (message.includes("total changed")) return "totalChanged";
+  if (message.includes("customer not found")) return "customerNotFound";
+  if (message.includes("code not valid")) return "promoInvalid";
+  if (message.includes("needs a customer")) return "promoNeedsCustomer";
+  if (message.includes("minimum spend")) return "promoMinSpend";
+  if (message.includes("redemption limit")) return "promoLimit";
+  if (message.includes("no eligible items")) return "promoNoItems";
   if (message.includes("manager approval") || message.includes("approval:")) return "managerApprovalRequired";
   if (message.includes("insufficient stock")) return "insufficientStock";
   if (message.includes("tendered")) return "tenderedTooLow";
@@ -64,6 +71,10 @@ export async function createSale(input: unknown): Promise<ActionResult<SaleRecei
     p_approval_id: parsed.data.approvalId,
     p_idempotency_key: parsed.data.idempotencyKey,
     p_client_sold_at: parsed.data.soldAt,
+    p_customer_id: parsed.data.customerId,
+    p_promotion_codes: parsed.data.promotionCodes,
+    p_apply_promotions: parsed.data.applyPromotions,
+    p_expected_total: parsed.data.expectedTotal,
   });
 
   if (error) return { ok: false, error: mapSaleError(error.message) };

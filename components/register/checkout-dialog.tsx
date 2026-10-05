@@ -14,7 +14,7 @@ import { loadDiscountThreshold } from "@/lib/offline/catalog";
 import { enqueueSale } from "@/lib/offline/outbox";
 import { buildProvisionalReceipt, discountNeedsApproval } from "@/lib/offline/provisional";
 import { formatEgp, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
-import { useCart, toSaleItems, type CartTotals } from "@/lib/store/cart";
+import { useCart, toSaleItems, toQueuedSaleItems, type CartTotals } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
@@ -51,6 +51,8 @@ export function CheckoutDialog({
   const router = useRouter();
   const clearCart = useCart((s) => s.clear);
   const online = useOnline();
+  const customer = useCart((state) => state.customer);
+  const promoCodes = useCart((state) => state.promoCodes);
 
   const [chosenMethod, setChosenMethod] = useState<"cash" | "card">("cash");
   const [tenderedInput, setTenderedInput] = useState("");
@@ -94,7 +96,7 @@ export function CheckoutDialog({
       id: key,
       userId,
       shiftId,
-      items: toSaleItems(totals),
+      items: toQueuedSaleItems(totals),
       amountTendered: tendered,
       provisional: buildProvisionalReceipt(totals, tendered, cashierName),
     });
@@ -123,6 +125,10 @@ export function CheckoutDialog({
         amount_tendered: method === "cash" ? tendered : null,
         idempotencyKey: key,
         shiftId,
+        customerId: customer?.id,
+        promotionCodes: promoCodes.length ? promoCodes : undefined,
+        // the total the customer was shown; the server refuses if rules moved meanwhile
+        expectedTotal: totals.total,
       };
       let result;
       try {
@@ -130,7 +136,7 @@ export function CheckoutDialog({
         if (!result.ok && result.error === "managerApprovalRequired" && /^\d{4}$/.test(managerPin)) {
           // Large discounts need a one-time manager approval bound to these amounts.
           const requestHash = await approvalRequestHash(
-            `sale_discount|${totals.baseTotal}|${totals.discountTotal}`
+            `sale_discount|${totals.baseTotal}|${totals.manualDiscountTotal}`
           );
           const approval = await createManagerApproval({ action: "sale_discount", requestHash, pin: managerPin });
           if (!approval.ok) {
@@ -149,6 +155,7 @@ export function CheckoutDialog({
         return;
       }
       if (!result.ok) {
+        if (result.error === "totalChanged") useCart.getState().setPromo(null); // re-evaluate before retrying
         toast.error(tErrors(result.error));
         return; // cart stays intact — fix and retry
       }
@@ -249,7 +256,7 @@ export function CheckoutDialog({
           <p className="text-muted-foreground py-2 text-sm">{t("cardHint")}</p>
         )}
 
-        {totals.discountTotal > 0 && (
+        {totals.manualDiscountTotal > 0 && (
           <Input
             dir="ltr"
             type="password"

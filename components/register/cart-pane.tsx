@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { DiscountPopover } from "./discount-popover";
 import { VoidCartDialog } from "./void-cart-dialog";
+import { CustomerPromoBar } from "./customer-promo-bar";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -68,6 +69,8 @@ export function CartPane({ totals, selectedIndex, onSelect, onQtyChange, onRemov
           ))
         )}
       </div>
+
+      <CustomerPromoBar />
 
       <div className="border-t px-4 py-3">
         <div className="text-muted-foreground flex flex-col gap-1 text-sm">
@@ -167,6 +170,11 @@ function CartLine({
           {line.lineDiscount > 0 && (
             <span className="text-destructive ms-2" dir="ltr">
               -{formatEgp(line.lineDiscount, locale)}
+            </span>
+          )}
+          {line.promoDiscount > 0 && (
+            <span className="ms-2 text-green-700 dark:text-green-500" dir="ltr">
+              -{formatEgp(line.promoDiscount, locale)} {t("promoShort")}
             </span>
           )}
         </div>
