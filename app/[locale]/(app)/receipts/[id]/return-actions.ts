@@ -33,7 +33,7 @@ export async function submitReturn(
     p_refund_tender: parsed.data.refundTender,
     p_reason: parsed.data.reason,
     p_restock: parsed.data.restock,
-    p_manager_pin: parsed.data.managerPin ?? null,
+    p_approval_id: parsed.data.approvalId ?? null,
   });
   if (error || !data?.[0]) return { ok: false, error: returnError(error?.message ?? "") };
 

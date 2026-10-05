@@ -1,4 +1,5 @@
 import { asAdminService, asUser, createTestDb, seedUser } from "./lib/pglite-db";
+import { createHash } from "node:crypto";
 
 const ADMIN = "00000000-0000-0000-0000-00000000000a";
 const CASHIER = "00000000-0000-0000-0000-00000000000b";
@@ -53,7 +54,13 @@ async function main() {
     approvalRejected = (error as Error).message.includes("manager approval is required");
   }
   if (!approvalRejected) throw new Error("threshold variance must require manager approval");
-  await db.query(`select * from public.close_shift('${varianceShifts[0].id}', 0, '4321')`);
+  const closeHash = createHash("sha256")
+    .update(`shift_close|${varianceShifts[0].id}|0|10000`)
+    .digest("hex");
+  const { rows: closeApprovals } = await db.query<{ approval_id: string }>(
+    `select public.create_manager_approval('shift_close', '${closeHash}', '4321') as approval_id`
+  );
+  await db.query(`select * from public.close_shift('${varianceShifts[0].id}', 0, '${closeApprovals[0].approval_id}'::uuid)`);
 
   await asAdminService(db);
   const { rows: otherShifts } = await db.query<{ id: string }>(

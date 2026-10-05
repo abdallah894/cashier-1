@@ -5,6 +5,7 @@
  * ceilings, restock disposition, ownership, and manager approval.
  */
 import { asAdminService, asUser, createTestDb, seedUser } from "./lib/pglite-db";
+import { createHash } from "node:crypto";
 
 const ADMIN = "00000000-0000-0000-0000-00000000000a";
 const CASHIER = "00000000-0000-0000-0000-00000000000b";
@@ -57,12 +58,12 @@ async function main() {
   );
   const saleItemId = saleItemRows[0].id;
 
-  const createReturn = (quantity: number, restock: boolean, managerPin: string | null = null) =>
+  const createReturn = (quantity: number, restock: boolean, approvalId: string | null = null) =>
     db.query<{ refund_total: string; return_id: string }>(
       `select * from public.create_return(
         '${saleId}',
         '[{"sale_item_id":"${saleItemId}","qty":${quantity}}]'::jsonb,
-        'cash', 'Customer changed mind', ${restock}, ${managerPin ? `'${managerPin}'` : "null"}
+        'cash', 'Customer changed mind', ${restock}, ${approvalId ? `'${approvalId}'::uuid` : "null"}
       )`
     );
 
@@ -130,12 +131,15 @@ async function main() {
   const { rows: thresholdItemRows } = await db.query<{ id: string }>(
     `select id from public.sale_items where sale_id = '${thresholdSaleRows[0].sale_id}'`
   );
-  const createThresholdReturn = (managerPin: string | null = null) =>
+  const returnHash = createHash("sha256")
+    .update(`return|${thresholdSaleRows[0].sale_id}|cash|Customer changed mind|true|6300`)
+    .digest("hex");
+  const createThresholdReturn = (approvalId: string | null = null) =>
     db.query<{ refund_total: string }>(
       `select * from public.create_return(
         '${thresholdSaleRows[0].sale_id}',
         '[{"sale_item_id":"${thresholdItemRows[0].id}","qty":1}]'::jsonb,
-        'cash', 'Customer changed mind', true, ${managerPin ? `'${managerPin}'` : "null"}
+        'cash', 'Customer changed mind', true, ${approvalId ? `'${approvalId}'::uuid` : "null"}
       )`
     );
   await expectError(
@@ -143,8 +147,16 @@ async function main() {
     "manager approval is required",
     "configured threshold rejects a cashier return without manager approval"
   );
-  const { rows: approved } = await createThresholdReturn("1234");
-  check("manager PIN approves a threshold return", Number(approved[0].refund_total) === 6300);
+  const { rows: approvals } = await db.query<{ approval_id: string }>(
+    `select public.create_manager_approval('return', '${returnHash}', '1234') as approval_id`
+  );
+  const { rows: approved } = await createThresholdReturn(approvals[0].approval_id);
+  check("bound approval approves a threshold return", Number(approved[0].refund_total) === 6300);
+  await asAdminService(db);
+  const { rows: returnAudits } = await db.query<{ approved_by: string | null; count: string }>(
+    `select approved_by, count(*) from public.audit_events where action = 'return_created' and approved_by = '${ADMIN}' group by approved_by`
+  );
+  check("approved return writes one linked audit event", returnAudits.length === 1 && returnAudits[0].approved_by === ADMIN && Number(returnAudits[0].count) === 1);
 
   if (failures > 0) {
     console.error(`\n${failures} check(s) failing`);

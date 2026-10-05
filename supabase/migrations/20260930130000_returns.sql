@@ -54,7 +54,7 @@ create or replace function public.create_return(
   p_refund_tender public.payment_method,
   p_reason text,
   p_restock boolean,
-  p_manager_pin text default null
+  p_approval_id uuid default null
 )
 returns table (
   return_id uuid,
@@ -81,6 +81,7 @@ declare
   v_line_total numeric;
   v_threshold numeric;
   v_manager_id uuid;
+  v_request_hash text;
 begin
   if v_actor_id is null then
     raise exception 'create_return: not authenticated';
@@ -160,18 +161,14 @@ begin
   select manager_approval_threshold into v_threshold
   from public.return_settings where id = true;
   if not public.is_admin() and v_threshold is not null and v_total >= v_threshold then
-    if p_manager_pin is null or p_manager_pin !~ '^\d{4}$' then
+    if p_approval_id is null then
       raise exception 'create_return: manager approval is required';
     end if;
-    select id into v_manager_id
-    from public.profiles
-    where role = 'admin'
-      and active
-      and pin_hash = extensions.crypt(p_manager_pin, pin_hash)
-    limit 1;
-    if v_manager_id is null then
-      raise exception 'create_return: manager approval is required';
-    end if;
+    v_request_hash := encode(extensions.digest(
+      'return|' || p_sale_id::text || '|' || p_refund_tender::text || '|' || btrim(p_reason) || '|' || p_restock::text || '|' || v_total::text,
+      'sha256'
+    ), 'hex');
+    v_manager_id := public.consume_manager_approval(p_approval_id, 'return', v_request_hash);
   end if;
 
   insert into public.returns
@@ -216,13 +213,19 @@ begin
     end if;
   end loop;
 
+  perform public.write_audit_event(
+    v_actor_id, v_manager_id, 'return_created', 'return', v_return_id,
+    jsonb_build_object('refund_total', v_total, 'payment_method', p_refund_tender::text, 'restock', p_restock, 'reason_length', length(btrim(p_reason))),
+    null
+  );
+
   return query select v_return_id, v_return_number, v_total, v_created_at;
 end;
 $$;
 
-revoke execute on function public.create_return(uuid, jsonb, public.payment_method, text, boolean, text)
+revoke execute on function public.create_return(uuid, jsonb, public.payment_method, text, boolean, uuid)
   from public, anon;
-grant execute on function public.create_return(uuid, jsonb, public.payment_method, text, boolean, text)
+grant execute on function public.create_return(uuid, jsonb, public.payment_method, text, boolean, uuid)
   to authenticated, service_role;
 
 alter table public.return_settings enable row level security;

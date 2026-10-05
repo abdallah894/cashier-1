@@ -522,7 +522,7 @@ export type Database = {
         Returns: number
       }
       close_shift: {
-        Args: { p_counted: number; p_manager_pin?: string | null; p_shift_id: string }
+        Args: { p_approval_id?: string | null; p_counted: number; p_shift_id: string }
         Returns: {
           cashier_id: string
           closed_at: string | null
@@ -565,7 +565,7 @@ export type Database = {
       create_return: {
         Args: {
           p_items: Json
-          p_manager_pin?: string | null
+          p_approval_id?: string | null
           p_reason: string
           p_refund_tender: Database["public"]["Enums"]["payment_method"]
           p_restock: boolean

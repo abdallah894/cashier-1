@@ -13,7 +13,7 @@ export const returnInputSchema = z.object({
   refundTender: z.enum(["cash", "card"]),
   reason: z.string().trim().min(1).max(500),
   restock: z.boolean(),
-  managerPin: z.string().regex(/^\d{4}$/).optional(),
+  approvalId: z.uuid().optional(),
 });
 
 export type ReturnInput = z.infer<typeof returnInputSchema>;

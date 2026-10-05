@@ -8,5 +8,5 @@ export const openShiftSchema = z.object({
 export const closeShiftSchema = z.object({
   shiftId: z.uuid(),
   counted: z.number().int().min(0).max(1_000_000_000),
-  managerPin: z.string().trim().regex(/^\d{4,12}$/).optional(),
+  approvalId: z.uuid().optional(),
 });
