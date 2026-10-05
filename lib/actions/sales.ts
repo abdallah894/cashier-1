@@ -24,6 +24,9 @@ function mapSaleError(message: string): string {
   if (message.includes("whole number")) return "wholeNumberRequired";
   if (message.includes("no cashier")) return "notAuthorized";
   if (message.includes("no open shift")) return "noOpenShift";
+  if (message.includes("shift is closed") || message.includes("shift not open")) return "shiftClosed";
+  if (message.includes("idempotency key")) return "duplicateSaleKey";
+  if (message.includes("sold_at")) return "checkoutFailed";
   return "checkoutFailed";
 }
 
@@ -40,14 +43,16 @@ export async function createSale(input: unknown): Promise<ActionResult<SaleRecei
   // The sale is recorded against the cashier's own open shift — looked up
   // server-side so the client can neither omit nor forge it. The DB trigger
   // (sales_validate_shift) re-checks ownership + openness transactionally.
-  const { data: shift, error: shiftError } = await supabase
-    .from("shifts")
-    .select("id")
-    .eq("cashier_id", user.id)
-    .is("closed_at", null)
-    .maybeSingle();
+  // A queued (offline) sale names the shift it was rung in; it is never
+  // silently re-homed to a later shift, because that would misstate the
+  // drawer of both shifts.
+  let shiftQuery = supabase.from("shifts").select("id, closed_at").eq("cashier_id", user.id);
+  shiftQuery = parsed.data.shiftId ? shiftQuery.eq("id", parsed.data.shiftId) : shiftQuery.is("closed_at", null);
+  const { data: shift, error: shiftError } = await shiftQuery.maybeSingle();
   if (shiftError) return { ok: false, error: "checkoutFailed" };
   if (!shift) return { ok: false, error: "noOpenShift" };
+  // A keyed request may be a replay of a sale already recorded in that shift: the RPC answers that.
+  if (shift.closed_at && !parsed.data.idempotencyKey) return { ok: false, error: "shiftClosed" };
 
   // ONE transaction server-side: sale + snapshot items + stock + movements.
   const { data, error } = await supabase.rpc("create_sale", {
@@ -57,6 +62,8 @@ export async function createSale(input: unknown): Promise<ActionResult<SaleRecei
     p_amount_tendered:
       parsed.data.payment_method === "cash" ? (parsed.data.amount_tendered ?? undefined) : undefined,
     p_approval_id: parsed.data.approvalId,
+    p_idempotency_key: parsed.data.idempotencyKey,
+    p_client_sold_at: parsed.data.soldAt,
   });
 
   if (error) return { ok: false, error: mapSaleError(error.message) };

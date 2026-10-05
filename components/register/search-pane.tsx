@@ -1,10 +1,10 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { Camera, CreditCard, Search } from "lucide-react";
-import { searchProductsClient } from "@/lib/supabase/queries/products-client";
+import { searchProducts } from "@/lib/offline/register-data";
 import { formatEgp } from "@/lib/money";
 import type { Tables } from "@/lib/supabase/database.types";
 import { Button } from "@/components/ui/button";
@@ -48,13 +48,17 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
 
   // TanStack Query owns caching/dedupe/staleness — the Vue equivalent
   // is @tanstack/vue-query's useQuery, near-identical API.
-  const { data: results = [], isFetching } = useQuery({
+  const { data, isFetching } = useQuery({
     queryKey: ["product-search", debounced],
-    queryFn: () => searchProductsClient(debounced),
+    queryFn: () => searchProducts(debounced),
     enabled: debounced.length >= 1,
     staleTime: 30_000,
     placeholderData: (prev) => prev,
   });
+
+  const results = useMemo(() => data?.products ?? [], [data]);
+  // results came from the saved catalog: stock figures are approximate
+  const approximate = data?.fromCache === true;
 
   useEffect(() => setHighlight(0), [results]);
 
@@ -108,6 +112,11 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
             aria-label={t("searchPlaceholder")}
           />
         </div>
+        {approximate && (
+          <p className="border-b bg-amber-500/10 px-3 py-1.5 text-xs text-amber-700 dark:text-amber-400">
+            {t("offlineCatalog")}
+          </p>
+        )}
         <div className="min-h-0 flex-1 overflow-y-auto p-1">
           {debounced.length === 0 ? (
             <p className="text-muted-foreground p-4 text-center text-sm">{t("searchHint")}</p>
@@ -135,6 +144,7 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
                     <div className="text-muted-foreground text-xs tabular-nums" dir="ltr">
                       {product.barcode}
                       {out && ` · ${t("outOfStock")}`}
+                      {approximate && ` · ${t("approxStock")}`}
                     </div>
                   </div>
                   <span className="shrink-0 font-semibold tabular-nums" dir="ltr">

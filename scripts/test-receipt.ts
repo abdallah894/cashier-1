@@ -26,6 +26,8 @@ function fakeSale(over: Partial<SaleForReceipt>): SaleForReceipt {
     payment_method: "cash",
     amount_tendered: null,
     change_due: null,
+    client_sold_at: null,
+    idempotency_key: null,
     created_at: "2026-07-05T10:30:00Z",
     sale_items: [],
     profiles: { full_name: "Test Cashier" },

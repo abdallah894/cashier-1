@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Loader2, Square } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { closeShift } from "@/lib/actions/shifts";
+import { getOfflineDb } from "@/lib/offline/db";
+import { countUnsettledForShift } from "@/lib/offline/outbox";
 import { parseEgpToPiasters } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +44,12 @@ export function CloseShiftDialog({ shiftId }: { shiftId: string }) {
     if (submitting || counted === null) return;
     setSubmitting(true);
     try {
+      // Unsynced cash sales are missing from the expected-cash figure: block the close until they are settled.
+      const unsettled = await countUnsettledForShift(getOfflineDb(), shiftId);
+      if (unsettled > 0) {
+        toast.error(tErrors("unsyncedSales"));
+        return;
+      }
       const result = await closeShift({ shiftId, counted, managerPin: managerPin || undefined });
       if (!result.ok) {
         toast.error(tErrors(result.error));

@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { NetworkIndicator } from "@/components/layout/network-indicator";
+import { SyncProvider } from "@/components/offline/sync-provider";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
 import { getCurrentProfile } from "@/lib/supabase/queries/profiles";
@@ -26,13 +27,14 @@ export default async function AppLayout({
 
   return (
     <SidebarProvider>
+      <SyncProvider userId={profile.id} />
       <AppSidebar role={profile.role} />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-6" />
           <div className="ms-auto flex items-center gap-1">
-            <NetworkIndicator />
+            <NetworkIndicator userId={profile.id} />
             <LocaleSwitcher />
             <ThemeToggle />
             <UserMenu name={profile.full_name} role={profile.role} />

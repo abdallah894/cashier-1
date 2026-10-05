@@ -215,6 +215,12 @@ export type Database = {
           },
         ]
       }
+      discount_settings: {
+        Row: { approval_threshold_bp: number; id: boolean }
+        Insert: { approval_threshold_bp?: number; id?: boolean }
+        Update: { approval_threshold_bp?: number; id?: boolean }
+        Relationships: []
+      }
       return_settings: {
         Row: {
           id: boolean
@@ -356,9 +362,11 @@ export type Database = {
           amount_tendered: number | null
           cashier_id: string
           change_due: number | null
+          client_sold_at: string | null
           created_at: string
           discount_total: number
           id: string
+          idempotency_key: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
           sale_number: number
           shift_id: string | null
@@ -370,9 +378,11 @@ export type Database = {
           amount_tendered?: number | null
           cashier_id: string
           change_due?: number | null
+          client_sold_at?: string | null
           created_at?: string
           discount_total?: number
           id?: string
+          idempotency_key?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
           sale_number?: number
           shift_id?: string | null
@@ -553,6 +563,8 @@ export type Database = {
           p_amount_tendered?: number
           p_approval_id?: string
           p_cashier_id?: string
+          p_client_sold_at?: string
+          p_idempotency_key?: string
           p_items: Json
           p_payment_method: Database["public"]["Enums"]["payment_method"]
           p_shift_id?: string

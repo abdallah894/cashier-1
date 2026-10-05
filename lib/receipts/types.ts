@@ -51,4 +51,6 @@ export type ReceiptData = {
   changeDue: number | null;
   /** encoded in the receipt's QR code */
   qrValue: string;
+  /** Set for a sale rung offline and not yet numbered by the server (e.g. "P-3"). */
+  provisionalLabel?: string;
 };

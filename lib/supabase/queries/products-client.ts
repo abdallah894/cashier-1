@@ -35,3 +35,30 @@ export async function getProductByBarcodeClient(
   if (error) throw error;
   return data;
 }
+
+/** Every active product, paged, for the offline catalog cache. */
+export async function fetchCatalogClient(): Promise<Tables<"products">[]> {
+  const supabase = createClient();
+  const pageSize = 1000;
+  const all: Tables<"products">[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("active", true)
+      .order("id")
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    all.push(...(data ?? []));
+    if (!data || data.length < pageSize) break;
+  }
+  return all;
+}
+
+/** Discount share (basis points) above which a manager must approve; cached for offline checks. */
+export async function fetchDiscountThresholdClient(): Promise<number> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("discount_settings").select("approval_threshold_bp").eq("id", true).single();
+  if (error) throw error;
+  return data.approval_threshold_bp;
+}

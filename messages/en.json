@@ -13,7 +13,8 @@
     "reports": "Reports",
     "shifts": "Shifts",
     "users": "Users",
-    "audit": "Audit log"
+    "audit": "Audit log",
+    "offlineSales": "Pending sales"
   },
   "shell": {
     "toggleTheme": "Toggle theme",
@@ -263,7 +264,10 @@
       "cancel": "Cancel",
       "confirm": "Complete sale",
       "saleDone": "Sale #{number} completed.",
-      "managerPinOptional": "Manager PIN, if a large discount needs approval"
+      "managerPinOptional": "Manager PIN, if a large discount needs approval",
+      "offlineNotice": "No connection. Cash sales are saved on this device and sent automatically when you reconnect. Card is unavailable.",
+      "offlineDiscountBlocked": "This discount needs a manager approval, which requires a connection. Reduce the discount or reconnect.",
+      "queuedDone": "Saved offline as P-{number}. It will sync automatically."
     },
     "shortcuts": {
       "focusSearch": "search",
@@ -274,7 +278,9 @@
       "changeQty": "qty",
       "removeLine": "remove",
       "close": "close"
-    }
+    },
+    "approxStock": "approx. stock",
+    "offlineCatalog": "Offline: showing the last synced catalog. Stock figures are approximate."
   },
   "shifts": {
     "title": "Shifts",
@@ -461,7 +467,8 @@
     "newSale": "New sale",
     "print": "Print",
     "downloadPdf": "Download PDF",
-    "autoPrint": "Auto-print after checkout"
+    "autoPrint": "Auto-print after checkout",
+    "provisional": "PROVISIONAL - NOT A FINAL INVOICE"
   },
   "returns": {
     "start": "Return items",
@@ -513,7 +520,12 @@
     "returnFailed": "The return could not be recorded. Please try again.",
     "emptyFile": "The file has no data rows.",
     "tooManyRows": "Too many rows — import at most 500 at a time.",
-    "unknown": "Something went wrong. Please try again."
+    "unknown": "Something went wrong. Please try again.",
+    "shiftClosed": "The shift this sale was rung in is already closed.",
+    "duplicateSaleKey": "This sale was already recorded under another cashier.",
+    "unsyncedSales": "This shift has sales that are not synced yet. Open Pending sales and settle them before closing.",
+    "cardUnconfirmed": "The connection dropped while paying by card. Check the bank terminal before trying again.",
+    "syncFailed": "The server could not record this sale after several attempts."
   },
   "fieldErrors": {
     "required": "Required.",
@@ -528,5 +540,54 @@
     "invalidUnit": "Unit must be piece or kg.",
     "invalidBoolean": "Use yes/no.",
     "qtyChangeZero": "Change cannot be zero."
+  },
+  "offline": {
+    "title": "Pending sales",
+    "description": "Cash sales made while offline are saved on this device and sent to the server in order. The server decides the final receipt number, stock and totals.",
+    "syncNow": "Sync now",
+    "syncResult": "{synced} synced, {rejected} need attention.",
+    "syncFailed": "Could not reach the server. Sales stay queued.",
+    "offlineWaiting": "You are offline. Queued sales will sync when the connection returns.",
+    "attention": "{count} sale(s) were rejected by the server and need a decision: retry or resolve them.",
+    "colNumber": "Receipt",
+    "colTime": "Rung at",
+    "colTotal": "Total",
+    "colStatus": "Status",
+    "colDetails": "Details",
+    "status": {
+      "queued": "Queued",
+      "syncing": "Syncing",
+      "synced": "Synced",
+      "rejected": "Rejected",
+      "resolved": "Resolved"
+    },
+    "otherCashier": "Waiting for that cashier to sign in",
+    "viewReceipt": "Receipt",
+    "finalReceipt": "Final receipt",
+    "retry": "Retry",
+    "resolve": "Resolve",
+    "resolveTitle": "Resolve rejected sale",
+    "resolveDescription": "Record how this sale was settled (for example refunded in cash and re-rung). The sale stays on record and is never deleted.",
+    "resolveNote": "What was done?",
+    "resolveConfirm": "Mark resolved",
+    "resolveNeedsNote": "A note is required to resolve a sale.",
+    "resolvedToast": "Sale marked as resolved.",
+    "cancel": "Cancel",
+    "empty": "No offline sales on this device.",
+    "pendingBadge": "{count} pending",
+    "rejectedBadge": "{count} need attention",
+    "syncedToast": "{count} offline sale(s) synced.",
+    "rejectedToast": "{count} offline sale(s) were rejected. Open Pending sales.",
+    "provisionalTitle": "Provisional receipt P-{number}",
+    "provisionalHint": {
+      "queued": "Saved on this device. The final receipt number is assigned when it syncs.",
+      "syncing": "Syncing now...",
+      "synced": "Synced. Use the final receipt for returns and records.",
+      "rejected": "The server rejected this sale. Open Pending sales to resolve it.",
+      "resolved": "This rejected sale was resolved by staff."
+    },
+    "print": "Print",
+    "backToRegister": "Back to register",
+    "notFound": "This offline sale is not on this device."
   }
 }

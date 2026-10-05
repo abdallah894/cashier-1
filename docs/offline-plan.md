@@ -60,3 +60,40 @@ Two existing seams make this an insert, not a rewrite:
 Multi-device stock reservation and true conflict-free replicated counts are
 out of scope; the model above accepts that offline stock is best-effort and
 reconciles authoritatively on sync.
+
+---
+
+## Implementation status (roadmap item 04)
+
+Built. The design above is implemented as follows:
+
+| Concern | Where |
+| --- | --- |
+| IndexedDB (Dexie) outbox + catalog cache | `lib/offline/db.ts`, `outbox.ts`, `catalog.ts` |
+| FIFO sync engine, single drain per DB | `lib/offline/sync.ts`, `submit.ts` |
+| Idempotent `create_sale` (`p_idempotency_key`, `p_client_sold_at`) | `supabase/migrations/20261006100000_offline_idempotency.sql` |
+| Provisional receipt (`P-n`, labelled not-final) | `components/offline/provisional-receipt-view.tsx` |
+| Queue screen: retry / resolve rejected sales | `/offline-sales` |
+| Header badges (pending / needs attention) | `components/layout/network-indicator.tsx` |
+| Offline catalog + approximate stock | `lib/offline/register-data.ts`, `search-pane.tsx` |
+
+Rules enforced:
+
+- **Idempotency.** The outbox id is the server idempotency key. A replay (lost response, restart, second tab) returns the original sale; stock, movements and the drawer event happen once.
+- **Cash only offline.** Card is disabled offline; a card request that loses its connection is reported as unconfirmed, never as paid.
+- **No silent loss.** A server rejection (stale stock, closed shift, ...) becomes `rejected`. Staff retry it or *resolve* it with a mandatory note; the row is never deleted.
+- **Shift integrity.** A queued sale names its shift and is never re-homed. Closing a shift is blocked while that shift has queued or rejected sales.
+- **Per-cashier queue.** `create_sale` attributes the sale to the signed-in user, so a cashier's queue only drains under that cashier.
+- **Discounts.** Above the manager-approval threshold (cached from `discount_settings`) a discount cannot be rung offline.
+- **Time.** `created_at` is the sync time; the till's own clock is stored in `sales.client_sold_at` (bounded to now-7d..now+5min).
+
+Tests: `npm run test:all` (`test-offline-idempotency.ts`, `test-offline-outbox.ts`, `test-offline-e2e.ts`).
+
+### Manual test (needs a signed-in browser)
+
+1. Open `/register`, let the catalog load once online.
+2. DevTools > Network > Offline. The header shows **Offline**; Card is disabled.
+3. Scan or search products (a banner says stock is approximate), check out in cash. You land on a `P-n` provisional receipt.
+4. Reload the page while still offline. The sale is still in **Pending sales**.
+5. Go back online. The sale syncs, the badge disappears, and *Final receipt* links to the numbered receipt.
+6. To see a rejection, sell the last unit offline on two devices, or lower the stock in Products first. The loser shows **Rejected**; try *Retry* and *Resolve*.

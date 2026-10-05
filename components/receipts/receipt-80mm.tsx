@@ -26,7 +26,10 @@ export function Receipt80mm({ receipt }: { receipt: ReceiptData }) {
 
       <Dashes />
 
-      <Row label={t("saleNo")} value={`#${receipt.saleNumber}`} />
+      {receipt.provisionalLabel && (
+        <div className="mb-1 border border-black p-1 text-center font-bold">{t("provisional")}</div>
+      )}
+      <Row label={t("saleNo")} value={receipt.provisionalLabel ?? `#${receipt.saleNumber}`} />
       <Row
         label={t("date")}
         value={format.dateTime(new Date(receipt.createdAt), {
@@ -90,7 +93,7 @@ export function Receipt80mm({ receipt }: { receipt: ReceiptData }) {
       <div className="flex flex-col items-center gap-1 pt-1 text-center">
         <ReceiptQr value={receipt.qrValue} className="size-[18mm]" />
         <div className="tabular-nums" dir="ltr">
-          #{receipt.saleNumber}
+          {receipt.provisionalLabel ?? `#${receipt.saleNumber}`}
         </div>
         <div>{t("thankYou")}</div>
       </div>

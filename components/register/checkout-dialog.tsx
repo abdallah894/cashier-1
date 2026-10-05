@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Banknote, CreditCard, Loader2 } from "lucide-react";
@@ -8,6 +8,11 @@ import { useRouter } from "@/i18n/navigation";
 import { createManagerApproval } from "@/lib/actions/approvals";
 import { createSale } from "@/lib/actions/sales";
 import { approvalRequestHash } from "@/lib/approvals/hash";
+import { useOnline } from "@/hooks/use-online";
+import { getOfflineDb } from "@/lib/offline/db";
+import { loadDiscountThreshold } from "@/lib/offline/catalog";
+import { enqueueSale } from "@/lib/offline/outbox";
+import { buildProvisionalReceipt, discountNeedsApproval } from "@/lib/offline/provisional";
 import { formatEgp, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
 import { useCart, toSaleItems, type CartTotals } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
@@ -29,30 +34,46 @@ export function CheckoutDialog({
   open,
   onOpenChange,
   totals,
+  userId,
+  shiftId,
+  cashierName,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   totals: CartTotals;
+  userId: string;
+  shiftId: string;
+  cashierName: string | null;
 }) {
   const t = useTranslations("register.checkoutDialog");
   const tErrors = useTranslations("errors");
   const locale = useLocale();
   const router = useRouter();
   const clearCart = useCart((s) => s.clear);
+  const online = useOnline();
 
-  const [method, setMethod] = useState<"cash" | "card">("cash");
+  const [chosenMethod, setChosenMethod] = useState<"cash" | "card">("cash");
   const [tenderedInput, setTenderedInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [managerPin, setManagerPin] = useState("");
+  // One idempotency key per checkout attempt: a retry (or the offline queue
+  // taking over after a lost response) can never create a second sale.
+  const saleKeyRef = useRef<string | null>(null);
+
+  // Card payments cannot be confirmed without the network: offline is cash only.
+  const method = online ? chosenMethod : "cash";
+
+  function resetForm() {
+    setChosenMethod("cash");
+    setTenderedInput("");
+    setManagerPin("");
+    saleKeyRef.current = null;
+  }
 
   // reset on close so the next checkout starts fresh
   function handleOpenChange(next: boolean) {
     if (submitting) return;
-    if (!next) {
-      setMethod("cash");
-      setTenderedInput("");
-      setManagerPin("");
-    }
+    if (!next) resetForm();
     onOpenChange(next);
   }
 
@@ -60,28 +81,72 @@ export function CheckoutDialog({
   const change = tendered !== null ? tendered - totals.total : null;
   const cashInvalid = method === "cash" && (tendered === null || tendered < totals.total);
 
+  /** Records a cash sale in the local outbox and prints a provisional receipt. */
+  async function queueOffline(key: string): Promise<void> {
+    if (tendered === null) return;
+    const db = getOfflineDb();
+    // Large discounts need a live manager approval, which needs the server.
+    if (discountNeedsApproval(totals, await loadDiscountThreshold(db))) {
+      toast.error(t("offlineDiscountBlocked"));
+      return;
+    }
+    const entry = await enqueueSale(db, {
+      id: key,
+      userId,
+      shiftId,
+      items: toSaleItems(totals),
+      amountTendered: tendered,
+      provisional: buildProvisionalReceipt(totals, tendered, cashierName),
+    });
+    clearCart();
+    toast.success(t("queuedDone", { number: entry.localNumber }));
+    resetForm();
+    onOpenChange(false);
+    router.push(`/offline-sales/${entry.id}?new=1`);
+  }
+
   async function confirm() {
     if (submitting || totals.lines.length === 0) return;
     if (method === "cash" && cashInvalid) return;
     setSubmitting(true);
     try {
+      const key = (saleKeyRef.current ??= crypto.randomUUID());
+
+      if (!online) {
+        await queueOffline(key);
+        return;
+      }
+
       const payload = {
         items: toSaleItems(totals),
         payment_method: method,
         amount_tendered: method === "cash" ? tendered : null,
+        idempotencyKey: key,
+        shiftId,
       };
-      let result = await createSale(payload);
-      if (!result.ok && result.error === "managerApprovalRequired" && /^\d{4}$/.test(managerPin)) {
-        // Large discounts need a one-time manager approval bound to these amounts.
-        const requestHash = await approvalRequestHash(
-          `sale_discount|${totals.baseTotal}|${totals.discountTotal}`
-        );
-        const approval = await createManagerApproval({ action: "sale_discount", requestHash, pin: managerPin });
-        if (!approval.ok) {
-          toast.error(tErrors(approval.error));
-          return;
+      let result;
+      try {
+        result = await createSale(payload);
+        if (!result.ok && result.error === "managerApprovalRequired" && /^\d{4}$/.test(managerPin)) {
+          // Large discounts need a one-time manager approval bound to these amounts.
+          const requestHash = await approvalRequestHash(
+            `sale_discount|${totals.baseTotal}|${totals.discountTotal}`
+          );
+          const approval = await createManagerApproval({ action: "sale_discount", requestHash, pin: managerPin });
+          if (!approval.ok) {
+            toast.error(tErrors(approval.error));
+            return;
+          }
+          result = await createSale({ ...payload, approvalId: approval.data.approvalId });
         }
-        result = await createSale({ ...payload, approvalId: approval.data.approvalId });
+      } catch {
+        // The connection dropped mid-request, so the sale may or may not be
+        // recorded. Cash falls back to the queue under the SAME key (the
+        // server replays instead of duplicating); a card sale cannot be
+        // confirmed, so the cashier must verify it before retrying.
+        if (method === "cash") await queueOffline(key);
+        else toast.error(tErrors("cardUnconfirmed"));
+        return;
       }
       if (!result.ok) {
         toast.error(tErrors(result.error));
@@ -89,9 +154,7 @@ export function CheckoutDialog({
       }
       clearCart();
       toast.success(t("saleDone", { number: result.data.saleNumber }));
-      setMethod("cash");
-      setTenderedInput("");
-      setManagerPin("");
+      resetForm();
       onOpenChange(false);
       router.push(`/receipts/${result.data.saleId}?new=1`);
     } finally {
@@ -113,13 +176,19 @@ export function CheckoutDialog({
           </span>
         </div>
 
-        <Tabs value={method} onValueChange={(v) => setMethod(v as "cash" | "card")}>
+        {!online && (
+          <p className="rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
+            {t("offlineNotice")}
+          </p>
+        )}
+
+        <Tabs value={method} onValueChange={(v) => setChosenMethod(v as "cash" | "card")}>
           <TabsList className="w-full">
             <TabsTrigger value="cash" className="flex-1 gap-2">
               <Banknote className="size-4" />
               {t("cash")}
             </TabsTrigger>
-            <TabsTrigger value="card" className="flex-1 gap-2">
+            <TabsTrigger value="card" className="flex-1 gap-2" disabled={!online}>
               <CreditCard className="size-4" />
               {t("card")}
             </TabsTrigger>

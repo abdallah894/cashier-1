@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useRouter } from "@/i18n/navigation";
 import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
-import { getProductByBarcodeClient } from "@/lib/supabase/queries/products-client";
+import { lookupBarcode } from "@/lib/offline/register-data";
 import { useCart, computeTotals } from "@/lib/store/cart";
 import { CartPane } from "./cart-pane";
 import { SearchPane, type SearchPaneHandle } from "./search-pane";
@@ -18,9 +18,15 @@ import { UnknownBarcodeDialog } from "./unknown-barcode-dialog";
 export function Register({
   isAdmin,
   cashiers,
+  userId,
+  shiftId,
+  cashierName,
 }: {
   isAdmin: boolean;
   cashiers: SwitchableCashier[];
+  userId: string;
+  shiftId: string;
+  cashierName: string | null;
 }) {
   const t = useTranslations("register");
   const router = useRouter();
@@ -50,7 +56,8 @@ export function Register({
     // the burst may have landed in the search box — wipe it
     searchRef.current?.clear();
     try {
-      const product = await getProductByBarcodeClient(barcode);
+      // live lookup online, last synced catalog offline
+      const { product } = await lookupBarcode(barcode);
       if (!product) {
         setUnknownBarcode(barcode);
         return;
@@ -154,7 +161,14 @@ export function Register({
       <ShortcutsBar onSwitchCashier={() => setSwitchOpen(true)} />
 
       <PinSwitchDialog cashiers={cashiers} open={switchOpen} onOpenChange={setSwitchOpen} />
-      <CheckoutDialog open={checkoutOpen} onOpenChange={setCheckoutOpen} totals={totals} />
+      <CheckoutDialog
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        totals={totals}
+        userId={userId}
+        shiftId={shiftId}
+        cashierName={cashierName}
+      />
       <CameraScanDialog open={cameraOpen} onOpenChange={setCameraOpen} onScan={handleScan} />
       <UnknownBarcodeDialog
         barcode={unknownBarcode}

@@ -16,5 +16,13 @@ export default async function RegisterPage({ params }: { params: Promise<{ local
   // no open shift → the register is blocked until one is opened
   if (!shift) return <OpenShiftGate cashiers={cashiers} />;
 
-  return <Register isAdmin={profile?.role === "admin"} cashiers={cashiers} />;
+  return (
+    <Register
+      isAdmin={profile?.role === "admin"}
+      cashiers={cashiers}
+      userId={profile?.id ?? ""}
+      shiftId={shift.id}
+      cashierName={profile?.full_name ?? null}
+    />
+  );
 }
