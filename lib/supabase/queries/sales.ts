@@ -101,3 +101,18 @@ export async function getCashiers(): Promise<Pick<Tables<"profiles">, "id" | "fu
   if (error) throw error;
   return data ?? [];
 }
+
+/** Tenders a sale was actually paid with (a split sale has more than one); refunds must use one of them. */
+export async function getSaleTenders(id: string): Promise<("cash" | "card")[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("payments")
+    .select("tender")
+    .eq("sale_id", id)
+    .eq("direction", "charge")
+    .eq("status", "captured");
+  if (error) throw error;
+  const tenders = new Set<"cash" | "card">();
+  for (const row of data ?? []) if (row.tender === "cash" || row.tender === "card") tenders.add(row.tender);
+  return [...tenders];
+}

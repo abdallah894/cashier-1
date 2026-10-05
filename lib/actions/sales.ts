@@ -17,6 +17,9 @@ export type SaleReceipt = {
 };
 
 function mapSaleError(message: string): string {
+  if (message.includes("terminal approval reference")) return "paymentReferenceRequired";
+  if (message.includes("invalid reference")) return "paymentReferenceInvalid";
+  if (message.includes("reference already used")) return "paymentReferenceUsed";
   if (message.includes("total changed")) return "totalChanged";
   if (message.includes("customer not found")) return "customerNotFound";
   if (message.includes("code not valid")) return "promoInvalid";
@@ -72,6 +75,7 @@ export async function createSale(input: unknown): Promise<ActionResult<SaleRecei
     p_idempotency_key: parsed.data.idempotencyKey,
     p_client_sold_at: parsed.data.soldAt,
     p_customer_id: parsed.data.customerId,
+    p_card_reference: parsed.data.payment_method === "card" ? parsed.data.cardReference : undefined,
     p_promotion_codes: parsed.data.promotionCodes,
     p_apply_promotions: parsed.data.applyPromotions,
     p_expected_total: parsed.data.expectedTotal,

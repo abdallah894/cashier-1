@@ -35,20 +35,24 @@ type ReturnableLine = {
 
 export function ReturnDialog({
   saleId,
-  paymentMethod,
+  tenders,
   lines,
 }: {
   saleId: string;
-  paymentMethod: "cash" | "card";
+  tenders: ("cash" | "card")[];
   lines: ReturnableLine[];
 }) {
   const t = useTranslations("returns");
+  const tReceipt = useTranslations("receipt");
   const tErrors = useTranslations("errors");
   const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [restock, setRestock] = useState(true);
   const [reason, setReason] = useState("");
   const [managerPin, setManagerPin] = useState("");
+  // a split-paid sale can be refunded through either tender it was paid with
+  const [chosenTender, setChosenTender] = useState<"cash" | "card" | null>(null);
+  const paymentMethod = chosenTender && tenders.includes(chosenTender) ? chosenTender : (tenders[0] ?? "cash");
   const [quantities, setQuantities] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
   const router = useRouter();
@@ -99,6 +103,7 @@ export function ReturnDialog({
         return;
       }
       toast.success(t("completed", { number: result.data.returnNumber }));
+      if (paymentMethod === "card") toast.info(t("cardRefundPending"), { duration: 12_000 });
       setOpen(false);
       reset();
       if (startExchange) router.push("/register");
@@ -154,6 +159,23 @@ export function ReturnDialog({
             <Label htmlFor="return-reason">{t("reason")}</Label>
             <Textarea id="return-reason" value={reason} onChange={(event) => setReason(event.target.value)} />
           </div>
+          {tenders.length > 1 && (
+            <div className="grid gap-2">
+              <Label>{t("refundTender")}</Label>
+              <div className="flex gap-2">
+                {tenders.map((tender) => (
+                  <Button
+                    key={tender}
+                    type="button"
+                    variant={paymentMethod === tender ? "default" : "outline"}
+                    onClick={() => setChosenTender(tender)}
+                  >
+                    {tReceipt(`payment.${tender}`)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="grid gap-2">
             <Label htmlFor="manager-pin">{t("managerPinOptional")}</Label>
             <Input

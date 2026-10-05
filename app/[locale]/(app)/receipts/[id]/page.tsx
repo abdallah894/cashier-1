@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { getSaleWithItems } from "@/lib/supabase/queries/sales";
+import { getSaleTenders, getSaleWithItems } from "@/lib/supabase/queries/sales";
 import { buildReceipt } from "@/lib/receipts/build";
 import { Receipt80mm } from "@/components/receipts/receipt-80mm";
 import { ReceiptActions } from "@/components/receipts/receipt-actions";
@@ -17,10 +17,11 @@ export default async function ReceiptPage({
   const { locale, id } = await params;
   setRequestLocale(locale);
 
-  const [t, sale, sp] = await Promise.all([
+  const [t, sale, sp, tenders] = await Promise.all([
     getTranslations("receipt"),
     getSaleWithItems(id),
     searchParams,
+    getSaleTenders(id),
   ]);
   if (!sale) notFound();
   const receipt = buildReceipt(sale);
@@ -34,7 +35,7 @@ export default async function ReceiptPage({
         <ReceiptActions receipt={receipt} justCompleted={sp.new === "1"} />
         <ReturnDialog
           saleId={sale.id}
-          paymentMethod={sale.payment_method}
+          tenders={tenders}
           lines={sale.sale_items.map((item) => {
             const returnedQty = (sale.returns ?? []).flatMap((entry) => entry.return_items)
               .filter((returnItem) => returnItem.sale_item_id === item.id)

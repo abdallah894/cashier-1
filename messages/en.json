@@ -19,7 +19,8 @@
     "suppliers": "Suppliers",
     "purchaseOrders": "Purchase orders",
     "customers": "Customers",
-    "promotions": "Promotions"
+    "promotions": "Promotions",
+    "payments": "Payments"
   },
   "shell": {
     "toggleTheme": "Toggle theme",
@@ -272,7 +273,9 @@
       "managerPinOptional": "Manager PIN, if a large discount needs approval",
       "offlineNotice": "No connection. Cash sales are saved on this device and sent automatically when you reconnect. Card is unavailable.",
       "offlineDiscountBlocked": "This discount needs a manager approval, which requires a connection. Reduce the discount or reconnect.",
-      "queuedDone": "Saved offline as P-{number}. It will sync automatically."
+      "queuedDone": "Saved offline as P-{number}. It will sync automatically.",
+      "cardReference": "Terminal approval code",
+      "cardReferenceHint": "Charge the card on the bank terminal first, then type the approval code (RRN) it prints. Never type a card number here."
     },
     "shortcuts": {
       "focusSearch": "search",
@@ -501,7 +504,8 @@
     "title": "Sale #{number}",
     "payment": {
       "cash": "Cash",
-      "card": "Card"
+      "card": "Card",
+      "split": "Card + cash"
     },
     "taxId": "Tax ID: {id}",
     "saleNo": "Receipt #",
@@ -542,7 +546,9 @@
     "historyNotRestocked": "Not returned to stock",
     "receiptTitle": "Return receipt",
     "originalReceipt": "Original receipt #{number}",
-    "receiptDate": "Date"
+    "receiptDate": "Date",
+    "refundTender": "Refund via",
+    "cardRefundPending": "Card refund recorded. Do the refund on the bank terminal, then confirm it under Payments."
   },
   "errors": {
     "insufficientStock": "Not enough stock for one of the items. Check the highlighted quantities.",
@@ -603,7 +609,12 @@
     "promoLimit": "This promotion has reached its redemption limit.",
     "promoNoItems": "This promotion does not apply to anything in the cart.",
     "promoCodeTaken": "A promotion with this code already exists.",
-    "promoFailed": "The promotion action failed. Please try again."
+    "promoFailed": "The promotion action failed. Please try again.",
+    "paymentReferenceRequired": "Enter the terminal approval code to record a card payment.",
+    "paymentReferenceInvalid": "That is not a valid approval code. Use the code printed by the terminal (4-40 letters or digits), never a card number.",
+    "paymentReferenceUsed": "This approval code was already used for another payment.",
+    "paymentWrongState": "That payment can no longer change in this way. Refresh the page.",
+    "paymentFailed": "The payment action failed. Please try again."
   },
   "fieldErrors": {
     "required": "Required.",
@@ -909,5 +920,87 @@
     "unit": "unit",
     "empty": "No promotions yet.",
     "toggle": "Toggle {name}"
+  },
+  "payments": {
+    "title": "Payments",
+    "description": "Every card and cash movement is a payment record. Pending, failed and unmatched payments appear here until someone confirms or resolves them, so nothing is silently lost.",
+    "attentionTitle": "Needs attention",
+    "attentionEmpty": "Nothing needs attention. All payments are settled.",
+    "colWhen": "When",
+    "colWhat": "Payment",
+    "colAmount": "Amount",
+    "colWhy": "Status",
+    "colStatus": "Status",
+    "colReference": "Reference",
+    "colTender": "Tender",
+    "colProvider": "Provider",
+    "colCharges": "Charges",
+    "colRefunds": "Refunds",
+    "colNet": "Net",
+    "direction": {
+      "charge": "Charge",
+      "refund": "Refund"
+    },
+    "tender": {
+      "cash": "Cash",
+      "card": "Card",
+      "split": "Card + cash"
+    },
+    "status": {
+      "pending": "Pending",
+      "authorized": "Authorized",
+      "captured": "Captured",
+      "declined": "Declined",
+      "failed": "Failed",
+      "voided": "Voided"
+    },
+    "reason": {
+      "pending": "Awaiting terminal result",
+      "orphan": "Charged, no sale",
+      "refundPending": "Refund to confirm",
+      "refundFailed": "Refund failed"
+    },
+    "reasonHint": {
+      "pending": "Check the terminal. If it approved, enter the approval code and confirm. If not, mark it failed.",
+      "orphan": "The card was charged but no sale was recorded. Re-ring the sale or refund the customer, then resolve this with a note.",
+      "refundPending": "Do the refund on the terminal, then enter its reference and confirm.",
+      "refundFailed": "The refund did not go through. Settle it with the customer, then resolve this with a note."
+    },
+    "referencePlaceholder": "Approval code",
+    "confirmPayment": "Confirm approved",
+    "confirmRefund": "Confirm refund",
+    "confirmed": "Payment confirmed.",
+    "markFailed": "Mark failed",
+    "failTitle": "Mark this payment as not completed",
+    "failDescription": "Record what happened. The payment stays on record with this reason.",
+    "statusDeclined": "Declined by the terminal",
+    "statusFailed": "Failed (technical)",
+    "statusVoided": "Cancelled / voided",
+    "failedDone": "Payment marked as not completed.",
+    "resolve": "Resolve",
+    "resolveTitle": "Resolve this payment",
+    "resolveDescription": "Say how it was settled (for example refunded on the terminal and the sale re-rung). The record is kept.",
+    "resolved": "Payment resolved.",
+    "notePlaceholder": "What was done?",
+    "cancel": "Cancel",
+    "from": "From",
+    "to": "To",
+    "apply": "Apply",
+    "summaryTitle": "Takings by tender",
+    "summaryEmpty": "No captured payments in this period.",
+    "reconciliationTitle": "Reconciliation",
+    "reconciliationNote": "Checks that every sale is paid exactly by its captured payments and flags payments without a sale or stuck in pending.",
+    "reconciliationClean": "Everything reconciles: no mismatches or open exceptions in this period.",
+    "issue": {
+      "sale_mismatch": "Sale total differs from payments",
+      "orphan_payment": "Charged, no sale",
+      "stale_pending": "Stuck pending",
+      "refund_unconfirmed": "Refund to confirm",
+      "refund_failed": "Refund failed"
+    },
+    "openSale": "Open sale",
+    "recentTitle": "Recent payments",
+    "recentEmpty": "No payments yet.",
+    "exportCsv": "Export CSV"
   }
 }

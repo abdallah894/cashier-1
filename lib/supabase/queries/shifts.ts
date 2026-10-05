@@ -64,11 +64,13 @@ export async function getShiftWithSales(id: string): Promise<{
   if (error) throw error;
   if (!shift) return null;
 
-  const { data: sales, error: salesError } = await supabase
-    .from("sales")
-    .select("total, payment_method")
-    .eq("shift_id", id);
+  const [{ count: saleCount, error: salesError }, { data: tenders, error: tendersError }] = await Promise.all([
+    supabase.from("sales").select("id", { count: "exact", head: true }).eq("shift_id", id),
+    // captured payments per tender: a split sale counts toward both cash and card
+    supabase.rpc("shift_tender_totals", { p_shift_id: id }),
+  ]);
   if (salesError) throw salesError;
+  if (tendersError) throw tendersError;
 
   const { data: drawerEvents, error: drawerEventsError } = await supabase
     .from("cash_drawer_events")
@@ -79,15 +81,15 @@ export async function getShiftWithSales(id: string): Promise<{
 
   let cashSales = 0;
   let cardSales = 0;
-  for (const sale of sales ?? []) {
-    if (sale.payment_method === "cash") cashSales += Number(sale.total);
-    else cardSales += Number(sale.total);
+  for (const row of tenders ?? []) {
+    if (row.tender === "cash") cashSales += Number(row.amount);
+    else if (row.tender === "card") cardSales += Number(row.amount);
   }
   return {
     shift: shift as ShiftListRow,
     cashSales,
     cardSales,
-    saleCount: (sales ?? []).length,
+    saleCount: saleCount ?? 0,
     drawerEvents: (drawerEvents ?? []).map((event) => ({
       event_type: event.event_type,
       amount: Number(event.amount),

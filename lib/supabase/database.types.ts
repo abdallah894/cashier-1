@@ -246,7 +246,7 @@ export type Database = {
           id: string
           manager_approved_by: string | null
           reason: string
-          refund_tender: Database["public"]["Enums"]["payment_method"]
+          refund_tender: "cash" | "card"
           refund_total: number
           restock: boolean
           return_number: number
@@ -258,7 +258,7 @@ export type Database = {
           id?: string
           manager_approved_by?: string | null
           reason: string
-          refund_tender: Database["public"]["Enums"]["payment_method"]
+          refund_tender: "cash" | "card"
           refund_total: number
           restock: boolean
           return_number?: number
@@ -270,7 +270,7 @@ export type Database = {
           id?: string
           manager_approved_by?: string | null
           reason?: string
-          refund_tender?: Database["public"]["Enums"]["payment_method"]
+          refund_tender?: "cash" | "card"
           refund_total?: number
           restock?: boolean
           return_number?: number
@@ -683,6 +683,50 @@ export type Database = {
         Update: { [_ in never]: never }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          direction: Database["public"]["Enums"]["payment_direction"]
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          legacy: boolean
+          original_payment_id: string | null
+          provider: string
+          provider_reference: string | null
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          return_id: string | null
+          sale_id: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          tender: Database["public"]["Enums"]["payment_method"]
+          updated_at: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      payment_events: {
+        Row: {
+          actor_id: string | null
+          amount: number | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["payment_status"] | null
+          id: string
+          note: string | null
+          payment_id: string
+          provider: string
+          provider_event_id: string | null
+          source: string
+          to_status: Database["public"]["Enums"]["payment_status"]
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           created_at: string
@@ -736,6 +780,57 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_payment: {
+        Args: {
+          p_amount: number
+          p_idempotency_key: string
+          p_provider: string
+          p_provider_reference?: string
+          p_tender: Database["public"]["Enums"]["payment_method"]
+        }
+        Returns: string
+      }
+      record_payment_result: {
+        Args: { p_note?: string; p_payment_id: string; p_reference?: string; p_status: Database["public"]["Enums"]["payment_status"] }
+        Returns: undefined
+      }
+      apply_provider_event: {
+        Args: {
+          p_amount: number
+          p_event_id: string
+          p_provider: string
+          p_provider_reference: string
+          p_status: Database["public"]["Enums"]["payment_status"]
+        }
+        Returns: string
+      }
+      resolve_payment: { Args: { p_note: string; p_payment_id: string }; Returns: undefined }
+      shift_tender_totals: {
+        Args: { p_shift_id: string }
+        Returns: { amount: number; tender: Database["public"]["Enums"]["payment_method"] }[]
+      }
+      report_payment_reconciliation: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          amount: number
+          created_at: string
+          detail: string
+          issue: string
+          payment_id: string | null
+          sale_id: string | null
+        }[]
+      }
+      report_tender_summary: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          charges: number
+          net: number
+          payment_count: number
+          provider: string
+          refunds: number
+          tender: Database["public"]["Enums"]["payment_method"]
+        }[]
+      }
       set_staff_capabilities: {
         Args: { p_capabilities: Database["public"]["Enums"]["capability"][]; p_staff_id: string }
         Returns: undefined
@@ -899,12 +994,14 @@ export type Database = {
           p_approval_id?: string
           p_cashier_id?: string
           p_apply_promotions?: boolean
+          p_card_reference?: string
           p_client_sold_at?: string
           p_customer_id?: string
           p_expected_total?: number
           p_idempotency_key?: string
           p_promotion_codes?: string[]
           p_items: Json
+          p_payment_ids?: string[]
           p_payment_method: Database["public"]["Enums"]["payment_method"]
           p_shift_id?: string
         }
@@ -1011,7 +1108,9 @@ export type Database = {
     }
     Enums: {
       capability: "return.approve" | "cart.void" | "discount.override" | "stock.correct" | "cash.drawer.adjust" | "shift.close.override" | "customer.manage"
-      payment_method: "cash" | "card"
+      payment_direction: "charge" | "refund"
+      payment_method: "cash" | "card" | "split"
+      payment_status: "pending" | "authorized" | "captured" | "declined" | "failed" | "voided"
       product_unit: "piece" | "kg"
       stock_movement_reason: "sale" | "received" | "damaged" | "correction" | "return"
       promotion_discount_kind: "percent" | "fixed"
@@ -1148,7 +1247,9 @@ export const Constants = {
   public: {
     Enums: {
       capability: ["return.approve", "cart.void", "discount.override", "stock.correct", "cash.drawer.adjust", "shift.close.override", "customer.manage"],
-      payment_method: ["cash", "card"],
+      payment_direction: ["charge", "refund"],
+      payment_method: ["cash", "card", "split"],
+      payment_status: ["pending", "authorized", "captured", "declined", "failed", "voided"],
       product_unit: ["piece", "kg"],
       stock_movement_reason: ["sale", "received", "damaged", "correction", "return"],
       promotion_discount_kind: ["percent", "fixed"],

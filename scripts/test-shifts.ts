@@ -40,7 +40,7 @@ async function main() {
     db.query(
       `select * from public.create_sale('${ITEM}'::jsonb, '${method}', ${
         shiftId ? `'${shiftId}'` : "null"
-      }, ${tendered ?? "null"})`
+      }, ${tendered ?? "null"}${method === "card" ? ", p_card_reference => 'TEST-1001'" : ""})`
     );
 
   // ---------- sales require an open shift ----------

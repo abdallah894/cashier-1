@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paymentReferenceSchema } from "./payments";
 
 export const saleItemSchema = z.object({
   product_id: z.uuid(),
@@ -12,6 +13,8 @@ export const checkoutSchema = z
     payment_method: z.enum(["cash", "card"]),
     amount_tendered: z.number().int().min(0).nullable(),
     approvalId: z.uuid().optional(),
+    /** Terminal approval code (RRN) for a card sale; never a card number. */
+    cardReference: paymentReferenceSchema.optional(),
     /** Optional loyalty-free customer link (privacy: lookup is by exact phone only). */
     customerId: z.uuid().optional(),
     promotionCodes: z.array(z.string().trim().min(1).max(40)).max(5).optional(),
@@ -28,6 +31,10 @@ export const checkoutSchema = z
   })
   .refine((v) => v.payment_method !== "cash" || v.amount_tendered !== null, {
     message: "tenderedRequired",
+  })
+  .refine((v) => v.payment_method !== "card" || v.cardReference !== undefined, {
+    message: "cardReferenceRequired",
+    path: ["cardReference"],
   });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

@@ -17,6 +17,7 @@ import {
   PackageCheck,
   Contact,
   Percent,
+  Wallet,
 } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection, type Locale } from "@/i18n/routing";
@@ -35,6 +36,7 @@ const navItems = [
   { key: "register", href: "/register", icon: ShoppingCart, adminOnly: false },
   { key: "sales", href: "/receipts", icon: ReceiptText, adminOnly: false },
   { key: "shifts", href: "/shifts", icon: Clock, adminOnly: false },
+  { key: "payments", href: "/payments", icon: Wallet, adminOnly: false },
   { key: "offlineSales", href: "/offline-sales", icon: CloudUpload, adminOnly: false },
   { key: "products", href: "/products", icon: Package, adminOnly: true },
   { key: "categories", href: "/categories", icon: Tags, adminOnly: true },

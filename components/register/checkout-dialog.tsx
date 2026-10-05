@@ -14,6 +14,7 @@ import { loadDiscountThreshold } from "@/lib/offline/catalog";
 import { enqueueSale } from "@/lib/offline/outbox";
 import { buildProvisionalReceipt, discountNeedsApproval } from "@/lib/offline/provisional";
 import { formatEgp, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
+import { isValidPaymentReference } from "@/lib/payments/providers";
 import { useCart, toSaleItems, toQueuedSaleItems, type CartTotals } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,6 +59,7 @@ export function CheckoutDialog({
   const [tenderedInput, setTenderedInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [managerPin, setManagerPin] = useState("");
+  const [cardReference, setCardReference] = useState("");
   // One idempotency key per checkout attempt: a retry (or the offline queue
   // taking over after a lost response) can never create a second sale.
   const saleKeyRef = useRef<string | null>(null);
@@ -69,6 +71,7 @@ export function CheckoutDialog({
     setChosenMethod("cash");
     setTenderedInput("");
     setManagerPin("");
+    setCardReference("");
     saleKeyRef.current = null;
   }
 
@@ -82,6 +85,8 @@ export function CheckoutDialog({
   const tendered = parseEgpToPiasters(tenderedInput);
   const change = tendered !== null ? tendered - totals.total : null;
   const cashInvalid = method === "cash" && (tendered === null || tendered < totals.total);
+  // a card sale is only recorded with the terminal's approval code
+  const cardInvalid = method === "card" && !isValidPaymentReference(cardReference.trim());
 
   /** Records a cash sale in the local outbox and prints a provisional receipt. */
   async function queueOffline(key: string): Promise<void> {
@@ -109,7 +114,7 @@ export function CheckoutDialog({
 
   async function confirm() {
     if (submitting || totals.lines.length === 0) return;
-    if (method === "cash" && cashInvalid) return;
+    if ((method === "cash" && cashInvalid) || (method === "card" && cardInvalid)) return;
     setSubmitting(true);
     try {
       const key = (saleKeyRef.current ??= crypto.randomUUID());
@@ -125,6 +130,7 @@ export function CheckoutDialog({
         amount_tendered: method === "cash" ? tendered : null,
         idempotencyKey: key,
         shiftId,
+        cardReference: method === "card" ? cardReference.trim() : undefined,
         customerId: customer?.id,
         promotionCodes: promoCodes.length ? promoCodes : undefined,
         // the total the customer was shown; the server refuses if rules moved meanwhile
@@ -253,7 +259,21 @@ export function CheckoutDialog({
             </div>
           </div>
         ) : (
-          <p className="text-muted-foreground py-2 text-sm">{t("cardHint")}</p>
+          <div className="flex flex-col gap-2">
+            <p className="text-muted-foreground text-sm">{t("cardHint")}</p>
+            <Input
+              dir="ltr"
+              autoFocus
+              value={cardReference}
+              onChange={(e) => setCardReference(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && confirm()}
+              placeholder={t("cardReference")}
+              aria-label={t("cardReference")}
+              aria-invalid={cardReference !== "" && cardInvalid}
+              className="h-12 text-center text-lg tabular-nums"
+            />
+            <p className="text-muted-foreground text-xs">{t("cardReferenceHint")}</p>
+          </div>
         )}
 
         {totals.manualDiscountTotal > 0 && (
@@ -274,7 +294,7 @@ export function CheckoutDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             {t("cancel")}
           </Button>
-          <Button onClick={confirm} disabled={submitting || cashInvalid} className="min-w-32">
+          <Button onClick={confirm} disabled={submitting || cashInvalid || cardInvalid} className="min-w-32">
             {submitting && <Loader2 className="size-4 animate-spin" />}
             {t("confirm")}
           </Button>
