@@ -79,6 +79,14 @@ async function main() {
   if (unpinned.rows.length) fail(`SECURITY DEFINER functions without a pinned search_path: ${unpinned.rows.map((r) => r.proname).join(", ")}`);
   else pass("every SECURITY DEFINER function pins its search_path");
 
+  const anonCallable = await db.query<{ proname: string }>(
+    `select distinct p.proname from pg_proc p
+     where p.pronamespace = 'public'::regnamespace and p.prokind = 'f'
+       and has_function_privilege('anon', p.oid, 'execute') order by 1`
+  );
+  if (anonCallable.rows.length) fail(`functions callable by signed-out users: ${anonCallable.rows.map((r) => r.proname).join(", ")}`);
+  else pass("no public function is callable by signed-out users");
+
   // ---- 6. generated types vs the live schema ----
   const tables = await db.query<{ relname: string }>(
     `select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace

@@ -22,7 +22,6 @@
     "test:all": "tsx scripts/run-all-tests.ts"
   },
   "dependencies": {
-    "@google/genai": "^2.24.0",
     "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-direction": "^1.1.2",
     "@supabase/ssr": "^0.12.0",
@@ -36,7 +35,7 @@
     "html5-qrcode": "^2.3.8",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.23.0",
-    "next": "16.2.10",
+    "next": "^16.3.8",
     "next-intl": "^4.13.1",
     "next-themes": "^0.4.6",
     "papaparse": "^5.5.4",
@@ -63,7 +62,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "^16.3.8",
     "eslint-config-prettier": "^10.1.8",
     "fake-indexeddb": "^6.2.5",
     "prettier": "^3.9.4",
