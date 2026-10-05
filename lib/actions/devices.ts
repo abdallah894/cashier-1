@@ -13,6 +13,7 @@ import {
   saveDeviceSchema,
 } from "@/lib/validation/devices";
 import type { ActionResult } from "./result";
+import { requireAdminAction } from "./guard";
 
 function deviceError(message: string): string {
   if (message.includes("admin only")) return "notAuthorized";
@@ -124,6 +125,8 @@ export async function completeDrawerOpening(input: unknown): Promise<ActionResul
 }
 
 export async function saveDevice(input: unknown): Promise<ActionResult<{ id: string }>> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = saveDeviceSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const supabase = await createClient();

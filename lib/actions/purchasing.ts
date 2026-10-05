@@ -11,6 +11,7 @@ import {
   updateSupplierSchema,
 } from "@/lib/validation/purchasing";
 import type { ActionResult } from "./result";
+import { requireAdminAction } from "./guard";
 
 function purchasingError(message: string): string {
   if (message.includes("admin only") || message.includes("capability required")) return "notAuthorized";
@@ -33,6 +34,8 @@ function revalidate(poId?: string) {
 }
 
 export async function createSupplier(input: unknown): Promise<ActionResult<{ id: string }>> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = supplierSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const supabase = await createClient();
@@ -54,6 +57,8 @@ export async function createSupplier(input: unknown): Promise<ActionResult<{ id:
 }
 
 export async function updateSupplier(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = updateSupplierSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const supabase = await createClient();
@@ -79,6 +84,8 @@ export async function updateSupplier(input: unknown): Promise<ActionResult> {
 }
 
 export async function createPurchaseOrder(input: unknown): Promise<ActionResult<{ poId: string }>> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = createPurchaseOrderSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const supabase = await createClient();
@@ -112,14 +119,20 @@ async function transition(
 }
 
 export async function placePurchaseOrder(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   return transition(input, "place_purchase_order");
 }
 
 export async function cancelPurchaseOrder(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   return transition(input, "cancel_purchase_order");
 }
 
 export async function closePurchaseOrder(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   return transition(input, "close_purchase_order");
 }
 

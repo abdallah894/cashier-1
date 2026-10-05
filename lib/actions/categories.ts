@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { routing } from "@/i18n/routing";
 import { categoryInputSchema } from "@/lib/validation/product";
 import { mapDbError, type ActionResult } from "./result";
+import { requireAdminAction } from "./guard";
 
 function revalidateCategories() {
   for (const locale of routing.locales) {
@@ -14,6 +15,8 @@ function revalidateCategories() {
 }
 
 export async function createCategory(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = categoryInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
 
@@ -26,6 +29,8 @@ export async function createCategory(input: unknown): Promise<ActionResult> {
 }
 
 export async function updateCategory(id: string, input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = categoryInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
 
@@ -42,6 +47,8 @@ export async function updateCategory(id: string, input: unknown): Promise<Action
 }
 
 export async function deleteCategory(id: string): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const supabase = await createClient();
   // products.category_id is ON DELETE SET NULL — products survive.
   const { error, count } = await supabase

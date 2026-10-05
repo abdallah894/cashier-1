@@ -8,6 +8,7 @@ import { getCategories } from "@/lib/supabase/queries/categories";
 import { validateCsvRow, type RawCsvRow, type RowIssue } from "@/lib/validation/import";
 import { mapDbError, type ActionResult } from "./result";
 import type { ProductInput } from "@/lib/validation/product";
+import { requireAdminAction } from "./guard";
 
 export type ImportRowResult = {
   /** 1-based data row number (matching the preview) */
@@ -25,6 +26,8 @@ export type ImportSummary = {
 const MAX_ROWS = 500;
 
 export async function importProducts(rows: RawCsvRow[]): Promise<ActionResult<ImportSummary>> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   if (!Array.isArray(rows) || rows.length === 0) return { ok: false, error: "emptyFile" };
   if (rows.length > MAX_ROWS) return { ok: false, error: "tooManyRows" };
 

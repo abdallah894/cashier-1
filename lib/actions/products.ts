@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { routing } from "@/i18n/routing";
 import { productInputSchema, stockAdjustmentSchema } from "@/lib/validation/product";
 import { mapDbError, type ActionResult } from "./result";
+import { requireAdminAction } from "./guard";
 
 function revalidateProducts(id?: string) {
   for (const locale of routing.locales) {
@@ -14,6 +15,8 @@ function revalidateProducts(id?: string) {
 }
 
 export async function createProduct(input: unknown): Promise<ActionResult<{ id: string }>> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = productInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
 
@@ -26,6 +29,8 @@ export async function createProduct(input: unknown): Promise<ActionResult<{ id: 
 }
 
 export async function updateProduct(id: string, input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = productInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
 
@@ -43,6 +48,8 @@ export async function updateProduct(id: string, input: unknown): Promise<ActionR
 }
 
 export async function deleteProduct(id: string): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const supabase = await createClient();
   const { error, count } = await supabase.from("products").delete({ count: "exact" }).eq("id", id);
   // FK restrict from sale_items/stock_movements → suggest deactivating

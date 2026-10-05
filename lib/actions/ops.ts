@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { closeDaySchema, handleAlertSchema, productSupplierSchema, storeSettingsSchema } from "@/lib/validation/ops";
 import type { ActionResult } from "./result";
+import { requireAdminAction } from "./guard";
 
 function opsError(message: string): string {
   if (message.includes("admin only") || message.includes("capability required")) return "notAuthorized";
@@ -26,6 +27,8 @@ function revalidate() {
 }
 
 export async function closeBusinessDay(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = closeDaySchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const supabase = await createClient();
@@ -36,6 +39,8 @@ export async function closeBusinessDay(input: unknown): Promise<ActionResult> {
 }
 
 export async function updateStoreSettings(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = storeSettingsSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const v = parsed.data;
@@ -70,6 +75,8 @@ export async function handleReorderAlert(input: unknown): Promise<ActionResult> 
 }
 
 export async function setProductSupplier(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = productSupplierSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const v = parsed.data;

@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { createPromotionSchema, previewPromotionsSchema, togglePromotionSchema } from "@/lib/validation/promotions";
 import type { ActionResult } from "./result";
+import { requireAdminAction } from "./guard";
 
 export type PromotionPreview = {
   /** discount per cart line, aligned with the submitted items */
@@ -53,6 +54,8 @@ export async function previewPromotions(input: unknown): Promise<ActionResult<Pr
 }
 
 export async function createPromotion(input: unknown): Promise<ActionResult<{ id: string }>> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = createPromotionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const v = parsed.data;
@@ -84,6 +87,8 @@ export async function createPromotion(input: unknown): Promise<ActionResult<{ id
 }
 
 export async function setPromotionActive(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = togglePromotionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const supabase = await createClient();

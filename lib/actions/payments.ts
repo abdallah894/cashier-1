@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { confirmPaymentSchema, failPaymentSchema, resolvePaymentSchema } from "@/lib/validation/payments";
 import type { ActionResult } from "./result";
+import { requireAdminAction } from "./guard";
 
 function paymentError(message: string): string {
   if (message.includes("admin only") || message.includes("not yours")) return "notAuthorized";
@@ -53,6 +54,8 @@ export async function failPayment(input: unknown): Promise<ActionResult> {
 
 /** Admin closes out an exception (for example an orphan charge refunded on the terminal) with a note. */
 export async function resolvePayment(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = resolvePaymentSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const supabase = await createClient();

@@ -10,6 +10,7 @@ import {
   stocktakeIdSchema,
 } from "@/lib/validation/stocktake";
 import type { ActionResult } from "./result";
+import { requireAdminAction } from "./guard";
 
 function stocktakeError(message: string): string {
   if (message.includes("capability required") || message.includes("admin only")) return "notAuthorized";
@@ -80,6 +81,8 @@ export async function submitStocktake(input: unknown): Promise<ActionResult> {
 }
 
 export async function reopenStocktake(input: unknown): Promise<ActionResult> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   return transition(input, "reopen_stocktake");
 }
 
@@ -88,6 +91,8 @@ export async function cancelStocktake(input: unknown): Promise<ActionResult> {
 }
 
 export async function approveStocktake(input: unknown): Promise<ActionResult<{ adjusted: number }>> {
+  const denied = await requireAdminAction();
+  if (denied) return denied;
   const parsed = approveStocktakeSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalidInput" };
   const supabase = await createClient();
