@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { routing } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
+import { log } from "@/lib/observability/log";
+import { recordOpsEvent } from "@/lib/ops/events";
 import { returnInputSchema } from "@/lib/validation/return";
 import type { ActionResult } from "@/lib/actions/result";
 
@@ -35,7 +37,14 @@ export async function submitReturn(
     p_restock: parsed.data.restock,
     p_approval_id: parsed.data.approvalId ?? null,
   });
-  if (error || !data?.[0]) return { ok: false, error: returnError(error?.message ?? "") };
+  if (error || !data?.[0]) {
+    const mapped = returnError(error?.message ?? "");
+    if (mapped === "returnFailed") {
+      log.error("return_failed", { code: error?.code, message: error?.message });
+      await recordOpsEvent("rpc_failed", { rpc: "create_return", code: error?.code ?? "unknown" });
+    }
+    return { ok: false, error: mapped };
+  }
 
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}/receipts/${parsed.data.saleId}`);

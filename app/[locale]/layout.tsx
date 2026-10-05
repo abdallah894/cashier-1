@@ -5,7 +5,6 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { routing, getDirection } from "@/i18n/routing";
 import { Providers } from "@/components/providers";
-import { ChatWidget } from "@/components/chat-widget";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -79,7 +78,6 @@ export default async function LocaleLayout({
         <NextIntlClientProvider>
           <Providers dir={dir}>
             {children}
-            <ChatWidget />
           </Providers>
         </NextIntlClientProvider>
       </body>

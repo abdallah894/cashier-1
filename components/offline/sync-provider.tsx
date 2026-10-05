@@ -9,6 +9,8 @@ import { recoverStuck } from "@/lib/offline/outbox";
 import { refreshOfflineData } from "@/lib/offline/register-data";
 import { submitQueuedSale } from "@/lib/offline/submit";
 import { drainOutbox } from "@/lib/offline/sync";
+import { reportSyncBacklog } from "@/lib/actions/ops-health";
+import { countByStatus } from "@/lib/offline/outbox";
 
 const SYNC_INTERVAL_MS = 30_000;
 const CATALOG_INTERVAL_MS = 10 * 60_000;
@@ -23,10 +25,26 @@ export function SyncProvider({ userId }: { userId: string }) {
   useEffect(() => {
     const db = getOfflineDb();
     let cancelled = false;
+    let lastReport = "";
+
+    // tell the server how big the offline queue is, so a stuck backlog alerts someone
+    async function report() {
+      if (!navigator.onLine) return;
+      const counts = await countByStatus(db, userId);
+      const queued = counts.queued + counts.syncing;
+      const oldest = (await db.outbox.where("status").anyOf("queued", "syncing").toArray()).filter((row) => row.userId === userId).map((row) => Date.parse(row.createdAt));
+      const oldestAgeSeconds = oldest.length ? Math.max(0, Math.round((Date.now() - Math.min(...oldest)) / 1000)) : 0;
+      const signature = `${queued}:${counts.rejected}`;
+      // nothing to say while the queue is empty and was already reported empty
+      if (signature === "0:0" && lastReport === "0:0") return;
+      lastReport = signature;
+      await reportSyncBacklog({ queued, rejected: counts.rejected, oldestAgeSeconds }).catch(() => undefined);
+    }
 
     async function sync() {
       if (!navigator.onLine) return;
       const result = await drainOutbox(db, userId, submitQueuedSale);
+      await report();
       if (cancelled) return;
       if (result.synced > 0) {
         toast.success(t("syncedToast", { count: result.synced }));
@@ -55,11 +73,13 @@ export function SyncProvider({ userId }: { userId: string }) {
     };
     window.addEventListener("online", onOnline);
     const syncTimer = setInterval(() => void sync(), SYNC_INTERVAL_MS);
+    const reportTimer = setInterval(() => void report(), 60_000);
     const catalogTimer = setInterval(() => void refreshCatalog(), CATALOG_INTERVAL_MS);
     return () => {
       cancelled = true;
       window.removeEventListener("online", onOnline);
       clearInterval(syncTimer);
+      clearInterval(reportTimer);
       clearInterval(catalogTimer);
     };
   }, [userId, router, t]);

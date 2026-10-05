@@ -886,6 +886,40 @@ export type Database = {
         Update: { [_ in never]: never }
         Relationships: []
       }
+      ops_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          detail: Json
+          id: string
+          kind: string
+          severity: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      backup_runs: {
+        Row: {
+          created_at: string
+          detail: string | null
+          finished_at: string
+          id: string
+          location: string | null
+          size_bytes: number | null
+          started_at: string | null
+          status: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      cash_drawer_settings: {
+        Row: { id: boolean; updated_at: string; variance_approval_threshold: number | null }
+        Insert: { id?: boolean; variance_approval_threshold?: number | null }
+        Update: { id?: boolean; variance_approval_threshold?: number | null }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           created_at: string
@@ -939,6 +973,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      evaluate_promotions: {
+        Args: { p_codes?: string[]; p_customer_id?: string; p_lines: Json; p_now?: string }
+        Returns: { discount: number; line_idx: number; promotion_id: string }[]
+      }
+      consume_rate_limit: {
+        Args: { p_limit: number; p_scope: string; p_window_seconds: number }
+        Returns: { allowed: boolean; remaining: number; retry_after_seconds: number }[]
+      }
+      record_ops_event: { Args: { p_detail?: Json; p_kind: string; p_severity: string }; Returns: undefined }
+      report_client_health: { Args: { p_oldest_age_seconds: number; p_queued: number; p_rejected: number }; Returns: undefined }
+      record_backup_run: {
+        Args: { p_detail: string | null; p_location: string | null; p_size_bytes: number | null; p_started_at: string | null; p_status: string }
+        Returns: undefined
+      }
+      ops_alerts: {
+        Args: Record<PropertyKey, never>
+        Returns: { alert: string; detail: string; severity: string; since: string | null }[]
+      }
+      verify_database_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: { check_name: string; detail: string; ok: boolean }[]
+      }
       store_tz: { Args: Record<PropertyKey, never>; Returns: string }
       business_day: { Args: { ts: string }; Returns: string }
       business_day_range: {

@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { routing } from "@/i18n/routing";
 import { checkoutSchema } from "@/lib/validation/sale";
+import { log } from "@/lib/observability/log";
+import { recordOpsEvent } from "@/lib/ops/events";
 import type { ActionResult } from "./result";
 
 export type SaleReceipt = {
@@ -65,23 +67,40 @@ export async function createSale(input: unknown): Promise<ActionResult<SaleRecei
   if (shift.closed_at && !parsed.data.idempotencyKey) return { ok: false, error: "shiftClosed" };
 
   // ONE transaction server-side: sale + snapshot items + stock + movements.
-  const { data, error } = await supabase.rpc("create_sale", {
-    p_items: parsed.data.items,
-    p_payment_method: parsed.data.payment_method,
-    p_shift_id: shift.id,
-    p_amount_tendered:
-      parsed.data.payment_method === "cash" ? (parsed.data.amount_tendered ?? undefined) : undefined,
-    p_approval_id: parsed.data.approvalId,
-    p_idempotency_key: parsed.data.idempotencyKey,
-    p_client_sold_at: parsed.data.soldAt,
-    p_customer_id: parsed.data.customerId,
-    p_card_reference: parsed.data.payment_method === "card" ? parsed.data.cardReference : undefined,
-    p_promotion_codes: parsed.data.promotionCodes,
-    p_apply_promotions: parsed.data.applyPromotions,
-    p_expected_total: parsed.data.expectedTotal,
-  });
+  let rpc;
+  try {
+    rpc = await supabase.rpc("create_sale", {
+      p_items: parsed.data.items,
+      p_payment_method: parsed.data.payment_method,
+      p_shift_id: shift.id,
+      p_amount_tendered:
+        parsed.data.payment_method === "cash" ? (parsed.data.amount_tendered ?? undefined) : undefined,
+      p_approval_id: parsed.data.approvalId,
+      p_idempotency_key: parsed.data.idempotencyKey,
+      p_client_sold_at: parsed.data.soldAt,
+      p_customer_id: parsed.data.customerId,
+      p_card_reference: parsed.data.payment_method === "card" ? parsed.data.cardReference : undefined,
+      p_promotion_codes: parsed.data.promotionCodes,
+      p_apply_promotions: parsed.data.applyPromotions,
+      p_expected_total: parsed.data.expectedTotal,
+    });
+  } catch (error) {
+    // the call itself failed (network, timeout): a system failure, not a business rejection
+    log.error("checkout_rpc_exception", { error });
+    await recordOpsEvent("checkout_failed", { code: "rpc_exception" }, "critical");
+    return { ok: false, error: "checkoutFailed" };
+  }
+  const { data, error } = rpc;
 
-  if (error) return { ok: false, error: mapSaleError(error.message) };
+  if (error) {
+    const mapped = mapSaleError(error.message);
+    if (mapped === "checkoutFailed") {
+      // unknown database failure (business rejections such as insufficient stock are not alerts)
+      log.error("checkout_failed", { code: error.code, message: error.message });
+      await recordOpsEvent("checkout_failed", { code: error.code ?? "unknown" }, "critical");
+    }
+    return { ok: false, error: mapped };
+  }
   const row = Array.isArray(data) ? data[0] : data;
   if (!row) return { ok: false, error: "checkoutFailed" };
 

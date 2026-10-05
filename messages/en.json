@@ -1267,5 +1267,25 @@
       "openOrder": "Open order",
       "empty": "No low-stock alerts."
     }
+  },
+  "assistant": {
+    "title": "Assistant",
+    "advisory": "Advisory only. It can read stock, prices and sales; it cannot change anything. Check important answers in the POS.",
+    "hint": "Ask about stock, prices, or today's sales.",
+    "thinking": "Thinking...",
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "open": "Open assistant",
+    "close": "Close assistant",
+    "errors": {
+      "signedOut": "Please sign in again to use the assistant.",
+      "forbidden": "Your account cannot use the assistant.",
+      "tooLong": "That message is too long. Shorten it and try again.",
+      "rateLimited": "You are asking too fast. Try again in {seconds} seconds.",
+      "quota": "The AI service has reached its usage limit. Try again later. The register and everything else keep working normally.",
+      "misconfigured": "The assistant is not configured. Ask an admin to check the AI keys. The register keeps working normally.",
+      "unavailable": "The assistant is unavailable right now. The register and everything else keep working normally.",
+      "network": "Could not reach the assistant. Check the connection. The register is not affected."
+    }
   }
 }

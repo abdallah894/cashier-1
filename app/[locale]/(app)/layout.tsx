@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { NetworkIndicator } from "@/components/layout/network-indicator";
 import { SyncProvider } from "@/components/offline/sync-provider";
+import { ChatWidget } from "@/components/chat-widget";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
 import { getCurrentProfile } from "@/lib/supabase/queries/profiles";
@@ -42,6 +43,7 @@ export default async function AppLayout({
         </header>
         <main className="flex flex-1 flex-col p-6">{children}</main>
       </SidebarInset>
+      <ChatWidget />
     </SidebarProvider>
   );
 }

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { routing } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
+import { log } from "@/lib/observability/log";
+import { recordOpsEvent } from "@/lib/ops/events";
 import { createHash } from "node:crypto";
 import { openShiftSchema, closeShiftSchema } from "@/lib/validation/shift";
 import type { ActionResult } from "./result";
@@ -70,6 +72,8 @@ export async function closeShift(input: unknown): Promise<ActionResult<{ shiftId
     if (error.message.includes("manager approval")) {
       return { ok: false, error: "managerApprovalRequired" };
     }
+    log.error("shift_close_failed", { code: error.code, message: error.message });
+    await recordOpsEvent("rpc_failed", { rpc: "close_shift", code: error.code ?? "unknown" });
     return { ok: false, error: "shiftCloseFailed" };
   }
 

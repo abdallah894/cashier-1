@@ -1,4 +1,4 @@
-import { createPosTools } from "../lib/gemini/pos-tools";
+import { createPosTools } from "../lib/ai/pos-tools";
 
 const tools = createPosTools({
   async findActiveProducts(query) {
