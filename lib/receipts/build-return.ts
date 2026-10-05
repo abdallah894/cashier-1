@@ -4,7 +4,7 @@ export type ReturnReceiptSource = {
   id: string;
   return_number: number;
   refund_total: number;
-  refund_tender: "cash" | "card";
+  refund_tender: "cash" | "card" | "split";
   restock: boolean;
   reason: string;
   created_at: string;
@@ -25,7 +25,7 @@ export type ReturnReceiptData = {
   returnNumber: number;
   originalSaleNumber: number;
   refundTotal: number;
-  refundTender: "cash" | "card";
+  refundTender: "cash" | "card" | "split";
   restocked: boolean;
   reason: string;
   createdAt: string;

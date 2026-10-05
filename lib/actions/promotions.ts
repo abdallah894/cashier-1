@@ -31,8 +31,9 @@ export async function previewPromotions(input: unknown): Promise<ActionResult<Pr
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("preview_promotions", {
     p_lines: parsed.data.items,
-    p_customer_id: parsed.data.customerId,
-    p_codes: parsed.data.codes,
+    // RPC arguments must always be sent; omitted (undefined) ones make PostgREST reject the call
+    p_customer_id: (parsed.data.customerId ?? null) as string,
+    p_codes: parsed.data.codes ?? [],
   });
   if (error) return { ok: false, error: promotionError(error.message) };
   const perLine = parsed.data.items.map(() => 0);

@@ -35,7 +35,7 @@ export async function submitReturn(
     p_refund_tender: parsed.data.refundTender,
     p_reason: parsed.data.reason,
     p_restock: parsed.data.restock,
-    p_approval_id: parsed.data.approvalId ?? null,
+    p_approval_id: parsed.data.approvalId ?? undefined,
   });
   if (error || !data?.[0]) {
     const mapped = returnError(error?.message ?? "");

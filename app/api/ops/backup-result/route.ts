@@ -27,10 +27,11 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   const { error } = await admin.rpc("record_backup_run", {
     p_status: parsed.data.status,
-    p_size_bytes: parsed.data.sizeBytes ?? null,
+    // generated types cannot express nullable arguments; the function accepts null for these three
+    p_size_bytes: (parsed.data.sizeBytes ?? null) as number,
     p_location: parsed.data.location ?? "unspecified",
-    p_detail: parsed.data.detail ?? null,
-    p_started_at: parsed.data.startedAt ?? null,
+    p_detail: (parsed.data.detail ?? null) as string,
+    p_started_at: (parsed.data.startedAt ?? null) as string,
   });
   if (error) {
     log.error("backup_result_not_recorded", { reason: error.message });

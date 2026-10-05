@@ -47,7 +47,7 @@ export async function closeShift(input: unknown): Promise<ActionResult<{ shiftId
   let { error } = await supabase.rpc("close_shift", {
     p_shift_id: parsed.data.shiftId,
     p_counted: parsed.data.counted,
-    p_approval_id: parsed.data.approvalId ?? null,
+    p_approval_id: parsed.data.approvalId ?? undefined,
   });
   if (error?.message.includes("manager approval") && parsed.data.managerPin) {
     const [{ data: shift }, { data: events }] = await Promise.all([
