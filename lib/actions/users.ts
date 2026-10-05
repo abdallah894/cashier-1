@@ -9,6 +9,7 @@ import {
   setStaffPinSchema,
   setStaffRoleSchema,
   toggleStaffActiveSchema,
+  setStaffCapabilitiesSchema,
 } from "@/lib/validation/user";
 import type { ActionResult } from "./result";
 
@@ -113,6 +114,28 @@ export async function toggleStaffActive(input: unknown): Promise<ActionResult<vo
     .eq("id", parsed.data.userId);
   if (error) return { ok: false, error: "unknown" };
 
+  revalidateUsers();
+  return { ok: true, data: undefined };
+}
+
+/** Replaces explicit grants; admins inherit all capabilities and need no rows. */
+export async function setStaffCapabilities(input: unknown): Promise<ActionResult<void>> {
+  const adminId = await currentAdminId();
+  if (!adminId) return { ok: false, error: "notAuthorized" };
+  const parsed = setStaffCapabilitiesSchema.safeParse(input);
+  if (!parsed.success || parsed.data.userId === adminId) return { ok: false, error: "invalidInput" };
+  const admin = createAdminClient();
+  const { data: profile, error: profileError } = await admin
+    .from("profiles").select("role").eq("id", parsed.data.userId).single();
+  if (profileError || !profile || profile.role === "admin") return { ok: false, error: "invalidInput" };
+  const { error: deleteError } = await admin.from("staff_capabilities").delete().eq("staff_id", parsed.data.userId);
+  if (deleteError) return { ok: false, error: "unknown" };
+  if (parsed.data.capabilities.length) {
+    const { error } = await admin.from("staff_capabilities").insert(
+      parsed.data.capabilities.map((capability) => ({ staff_id: parsed.data.userId, capability, granted_by: adminId }))
+    );
+    if (error) return { ok: false, error: "unknown" };
+  }
   revalidateUsers();
   return { ok: true, data: undefined };
 }

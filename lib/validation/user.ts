@@ -29,3 +29,10 @@ export const toggleStaffActiveSchema = z.object({
   userId: z.uuid(),
   active: z.boolean(),
 });
+
+export const setStaffCapabilitiesSchema = z.object({
+  userId: z.uuid(),
+  capabilities: z.array(z.enum([
+    "return.approve", "cart.void", "discount.override", "stock.correct", "cash.drawer.adjust", "shift.close.override",
+  ])).max(6),
+});

@@ -12,7 +12,8 @@
     "categories": "Categories",
     "reports": "Reports",
     "shifts": "Shifts",
-    "users": "Users"
+    "users": "Users",
+    "audit": "Audit log"
   },
   "shell": {
     "toggleTheme": "Toggle theme",
@@ -349,6 +350,7 @@
     "activated": "Account activated",
     "created": "User created"
   },
+  "audit": { "title": "Audit log", "when": "When", "action": "Action", "target": "Target", "details": "Safe details", "empty": "No audit events yet." },
   "pinSwitch": {
     "title": "Switch cashier",
     "pinFor": "PIN for {name}",

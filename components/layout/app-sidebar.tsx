@@ -10,6 +10,7 @@ import {
   Store,
   ReceiptText,
   UsersRound,
+  ShieldCheck,
 } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection, type Locale } from "@/i18n/routing";
@@ -32,6 +33,7 @@ const navItems = [
   { key: "categories", href: "/categories", icon: Tags, adminOnly: true },
   { key: "reports", href: "/reports", icon: BarChart3, adminOnly: true },
   { key: "users", href: "/users", icon: UsersRound, adminOnly: true },
+  { key: "audit", href: "/audit", icon: ShieldCheck, adminOnly: true },
 ] as const;
 
 export function AppSidebar({ role }: { role: "admin" | "cashier" }) {
