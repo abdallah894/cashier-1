@@ -406,22 +406,22 @@
       "cancel": "Cancel",
       "saved": "Permissions saved for {name}.",
       "names": {
-        "return.approve": "Approve returns",
-        "cart.void": "Void carts without a manager",
-        "discount.override": "Give large discounts",
-        "stock.correct": "Count, correct and receive stock",
-        "cash.drawer.adjust": "Paid-in / paid-out / safe drops",
-        "shift.close.override": "Close shifts with variance",
-        "customer.manage": "View and manage customers"
+        "return_approve": "Approve returns",
+        "cart_void": "Void carts without a manager",
+        "discount_override": "Give large discounts",
+        "stock_correct": "Count, correct and receive stock",
+        "cash_drawer_adjust": "Paid-in / paid-out / safe drops",
+        "shift_close_override": "Close shifts with variance",
+        "customer_manage": "View and manage customers"
       },
       "hints": {
-        "return.approve": "Approves returns above the threshold.",
-        "cart.void": "Clearing a cart needs no manager PIN.",
-        "discount.override": "Discounts above the limit need no approval.",
-        "stock.correct": "Stocktakes, stock corrections and receiving purchase orders.",
-        "cash.drawer.adjust": "Records cash movements without a manager PIN.",
-        "shift.close.override": "Closes a shift even with a large cash variance.",
-        "customer.manage": "Customer list, purchase history, consent and erasure."
+        "return_approve": "Approves returns above the threshold.",
+        "cart_void": "Clearing a cart needs no manager PIN.",
+        "discount_override": "Discounts above the limit need no approval.",
+        "stock_correct": "Stocktakes, stock corrections and receiving purchase orders.",
+        "cash_drawer_adjust": "Records cash movements without a manager PIN.",
+        "shift_close_override": "Closes a shift even with a large cash variance.",
+        "customer_manage": "Customer list, purchase history, consent and erasure."
       }
     }
   },

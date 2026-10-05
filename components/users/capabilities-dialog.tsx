@@ -88,8 +88,8 @@ function CapabilitiesBody({ target, onClose }: { target: Target; onClose: () => 
         {CAPABILITIES.map((capability) => (
           <div key={capability} className="flex items-center justify-between gap-3 rounded-md border p-3">
             <Label htmlFor={`cap-${capability}`} className="grid gap-0.5">
-              <span>{t(`names.${capability}`)}</span>
-              <span className="text-muted-foreground text-xs font-normal">{t(`hints.${capability}`)}</span>
+              <span>{t(`names.${capability.replaceAll(".", "_")}`)}</span>
+              <span className="text-muted-foreground text-xs font-normal">{t(`hints.${capability.replaceAll(".", "_")}`)}</span>
             </Label>
             <Switch
               id={`cap-${capability}`}

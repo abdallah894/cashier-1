@@ -406,22 +406,22 @@
       "cancel": "إلغاء",
       "saved": "تم حفظ صلاحيات {name}.",
       "names": {
-        "return.approve": "اعتماد المرتجعات",
-        "cart.void": "تفريغ السلة بدون مدير",
-        "discount.override": "إعطاء خصومات كبيرة",
-        "stock.correct": "جرد وتصحيح واستلام المخزون",
-        "cash.drawer.adjust": "إيداع / سحب / إيداع بالخزنة",
-        "shift.close.override": "إغلاق الوردية مع فرق",
-        "customer.manage": "عرض وإدارة العملاء"
+        "return_approve": "اعتماد المرتجعات",
+        "cart_void": "تفريغ السلة بدون مدير",
+        "discount_override": "إعطاء خصومات كبيرة",
+        "stock_correct": "جرد وتصحيح واستلام المخزون",
+        "cash_drawer_adjust": "إيداع / سحب / إيداع بالخزنة",
+        "shift_close_override": "إغلاق الوردية مع فرق",
+        "customer_manage": "عرض وإدارة العملاء"
       },
       "hints": {
-        "return.approve": "يعتمد المرتجعات فوق الحد.",
-        "cart.void": "تفريغ السلة بدون رمز PIN للمدير.",
-        "discount.override": "الخصومات فوق الحد بدون موافقة.",
-        "stock.correct": "الجرد وتصحيح المخزون واستلام أوامر الشراء.",
-        "cash.drawer.adjust": "تسجيل حركات النقد بدون PIN للمدير.",
-        "shift.close.override": "إغلاق الوردية حتى مع فرق نقدي كبير.",
-        "customer.manage": "قائمة العملاء وسجل المشتريات والموافقة والحذف."
+        "return_approve": "يعتمد المرتجعات فوق الحد.",
+        "cart_void": "تفريغ السلة بدون رمز PIN للمدير.",
+        "discount_override": "الخصومات فوق الحد بدون موافقة.",
+        "stock_correct": "الجرد وتصحيح المخزون واستلام أوامر الشراء.",
+        "cash_drawer_adjust": "تسجيل حركات النقد بدون PIN للمدير.",
+        "shift_close_override": "إغلاق الوردية حتى مع فرق نقدي كبير.",
+        "customer_manage": "قائمة العملاء وسجل المشتريات والموافقة والحذف."
       }
     }
   },
