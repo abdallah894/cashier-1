@@ -468,6 +468,51 @@ export type Database = {
         Update: { actor_id?: string; amount?: number; created_at?: string; event_type?: "paid_in" | "paid_out" | "safe_drop" | "cash_refund" | "cash_sale"; id?: string; reason?: string; return_id?: string | null; sale_id?: string | null; shift_id?: string }
         Relationships: []
       }
+      stocktakes: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          category_id: string | null
+          category_name_ar: string | null
+          category_name_en: string | null
+          created_at: string
+          created_by: string
+          id: string
+          note: string | null
+          scope: Database["public"]["Enums"]["stocktake_scope"]
+          status: Database["public"]["Enums"]["stocktake_status"]
+          stocktake_number: number
+          submitted_at: string | null
+          submitted_by: string | null
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      stocktake_items: {
+        Row: {
+          barcode: string
+          counted_at: string | null
+          counted_by: string | null
+          counted_qty: number | null
+          current_qty_at_approval: number | null
+          expected_qty: number
+          name_ar: string
+          name_en: string
+          applied_delta: number | null
+          product_id: string
+          reason: string | null
+          resolution: "use_count" | "keep_current" | null
+          stocktake_id: string
+          unit: Database["public"]["Enums"]["product_unit"]
+          unit_cost: number
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           created_at: string
@@ -521,6 +566,48 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_stocktake: {
+        Args: {
+          p_category_id?: string
+          p_note?: string
+          p_product_ids?: string[]
+          p_scope: Database["public"]["Enums"]["stocktake_scope"]
+        }
+        Returns: string
+      }
+      record_stocktake_counts: {
+        Args: { p_counts: Json; p_stocktake_id: string }
+        Returns: number
+      }
+      submit_stocktake: { Args: { p_stocktake_id: string }; Returns: undefined }
+      reopen_stocktake: { Args: { p_stocktake_id: string }; Returns: undefined }
+      cancel_stocktake: { Args: { p_stocktake_id: string }; Returns: undefined }
+      approve_stocktake: {
+        Args: { p_resolutions?: Json; p_stocktake_id: string }
+        Returns: number
+      }
+      stocktake_conflicts: {
+        Args: { p_stocktake_id: string }
+        Returns: { counted_qty: number; current_qty: number; expected_qty: number; product_id: string }[]
+      }
+      stocktake_variance_report: {
+        Args: { p_stocktake_id: string }
+        Returns: {
+          barcode: string
+          conflict: boolean
+          counted_qty: number
+          current_qty: number
+          expected_qty: number
+          name_ar: string
+          name_en: string
+          product_id: string
+          reason: string | null
+          unit: Database["public"]["Enums"]["product_unit"]
+          unit_cost: number
+          variance_qty: number
+          variance_value: number
+        }[]
+      }
       adjust_stock: {
         Args: {
           p_note?: string
@@ -675,6 +762,8 @@ export type Database = {
       payment_method: "cash" | "card"
       product_unit: "piece" | "kg"
       stock_movement_reason: "sale" | "received" | "damaged" | "correction" | "return"
+      stocktake_scope: "full" | "cycle"
+      stocktake_status: "open" | "submitted" | "approved" | "cancelled"
       user_role: "admin" | "cashier"
     }
     CompositeTypes: {
@@ -807,6 +896,8 @@ export const Constants = {
       payment_method: ["cash", "card"],
       product_unit: ["piece", "kg"],
       stock_movement_reason: ["sale", "received", "damaged", "correction", "return"],
+      stocktake_scope: ["full", "cycle"],
+      stocktake_status: ["open", "submitted", "approved", "cancelled"],
       user_role: ["admin", "cashier"],
     },
   },
