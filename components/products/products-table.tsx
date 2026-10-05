@@ -25,6 +25,8 @@ function ProductThumb({ src }: { src: string }) {
 }
 
 export function ProductsTable({ rows }: { rows: ProductWithCategory[] }) {
+  // TanStack Table returns functions that change identity; the React Compiler must not memoize this component
+  "use no memo";
   const t = useTranslations("products");
   const tCommon = useTranslations("common");
   const locale = useLocale();
