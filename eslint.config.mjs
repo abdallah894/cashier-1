@@ -21,6 +21,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Serwist-generated service worker bundle (built from app/sw.ts).
     "public/sw.js",
+    // native shells have their own tooling and generated code
+    "desktop/**",
+    "mobile/**",
     // legacy CommonJS test script
     "scripts/*.cjs",
   ]),

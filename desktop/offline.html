@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cachier POS</title>
+<style>
+  body { font: 16px system-ui, sans-serif; display: grid; place-items: center; height: 100vh; margin: 0; background: #18181b; color: #fafafa; text-align: center; }
+  main { max-width: 28rem; padding: 1.5rem; }
+  button { font: inherit; padding: .6rem 1.4rem; border: 0; border-radius: .5rem; background: #fafafa; color: #18181b; cursor: pointer; }
+  p { color: #a1a1aa; line-height: 1.5; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cannot reach the POS</h1>
+  <h1 dir="rtl" lang="ar">تعذر الوصول إلى النظام</h1>
+  <p>Check the network cable or Wi-Fi, then try again. Sales already made are saved on this device and sync when the connection returns.</p>
+  <p dir="rtl" lang="ar">تحقق من الاتصال ثم حاول مرة أخرى. المبيعات المسجلة محفوظة على هذا الجهاز وستُرسل عند عودة الاتصال.</p>
+  <button id="retry">Retry / إعادة المحاولة</button>
+</main>
+<script>document.getElementById("retry").addEventListener("click", function () { location.href = new URLSearchParams(location.search).get("target") || "/"; });</script>
+</body>
+</html>

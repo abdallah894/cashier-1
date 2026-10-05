@@ -41,7 +41,7 @@ export default async function AppLayout({
             <UserMenu name={profile.full_name} role={profile.role} />
           </div>
         </header>
-        <main className="flex flex-1 flex-col p-6">{children}</main>
+        <main className="flex flex-1 flex-col p-3 sm:p-6">{children}</main>
       </SidebarInset>
       <ChatWidget />
     </SidebarProvider>

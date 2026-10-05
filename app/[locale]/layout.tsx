@@ -47,6 +47,8 @@ export async function generateMetadata({
 // viewport, not metadata).
 export const viewport: Viewport = {
   themeColor: "#18181b",
+  // draw under notches / rounded corners; pages add safe-area padding
+  viewportFit: "cover",
 };
 
 export default async function LocaleLayout({

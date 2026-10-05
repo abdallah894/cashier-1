@@ -1,0 +1,21 @@
+{
+  "appId": "com.cachier.pos",
+  "appName": "Cachier POS",
+  "webDir": "www",
+  "server": {
+    "url": "https://YOUR-POS-DOMAIN.example.com",
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "never",
+    "limitsNavigationsToAppBoundDomains": true
+  },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 800, "backgroundColor": "#18181b" },
+    "StatusBar": { "style": "DARK", "backgroundColor": "#18181b" }
+  }
+}

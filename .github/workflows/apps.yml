@@ -1,0 +1,67 @@
+name: Build apps
+
+# Manual: builds unsigned desktop installers and an Android debug APK that load
+# the deployed web app. Signing is configured separately (see docs/apps.md).
+on:
+  workflow_dispatch:
+    inputs:
+      app_url:
+        description: Production https URL of the web app
+        required: true
+
+jobs:
+  desktop:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set app URL
+        shell: bash
+        run: node -e "const f='desktop/app-config.json',c=require('./'+f);c.appUrl=process.env.APP_URL;require('fs').writeFileSync(f,JSON.stringify(c,null,2))"
+        env:
+          APP_URL: ${{ inputs.app_url }}
+      - run: npm install
+        working-directory: desktop
+      - run: npm run dist
+        working-directory: desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.os }}
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.dmg
+            desktop/dist/*.AppImage
+            desktop/dist/*.deb
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Set app URL
+        run: node -e "const f='mobile/capacitor.config.json',c=require('./'+f);c.server.url=process.env.APP_URL;require('fs').writeFileSync(f,JSON.stringify(c,null,2))"
+        env:
+          APP_URL: ${{ inputs.app_url }}
+      - run: npm install
+        working-directory: mobile
+      - run: npm run sync
+        working-directory: mobile
+      - run: ./gradlew assembleDebug
+        working-directory: mobile/android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: mobile/android/app/build/outputs/apk/debug/*.apk

@@ -1,0 +1,30 @@
+{
+  "name": "cachier-pos-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Desktop shell (Windows, macOS, Linux) for Cachier POS",
+  "author": "Cachier POS",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron . --dev",
+    "check": "node check-config.cjs",
+    "dist": "node check-config.cjs && electron-builder",
+    "dist:win": "node check-config.cjs && electron-builder --win",
+    "dist:mac": "node check-config.cjs && electron-builder --mac",
+    "dist:linux": "node check-config.cjs && electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.cachier.pos",
+    "productName": "Cachier POS",
+    "files": ["main.cjs", "preload.cjs", "offline.html", "app-config.json", "package.json"],
+    "directories": { "output": "dist", "buildResources": "build" },
+    "win": { "target": ["nsis"] },
+    "nsis": { "oneClick": false, "perMachine": true, "allowToChangeInstallationDirectory": true },
+    "mac": { "target": ["dmg"], "category": "public.app-category.business" },
+    "linux": { "target": ["AppImage", "deb"], "category": "Office" }
+  }
+}
