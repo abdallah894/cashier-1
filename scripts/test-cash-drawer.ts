@@ -16,6 +16,8 @@ async function main() {
   await asAdminService(db);
   await db.exec(`insert into public.products (barcode, name_ar, name_en, price, tax_rate, stock_qty, unit)
     values ('drawer-test', 'منتج', 'Product', 6300, 0, 10, 'piece')`);
+  await db.query(`insert into public.staff_capabilities (staff_id, capability, granted_by)
+    values ('${CASHIER}', 'cash.drawer.adjust', '${ADMIN}')`);
   const { rows: productRows } = await db.query<{ id: string }>("select id from public.products where barcode = 'drawer-test'");
   await asUser(db, CASHIER);
   await db.query(`select * from public.create_sale('[{"product_id":"${productRows[0].id}","qty":1}]'::jsonb, 'cash', '${shiftId}', 6300)`);

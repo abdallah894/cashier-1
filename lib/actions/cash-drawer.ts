@@ -15,8 +15,9 @@ export async function recordCashDrawerEvent(input: unknown): Promise<ActionResul
     p_type: parsed.data.type,
     p_amount: parsed.data.amount,
     p_reason: parsed.data.reason,
+    p_approval_id: parsed.data.approvalId || undefined,
   });
-  if (error) return { ok: false, error: error.message.includes("not your shift") ? "notAuthorized" : "unknown" };
+  if (error) return { ok: false, error: error.message.includes("not your shift") ? "notAuthorized" : error.message.includes("capability required") || error.message.includes("approval:") ? "managerApprovalRequired" : "unknown" };
   for (const locale of routing.locales) {
     revalidatePath(`/${locale}/shifts`);
     revalidatePath(`/${locale}/shifts/${parsed.data.shiftId}`);

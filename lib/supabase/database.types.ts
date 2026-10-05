@@ -514,6 +514,7 @@ export type Database = {
       adjust_stock: {
         Args: {
           p_note?: string
+          p_approval_id?: string
           p_product_id: string
           p_qty_change: number
           p_reason: Database["public"]["Enums"]["stock_movement_reason"]
@@ -540,7 +541,7 @@ export type Database = {
         }
       }
       record_cash_drawer_event: {
-        Args: { p_amount: number; p_reason: string; p_shift_id: string; p_type: "paid_in" | "paid_out" | "safe_drop" }
+        Args: { p_amount: number; p_approval_id?: string; p_reason: string; p_shift_id: string; p_type: "paid_in" | "paid_out" | "safe_drop" }
         Returns: Database["public"]["Tables"]["cash_drawer_events"]["Row"]
       }
       create_sale: {

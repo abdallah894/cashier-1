@@ -3,6 +3,7 @@ import { asAdminService, asUser, createTestDb, seedUser } from "./lib/pglite-db"
 const ADMIN = "00000000-0000-0000-0000-00000000000a";
 const CASHIER = "00000000-0000-0000-0000-00000000000b";
 const CASHIER2 = "00000000-0000-0000-0000-00000000000c";
+const PRODUCT = "00000000-0000-0000-0000-000000000101";
 
 let failures = 0;
 function check(name: string, condition: boolean, detail = "") {
@@ -27,6 +28,8 @@ async function main() {
   await seedUser(db, CASHIER2, "cashier2", "cashier");
   await asAdminService(db);
   await db.query(`select public.set_pin('${ADMIN}', '1234')`);
+  await db.query(`insert into public.products (id, barcode, name_ar, name_en, price, tax_rate, stock_qty, unit)
+    values ('${PRODUCT}', 'audit-100', 'منتج', 'Product', 1000, 0, 10, 'piece')`);
 
   await asUser(db, CASHIER);
   await expectError(
@@ -109,6 +112,42 @@ async function main() {
     `select metadata from public.audit_events where action = 'approval_created'`
   );
   check("approval audit metadata contains no PIN", !JSON.stringify(auditMetadata).includes("1234"));
+
+  await asUser(db, CASHIER2);
+  await expectError(
+    db.query(`select public.adjust_stock('${PRODUCT}', 1, 'correction', 'Count correction')`),
+    "capability required",
+    "cashier needs stock correction capability"
+  );
+  await asAdminService(db);
+  await db.query(`insert into public.staff_capabilities (staff_id, capability, granted_by)
+    values ('${CASHIER2}', 'stock.correct', '${ADMIN}')`);
+  await asUser(db, CASHIER2);
+  await db.query(`select public.adjust_stock('${PRODUCT}', 1, 'correction', 'Count correction')`);
+  await asAdminService(db);
+  const { rows: stockAudits } = await db.query<{ count: string }>(
+    `select count(*) from public.audit_events where action = 'stock_correction' and actor_id = '${CASHIER2}'`
+  );
+  check("authorized stock correction writes one audit event", Number(stockAudits[0].count) === 1);
+  await asUser(db, CASHIER2);
+  const { rows: shiftRows } = await db.query<{ id: string }>(
+    `insert into public.shifts (cashier_id, opening_float) values ('${CASHIER2}', 0) returning id`
+  );
+  await expectError(
+    db.query(`select public.record_cash_drawer_event('${shiftRows[0].id}', 'paid_in', 100, 'Float top-up')`),
+    "capability required",
+    "cashier needs cash drawer capability"
+  );
+  await asAdminService(db);
+  await db.query(`insert into public.staff_capabilities (staff_id, capability, granted_by)
+    values ('${CASHIER2}', 'cash.drawer.adjust', '${ADMIN}')`);
+  await asUser(db, CASHIER2);
+  await db.query(`select public.record_cash_drawer_event('${shiftRows[0].id}', 'paid_in', 100, 'Float top-up')`);
+  await asAdminService(db);
+  const { rows: drawerAudits } = await db.query<{ count: string }>(
+    `select count(*) from public.audit_events where action = 'cash_drawer_event' and actor_id = '${CASHIER2}'`
+  );
+  check("authorized drawer event writes one audit event", Number(drawerAudits[0].count) === 1);
 
   if (failures > 0) {
     console.error(`\n${failures} check(s) failing`);

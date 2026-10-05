@@ -179,3 +179,78 @@ revoke all on public.manager_approvals from anon, authenticated;
 grant execute on function public.create_manager_approval(text, text, text) to authenticated, service_role;
 revoke all on function public.consume_manager_approval(uuid, text, text) from public, anon;
 grant execute on function public.consume_manager_approval(uuid, text, text) to authenticated, service_role;
+
+drop function public.adjust_stock(uuid, numeric, public.stock_movement_reason, text);
+create or replace function public.adjust_stock(
+  p_product_id uuid,
+  p_qty_change numeric,
+  p_reason public.stock_movement_reason,
+  p_note text default null,
+  p_approval_id uuid default null
+)
+returns numeric
+language plpgsql security definer set search_path = ''
+as $$
+declare v_product public.products%rowtype; v_new_qty numeric; v_actor_id uuid := auth.uid(); v_approved_by uuid; v_hash text;
+begin
+  if p_reason in ('sale', 'return') then raise exception 'adjust_stock: reserved movement reason'; end if;
+  if p_qty_change is null or p_qty_change = 0 then raise exception 'adjust_stock: qty_change must be non-zero'; end if;
+  v_hash := encode(extensions.digest('stock_correction|' || p_product_id::text || '|' || p_qty_change::text || '|' || p_reason::text || '|' || coalesce(btrim(p_note), ''), 'sha256'), 'hex');
+  if not public.has_capability('stock.correct') then
+    if p_approval_id is null then raise exception 'adjust_stock: capability required'; end if;
+    v_approved_by := public.consume_manager_approval(p_approval_id, 'stock_correction', v_hash);
+  end if;
+  select * into v_product from public.products where id = p_product_id for update;
+  if not found then raise exception 'adjust_stock: product % not found', p_product_id; end if;
+  if v_product.unit = 'piece' and p_qty_change <> trunc(p_qty_change) then
+    raise exception 'adjust_stock: % (%) is counted per piece — change must be a whole number', v_product.name_en, v_product.barcode;
+  end if;
+  if v_product.stock_qty + p_qty_change < 0 then
+    raise exception 'adjust_stock: would make stock negative for % (%): have %, change %', v_product.name_en, v_product.barcode, v_product.stock_qty, p_qty_change;
+  end if;
+  update public.products set stock_qty = stock_qty + p_qty_change where id = p_product_id returning stock_qty into v_new_qty;
+  insert into public.stock_movements (product_id, qty_change, reason, reference_id, note, created_by)
+  values (p_product_id, p_qty_change, p_reason, null, p_note, v_actor_id);
+  perform public.write_audit_event(v_actor_id, v_approved_by, 'stock_correction', 'product', p_product_id,
+    jsonb_build_object('signed_qty_change', p_qty_change, 'reason_length', length(coalesce(p_note, ''))), null);
+  return v_new_qty;
+end;
+$$;
+revoke execute on function public.adjust_stock(uuid, numeric, public.stock_movement_reason, text, uuid) from public, anon;
+grant execute on function public.adjust_stock(uuid, numeric, public.stock_movement_reason, text, uuid) to authenticated, service_role;
+
+drop function public.record_cash_drawer_event(uuid, public.cash_drawer_event_type, numeric, text);
+create or replace function public.record_cash_drawer_event(
+  p_shift_id uuid,
+  p_type public.cash_drawer_event_type,
+  p_amount numeric,
+  p_reason text,
+  p_approval_id uuid default null
+)
+returns public.cash_drawer_events
+language plpgsql security definer set search_path = ''
+as $$
+declare v_shift public.shifts%rowtype; v_event public.cash_drawer_events%rowtype; v_amount numeric; v_actor_id uuid := auth.uid(); v_approved_by uuid; v_hash text;
+begin
+  if p_type not in ('paid_in', 'paid_out', 'safe_drop') then raise exception 'cash drawer: invalid manual event type'; end if;
+  if p_amount is null or p_amount <= 0 then raise exception 'cash drawer: amount must be positive'; end if;
+  if p_reason is null or length(btrim(p_reason)) = 0 then raise exception 'cash drawer: reason is required'; end if;
+  v_hash := encode(extensions.digest('cash_drawer_event|' || p_shift_id::text || '|' || p_type::text || '|' || p_amount::text || '|' || btrim(p_reason), 'sha256'), 'hex');
+  if not public.has_capability('cash.drawer.adjust') then
+    if p_approval_id is null then raise exception 'cash drawer: capability required'; end if;
+    v_approved_by := public.consume_manager_approval(p_approval_id, 'cash_drawer_event', v_hash);
+  end if;
+  select * into v_shift from public.shifts where id = p_shift_id for update;
+  if not found then raise exception 'cash drawer: shift not found'; end if;
+  if v_shift.closed_at is not null then raise exception 'cash drawer: shift is closed'; end if;
+  if v_shift.cashier_id <> v_actor_id and not public.is_admin() then raise exception 'cash drawer: not your shift'; end if;
+  v_amount := case when p_type in ('paid_out', 'safe_drop') then -p_amount else p_amount end;
+  insert into public.cash_drawer_events (shift_id, event_type, amount, reason, actor_id)
+  values (p_shift_id, p_type, v_amount, btrim(p_reason), v_actor_id) returning * into v_event;
+  perform public.write_audit_event(v_actor_id, v_approved_by, 'cash_drawer_event', 'shift', p_shift_id,
+    jsonb_build_object('amount', v_amount, 'event_type', p_type::text, 'reason_length', length(btrim(p_reason))), null);
+  return v_event;
+end;
+$$;
+revoke execute on function public.record_cash_drawer_event(uuid, public.cash_drawer_event_type, numeric, text, uuid) from public, anon;
+grant execute on function public.record_cash_drawer_event(uuid, public.cash_drawer_event_type, numeric, text, uuid) to authenticated, service_role;

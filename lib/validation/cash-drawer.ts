@@ -5,6 +5,7 @@ export const cashDrawerEventSchema = z.object({
   type: z.enum(["paid_in", "paid_out", "safe_drop"]),
   amount: z.number().int().positive().max(100_000_000),
   reason: z.string().trim().min(1).max(500),
+  approvalId: z.uuid().optional(),
 });
 
 export type CashDrawerEventInput = z.infer<typeof cashDrawerEventSchema>;

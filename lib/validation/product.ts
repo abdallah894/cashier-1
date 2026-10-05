@@ -115,6 +115,7 @@ export const stockAdjustmentSchema = z.object({
     .refine((n) => Number.isFinite(n) && Math.abs(n) < 10_000_000, "invalidQty"),
   reason: z.enum(["received", "damaged", "correction"]),
   note: z.string().trim().max(500, "tooLong").optional(),
+  approvalId: z.uuid().optional(),
 });
 
 export type StockAdjustmentInput = z.infer<typeof stockAdjustmentSchema>;

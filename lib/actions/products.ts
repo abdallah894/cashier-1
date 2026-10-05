@@ -63,6 +63,7 @@ export async function adjustStock(input: unknown): Promise<ActionResult<{ newQty
     p_qty_change: parsed.data.qty_change,
     p_reason: parsed.data.reason,
     p_note: parsed.data.note || undefined,
+    p_approval_id: parsed.data.approvalId || undefined,
   });
   if (error) return { ok: false, error: mapDbError(error) };
 
