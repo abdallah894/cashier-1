@@ -46,6 +46,7 @@ function fakeItem(over: Partial<FakeItem>): FakeItem {
     name_ar: "منتج",
     name_en: "Product",
     unit_price: 1000,
+    unit_cost: 600,
     tax_rate: 0.14,
     qty: 1,
     line_discount: 0,

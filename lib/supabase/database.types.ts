@@ -312,6 +312,7 @@ export type Database = {
           qty: number
           sale_id: string
           tax_rate: number
+          unit_cost: number
           unit_price: number
         }
         Insert: {
@@ -325,6 +326,7 @@ export type Database = {
           qty: number
           sale_id: string
           tax_rate: number
+          unit_cost?: number
           unit_price: number
         }
         Update: {
@@ -338,6 +340,7 @@ export type Database = {
           qty?: number
           sale_id?: string
           tax_rate?: number
+          unit_cost?: number
           unit_price?: number
         }
         Relationships: [
@@ -513,6 +516,110 @@ export type Database = {
         Update: { [_ in never]: never }
         Relationships: []
       }
+      suppliers: {
+        Row: {
+          active: boolean
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          payment_terms: string | null
+          phone: string | null
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          email?: string | null
+          name: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          tax_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          email?: string | null
+          name?: string
+          notes?: string | null
+          payment_terms?: string | null
+          phone?: string | null
+          tax_id?: string | null
+        }
+        Relationships: []
+      }
+      purchasing_settings: {
+        Row: { id: boolean; over_receipt_tolerance_pct: number }
+        Insert: { id?: boolean; over_receipt_tolerance_pct?: number }
+        Update: { id?: boolean; over_receipt_tolerance_pct?: number }
+        Relationships: []
+      }
+      purchase_orders: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          created_by: string
+          expected_date: string | null
+          id: string
+          note: string | null
+          ordered_at: string | null
+          po_number: number
+          status: Database["public"]["Enums"]["purchase_order_status"]
+          supplier_id: string
+          supplier_name: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      purchase_order_lines: {
+        Row: {
+          barcode: string
+          id: string
+          name_ar: string
+          name_en: string
+          ordered_qty: number
+          po_id: string
+          product_id: string
+          received_qty: number
+          tax_rate: number
+          unit: Database["public"]["Enums"]["product_unit"]
+          unit_cost: number
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      goods_receipts: {
+        Row: {
+          id: string
+          idempotency_key: string | null
+          invoice_reference: string | null
+          note: string | null
+          po_id: string
+          receipt_number: number
+          received_at: string
+          received_by: string
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
+      goods_receipt_lines: {
+        Row: {
+          id: string
+          po_line_id: string
+          product_id: string
+          qty: number
+          receipt_id: string
+          tax_rate: number
+          unit_cost: number
+        }
+        Insert: { [_ in never]: never }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
       stock_movements: {
         Row: {
           created_at: string
@@ -566,6 +673,46 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_purchase_order: {
+        Args: { p_expected_date?: string; p_lines: Json; p_note?: string; p_supplier_id: string }
+        Returns: string
+      }
+      place_purchase_order: { Args: { p_po_id: string }; Returns: undefined }
+      cancel_purchase_order: { Args: { p_po_id: string }; Returns: undefined }
+      close_purchase_order: { Args: { p_po_id: string }; Returns: undefined }
+      receive_purchase_order: {
+        Args: { p_idempotency_key?: string; p_invoice_reference?: string; p_lines: Json; p_note?: string; p_po_id: string }
+        Returns: string
+      }
+      report_outstanding_purchase_orders: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          expected_date: string | null
+          name_ar: string
+          name_en: string
+          ordered_qty: number
+          po_id: string
+          po_number: number
+          product_id: string
+          received_qty: number
+          remaining_qty: number
+          remaining_value: number
+          status: Database["public"]["Enums"]["purchase_order_status"]
+          supplier_name: string
+          unit_cost: number
+        }[]
+      }
+      report_received_cost: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          cost_total: number
+          qty: number
+          receipt_count: number
+          supplier_id: string
+          supplier_name: string
+          vat_total: number
+        }[]
+      }
       create_stocktake: {
         Args: {
           p_category_id?: string
@@ -762,6 +909,7 @@ export type Database = {
       payment_method: "cash" | "card"
       product_unit: "piece" | "kg"
       stock_movement_reason: "sale" | "received" | "damaged" | "correction" | "return"
+      purchase_order_status: "draft" | "ordered" | "partially_received" | "received" | "closed" | "cancelled"
       stocktake_scope: "full" | "cycle"
       stocktake_status: "open" | "submitted" | "approved" | "cancelled"
       user_role: "admin" | "cashier"
@@ -896,6 +1044,7 @@ export const Constants = {
       payment_method: ["cash", "card"],
       product_unit: ["piece", "kg"],
       stock_movement_reason: ["sale", "received", "damaged", "correction", "return"],
+      purchase_order_status: ["draft", "ordered", "partially_received", "received", "closed", "cancelled"],
       stocktake_scope: ["full", "cycle"],
       stocktake_status: ["open", "submitted", "approved", "cancelled"],
       user_role: ["admin", "cashier"],

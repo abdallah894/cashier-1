@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   CloudUpload,
   ClipboardList,
+  Truck,
+  PackageCheck,
 } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection, type Locale } from "@/i18n/routing";
@@ -35,6 +37,8 @@ const navItems = [
   { key: "products", href: "/products", icon: Package, adminOnly: true },
   { key: "categories", href: "/categories", icon: Tags, adminOnly: true },
   { key: "stocktakes", href: "/stocktakes", icon: ClipboardList, adminOnly: true },
+  { key: "purchaseOrders", href: "/purchase-orders", icon: PackageCheck, adminOnly: true },
+  { key: "suppliers", href: "/suppliers", icon: Truck, adminOnly: true },
   { key: "reports", href: "/reports", icon: BarChart3, adminOnly: true },
   { key: "users", href: "/users", icon: UsersRound, adminOnly: true },
   { key: "audit", href: "/audit", icon: ShieldCheck, adminOnly: true },

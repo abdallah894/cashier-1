@@ -1,0 +1,58 @@
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { useRouter } from "@/i18n/navigation";
+import { cancelPurchaseOrder, closePurchaseOrder, placePurchaseOrder } from "@/lib/actions/purchasing";
+import type { Database } from "@/lib/supabase/database.types";
+import { Button } from "@/components/ui/button";
+
+/** Admin lifecycle buttons; the buttons shown follow the allowed status transitions. */
+export function PurchaseOrderActions({
+  poId,
+  status,
+}: {
+  poId: string;
+  status: Database["public"]["Enums"]["purchase_order_status"];
+}) {
+  const t = useTranslations("purchaseOrders");
+  const tErrors = useTranslations("errors");
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  async function run(action: (input: unknown) => Promise<{ ok: boolean; error?: string }>, doneKey: string) {
+    setBusy(true);
+    try {
+      const result = await action({ poId });
+      if (!result.ok) {
+        toast.error(tErrors(result.error ?? "unknown"));
+        return;
+      }
+      toast.success(t(doneKey));
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {status === "draft" && (
+        <Button disabled={busy} onClick={() => run(placePurchaseOrder, "placed")}>
+          {t("place")}
+        </Button>
+      )}
+      {(status === "draft" || status === "ordered") && (
+        <Button variant="outline" disabled={busy} onClick={() => run(cancelPurchaseOrder, "cancelledDone")}>
+          {t("cancelOrder")}
+        </Button>
+      )}
+      {status === "partially_received" && (
+        <Button variant="outline" disabled={busy} onClick={() => run(closePurchaseOrder, "closedDone")}>
+          {t("closeShort")}
+        </Button>
+      )}
+    </div>
+  );
+}
