@@ -4,7 +4,7 @@
  */
 import "fake-indexeddb/auto";
 import { createOfflineDb } from "../lib/offline/db";
-import { enqueueSale, listOutbox } from "../lib/offline/outbox";
+import { claimNext, enqueueSale, listOutbox } from "../lib/offline/outbox";
 import { drainOutboxExclusive, type LockManagerLike, type SubmitResult } from "../lib/offline/sync";
 import { CATALOG_EXPIRED_AFTER_MS, CATALOG_STALE_AFTER_MS, catalogFreshness } from "../lib/offline/catalog";
 
@@ -61,6 +61,31 @@ async function main() {
     const aResult = await a;
     check("the first tab drains everything in order", aResult?.synced === 3 && order.join() === "p-1,p-2,p-3", order.join());
     check("the lock is released afterwards", (await drainOutboxExclusive(tabB, USER, submit, locks))?.synced === 0);
+  }
+
+  // ---- a page that reloaded mid-sync leaves a fresh `syncing` row: the next drain resends it ----
+  {
+    const db = createOfflineDb("lock-orphan");
+    await enqueueSale(db, sale(1));
+    await claimNext(db, USER); // claimed by a page that then reloaded: nobody will finish it
+    const locks = fakeLocks();
+    const sent: string[] = [];
+    const submit = async (entry: { items: { product_id: string }[] }): Promise<SubmitResult> => {
+      sent.push(entry.items[0].product_id);
+      return { kind: "synced", saleId: "1", saleNumber: 1 };
+    };
+
+    // while another tab holds the lock, its `syncing` row is live and must not be touched
+    let release!: () => void;
+    const held = locks.request("cachier-outbox-drain", { ifAvailable: true }, () => new Promise<void>((resolve) => (release = resolve)));
+    check("while another tab drains, nothing is resent", (await drainOutboxExclusive(db, USER, submit, locks)) === null && sent.length === 0);
+    check("…and its row stays syncing", (await listOutbox(db))[0].status === "syncing");
+    release();
+    await held;
+
+    const result = await drainOutboxExclusive(db, USER, submit, locks);
+    check("with no drain alive, the orphaned sale is resent at once", result?.synced === 1 && sent.join() === "p-1", sent.join());
+    check("…and ends synced", (await listOutbox(db))[0].status === "synced");
   }
 
   // ---- without the Web Locks API it still drains (in-tab guard) ----

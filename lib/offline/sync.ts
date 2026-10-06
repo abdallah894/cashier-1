@@ -1,5 +1,5 @@
 import type { OfflineDb } from "./db";
-import { claimNext, markRejected, markSynced, releaseToQueue } from "./outbox";
+import { claimNext, markRejected, markSynced, recoverStuck, releaseToQueue } from "./outbox";
 import type { OutboxEntry } from "./types";
 
 export type SubmitResult =
@@ -133,6 +133,11 @@ export async function drainOutboxExclusive(
   if (!locks) return drainOutbox(db, userId, submit);
   return locks.request(DRAIN_LOCK_NAME, { ifAvailable: true }, async (lock) => {
     if (!lock) return null;
+    // Every drain in this browser runs inside this lock, so holding it means no
+    // tab is mid-submit: a sale still marked `syncing` was left by a page that
+    // reloaded or closed mid-request. Send it again now (the idempotency key
+    // makes that safe) instead of leaving it stuck until a later reload.
+    await recoverStuck(db, 0, userId);
     return drainOutbox(db, userId, submit);
   });
 }

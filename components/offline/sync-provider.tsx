@@ -44,6 +44,8 @@ export function SyncProvider({ userId }: { userId: string }) {
 
     async function sync() {
       if (!navigator.onLine) return;
+      // browsers without Web Locks: requeue sales whose submitter has been gone a while
+      await recoverStuck(db, STUCK_AFTER_MS, userId);
       // null: another tab of this browser is draining right now
       const result = await drainOutboxExclusive(db, userId, submitQueuedSale);
       if (!result) return;
@@ -78,9 +80,7 @@ export function SyncProvider({ userId }: { userId: string }) {
     const safeSync = safely(sync);
     const safeReport = safely(report);
 
-    void recoverStuck(db, STUCK_AFTER_MS)
-      .then(sync)
-      .catch(() => undefined);
+    safeSync();
     void refreshCatalog();
 
     const onOnline = () => {

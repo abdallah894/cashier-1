@@ -127,11 +127,11 @@ export async function releaseToQueue(
  * it. The idempotency key makes a re-submit safe even if the first attempt
  * actually reached the server.
  */
-export async function recoverStuck(db: OfflineDb, olderThanMs: number): Promise<number> {
+export async function recoverStuck(db: OfflineDb, olderThanMs: number, userId?: string): Promise<number> {
   return db.transaction("rw", db.outbox, async () => {
     const cutoff = Date.now() - olderThanMs;
     const stuck = (await db.outbox.where("status").equals("syncing").toArray()).filter(
-      (entry) => entry.syncingSince === null || entry.syncingSince <= cutoff
+      (entry) => (!userId || entry.userId === userId) && (entry.syncingSince === null || entry.syncingSince <= cutoff)
     );
     for (const entry of stuck) {
       await db.outbox.update(entry.id, { status: "queued", syncingSince: null });
