@@ -8,6 +8,12 @@ import { Kbd } from "@/components/ui/kbd";
 const SHORTCUTS = [
   { keys: "/", label: "focusSearch" },
   { keys: "F2", label: "openCheckout" },
+  { keys: "F4", label: "lineDiscount" },
+  { keys: "F5", label: "saleDiscount" },
+  { keys: "F6", label: "customer" },
+  { keys: "F7", label: "promoCode" },
+  { keys: "3*", label: "multiplier" },
+  { keys: "Ctrl+Del", label: "voidCart" },
   { keys: "F8", label: "cameraScan" },
   { keys: "F9", label: "switchCashier" },
   { keys: "↑↓", label: "selectLine" },

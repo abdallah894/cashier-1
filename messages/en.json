@@ -293,7 +293,13 @@
       "selectLine": "select line",
       "changeQty": "qty",
       "removeLine": "remove",
-      "close": "close"
+      "close": "close",
+      "lineDiscount": "line discount",
+      "saleDiscount": "sale discount",
+      "customer": "customer",
+      "promoCode": "promo code",
+      "multiplier": "qty ×",
+      "voidCart": "void cart"
     },
     "approxStock": "approx. stock",
     "offlineCatalog": "Offline: showing the last synced catalog. Stock figures are approximate.",
@@ -320,7 +326,10 @@
     },
     "scanBlocked": "The scan was ignored: finish or close the open window first.",
     "unknownPlu": "This scale label is for PLU {plu}, but no product has that PLU. Add the PLU code to the product first.",
-    "notByWeight": "PLU {plu} is on a weight label, but that product is not sold by the kilo."
+    "notByWeight": "PLU {plu} is on a weight label, but that product is not sold by the kilo.",
+    "multiplierActive": "Next item × {qty}",
+    "multiplierCancel": "Cancel",
+    "multiplierWholeOnly": "This item is sold per piece: use a whole number."
   },
   "shifts": {
     "title": "Shifts",
@@ -1323,5 +1332,18 @@
       "unavailable": "The assistant is unavailable right now. The register and everything else keep working normally.",
       "network": "Could not reach the assistant. Check the connection. The register is not affected."
     }
+  },
+  "deviceErrors": {
+    "noPrinter": "No receipt printer is connected. Use the browser print instead.",
+    "noInterface": "The printer did not offer a usable USB connection.",
+    "noEndpoint": "The printer has no data channel the browser can write to.",
+    "usbTransfer": "The printer stopped answering. Check the cable, paper and power, then try again.",
+    "webUsbUnavailable": "This browser cannot talk to the printer. Use Chrome or Edge over HTTPS, or the desktop app.",
+    "noDeviceSelected": "No printer was chosen.",
+    "disconnected": "The device was disconnected. Plug it back in and try again.",
+    "accessDenied": "The browser was not allowed to use the device. Allow access when asked.",
+    "printFailed": "The receipt could not be printed.",
+    "drawerNotOpened": "The cash drawer did not open.",
+    "generic": "Device problem: {detail}"
   }
 }

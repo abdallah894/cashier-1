@@ -93,7 +93,7 @@ export function CartPane({ totals, selectedIndex, onSelect, onQtyChange, onRemov
           )}
           <div className="flex items-center justify-between">
             <DiscountPopover discount={saleDiscount} onApply={setSaleDiscount}>
-              <Button variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs">
+              <Button variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs" data-shortcut="sale-discount">
                 <Tag className="size-3" />
                 {saleDiscount ? t("editSaleDiscount") : t("addSaleDiscount")}
               </Button>
@@ -192,6 +192,7 @@ function CartLine({
           size="icon"
           className={cn("size-7", item.discount && "text-destructive")}
           aria-label={t("lineDiscount")}
+          data-shortcut={selected ? "line-discount" : undefined}
           onClick={(e) => e.stopPropagation()}
         >
           <Tag className="size-3.5" />

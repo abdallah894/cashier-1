@@ -59,7 +59,7 @@ export function VoidCartDialog({ totals }: { totals: CartTotals }) {
   return (
     <Dialog open={open} onOpenChange={(next) => !busy && setOpen(next)}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" data-shortcut="void-cart">
           {t("trigger")}
         </Button>
       </DialogTrigger>

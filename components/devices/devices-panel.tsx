@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useFormatter, useTranslations } from "next-intl";
+import { useDeviceErrorText } from "@/hooks/use-device-error";
 import { toast } from "sonner";
 import { Plus, Usb } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
@@ -53,6 +54,7 @@ export function DevicesPanel({
 }) {
   const t = useTranslations("devices");
   const tErrors = useTranslations("errors");
+  const deviceError = useDeviceErrorText();
   const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -106,7 +108,7 @@ export function DevicesPanel({
         "paired"
       );
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("pairFailed"));
+      toast.error(error instanceof Error ? deviceError(error.message) : t("pairFailed"));
     }
   }
 
@@ -122,7 +124,7 @@ export function DevicesPanel({
         detail = transport.label;
       }
     } catch (error) {
-      detail = error instanceof Error ? error.message : t("checkFailed");
+      detail = error instanceof Error ? deviceError(error.message) : t("checkFailed");
     }
     run(() => reportDeviceHealth({ deviceId: device.id, health, detail }), health === "ok" ? "healthOk" : "healthOffline");
   }
