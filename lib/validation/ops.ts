@@ -10,6 +10,15 @@ export const storeSettingsSchema = z.object({
   reorderCoverDays: z.number().int().min(1).max(365).optional(),
   reorderLookbackDays: z.number().int().min(7).max(365).optional(),
   defaultLeadTimeDays: z.number().int().min(0).max(120).optional(),
+  // store identity printed on receipts; empty string clears a field
+  storeNameAr: z.string().trim().max(120).optional(),
+  storeNameEn: z.string().trim().max(120).optional(),
+  addressAr: z.string().trim().max(200).optional(),
+  addressEn: z.string().trim().max(200).optional(),
+  phone: z.string().trim().max(40).optional(),
+  taxRegistrationNumber: z.string().trim().max(40).optional(),
+  receiptFooterAr: z.string().trim().max(200).optional(),
+  receiptFooterEn: z.string().trim().max(200).optional(),
 });
 
 export const handleAlertSchema = z.object({

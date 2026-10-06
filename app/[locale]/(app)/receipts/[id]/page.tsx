@@ -3,6 +3,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getSaleTenders, getSaleWithItems } from "@/lib/supabase/queries/sales";
 import { deviceSettings, getCurrentTillId, getDevices, getPrintedCount } from "@/lib/supabase/queries/devices";
 import { buildReceipt } from "@/lib/receipts/build";
+import { getStoreInfo } from "@/lib/supabase/queries/ops-reports";
 import { Receipt80mm } from "@/components/receipts/receipt-80mm";
 import { ReceiptActions } from "@/components/receipts/receipt-actions";
 import { ReturnDialog } from "@/components/receipts/return-dialog";
@@ -25,7 +26,7 @@ export default async function ReceiptPage({
     getSaleTenders(id),
   ]);
   if (!sale) notFound();
-  const receipt = buildReceipt(sale);
+  const receipt = buildReceipt(sale, await getStoreInfo());
   const tillId = await getCurrentTillId();
   const [devices, printedCount] = await Promise.all([getDevices(tillId ?? undefined), getPrintedCount("sale_receipt", id)]);
   const printerDevice = devices.find((d) => d.kind === "printer" && d.active && d.profile === "escpos_usb_80mm");

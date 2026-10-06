@@ -78,7 +78,8 @@ export function Register({
     }
   }
 
-  useBarcodeScanner(handleScan, { enabled: !dialogOpen });
+  // while a window is open (payment, camera...) a scan must not reach its inputs
+  useBarcodeScanner(handleScan, { enabled: !dialogOpen, onBlockedScan: () => toast.error(t("scanBlocked")) });
 
   function handleUnknownBarcodeOpenChange(next: boolean) {
     if (!next) setUnknownBarcode(null);

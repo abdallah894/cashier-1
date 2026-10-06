@@ -99,6 +99,50 @@ async function main() {
     "cashier cannot open a shift for someone else"
   );
 
+  // Phase 0 (P0-1): checkout is the RPC only — no direct sale/sale_items inserts.
+  const ownShift = (
+    await db.query<{ id: string }>(`select id from public.shifts where cashier_id = '${CASHIER}'`)
+  ).rows[0].id;
+  await expectError(
+    db.query(
+      `insert into public.sales (cashier_id, shift_id, subtotal, tax_total, total, payment_method, amount_tendered, change_due)
+       values ('${CASHIER}', '${ownShift}', 1, 0, 1, 'cash', 1, 0)`
+    ),
+    "row-level security",
+    "cashier cannot insert a sale directly (must use create_sale)"
+  );
+  const ownSale = (
+    await db.query<{ id: string }>(`select id from public.sales where cashier_id = '${CASHIER}'`)
+  ).rows[0].id;
+  await expectError(
+    db.query(
+      `insert into public.sale_items (sale_id, product_id, name_ar, name_en, unit_price, tax_rate, qty)
+       values ('${ownSale}', '${PRODUCT}', 'س', 'X', 1, 0, 1)`
+    ),
+    "row-level security",
+    "cashier cannot append lines to a sale directly"
+  );
+
+  // Phase 0 (P0-2): a cashier cannot edit, close or reopen a shift by hand.
+  const forgedClose = await db.query(
+    `update public.shifts set closed_at = now(), closing_counted = 0, expected_cash = 0 where id = '${ownShift}' returning id`
+  );
+  check("cashier cannot close own shift by direct update (0 rows)", forgedClose.rows.length === 0);
+  const forgedFloat = await db.query(
+    `update public.shifts set opening_float = 999999 where id = '${ownShift}' returning id`
+  );
+  check("cashier cannot change opening float (0 rows)", forgedFloat.rows.length === 0);
+  await asUser(db, CASHIER2);
+  await expectError(
+    db.query(
+      `insert into public.shifts (cashier_id, opening_float, closed_at, closing_counted, expected_cash)
+       values ('${CASHIER2}', 0, now(), 0, 0)`
+    ),
+    "must be open",
+    "cannot create a shift that is already closed"
+  );
+  await asUser(db, CASHIER);
+
   // ---------- as admin ----------
   await asUser(db, ADMIN);
   const allShifts = await db.query(`select id from public.shifts`);

@@ -52,6 +52,14 @@ export async function updateStoreSettings(input: unknown): Promise<ActionResult>
       ...(v.reorderCoverDays === undefined ? {} : { reorder_cover_days: v.reorderCoverDays }),
       ...(v.reorderLookbackDays === undefined ? {} : { reorder_lookback_days: v.reorderLookbackDays }),
       ...(v.defaultLeadTimeDays === undefined ? {} : { default_lead_time_days: v.defaultLeadTimeDays }),
+      ...(v.storeNameAr === undefined ? {} : { store_name_ar: v.storeNameAr }),
+      ...(v.storeNameEn === undefined ? {} : { store_name_en: v.storeNameEn }),
+      ...(v.addressAr === undefined ? {} : { address_ar: v.addressAr }),
+      ...(v.addressEn === undefined ? {} : { address_en: v.addressEn }),
+      ...(v.phone === undefined ? {} : { phone: v.phone }),
+      ...(v.taxRegistrationNumber === undefined ? {} : { tax_registration_number: v.taxRegistrationNumber }),
+      ...(v.receiptFooterAr === undefined ? {} : { receipt_footer_ar: v.receiptFooterAr }),
+      ...(v.receiptFooterEn === undefined ? {} : { receipt_footer_en: v.receiptFooterEn }),
     },
   });
   if (error) return { ok: false, error: opsError(error.message) };

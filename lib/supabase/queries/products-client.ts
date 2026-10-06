@@ -2,6 +2,8 @@
 // consumed through TanStack Query). RLS: any signed-in staff can read.
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/database.types";
+import { storeInfoFromSettings } from "@/lib/receipts/store-info";
+import type { StoreInfo } from "@/lib/receipts/types";
 
 function escapeFilterValue(q: string): string {
   return q.replace(/[,()"\\]/g, " ").trim();
@@ -61,4 +63,12 @@ export async function fetchDiscountThresholdClient(): Promise<number> {
   const { data, error } = await supabase.from("discount_settings").select("approval_threshold_bp").eq("id", true).single();
   if (error) throw error;
   return data.approval_threshold_bp;
+}
+
+/** Store identity for receipts, cached offline for provisional receipts. */
+export async function fetchStoreInfoClient(): Promise<StoreInfo> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("store_settings").select("*").eq("id", true).single();
+  if (error) throw error;
+  return storeInfoFromSettings(data);
 }

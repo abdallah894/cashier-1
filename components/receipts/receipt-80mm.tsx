@@ -19,9 +19,11 @@ export function Receipt80mm({ receipt, gift = false }: { receipt: ReceiptData; g
       {/* store header — configurable constants from lib/receipts/store-info */}
       <div className="text-center">
         <div className="text-sm font-bold">{isAr ? receipt.store.nameAr : receipt.store.nameEn}</div>
-        <div>{isAr ? receipt.store.addressAr : receipt.store.addressEn}</div>
-        <div dir="ltr">{receipt.store.phone}</div>
-        <div>{t("taxId", { id: receipt.store.taxId })}</div>
+        {(isAr ? receipt.store.addressAr : receipt.store.addressEn) && (
+          <div>{isAr ? receipt.store.addressAr : receipt.store.addressEn}</div>
+        )}
+        {receipt.store.phone && <div dir="ltr">{receipt.store.phone}</div>}
+        {receipt.store.taxId && <div>{t("taxId", { id: receipt.store.taxId })}</div>}
       </div>
 
       <Dashes />
@@ -112,6 +114,9 @@ export function Receipt80mm({ receipt, gift = false }: { receipt: ReceiptData; g
           {receipt.provisionalLabel ?? `#${receipt.saleNumber}`}
         </div>
         <div>{t("thankYou")}</div>
+        {(isAr ? receipt.store.footerAr : receipt.store.footerEn) && (
+          <div>{isAr ? receipt.store.footerAr : receipt.store.footerEn}</div>
+        )}
       </div>
     </div>
   );

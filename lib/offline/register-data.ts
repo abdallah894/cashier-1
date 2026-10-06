@@ -2,10 +2,11 @@ import type { Tables } from "@/lib/supabase/database.types";
 import {
   fetchCatalogClient,
   fetchDiscountThresholdClient,
+  fetchStoreInfoClient,
   getProductByBarcodeClient,
   searchProductsClient,
 } from "@/lib/supabase/queries/products-client";
-import { findByBarcode, refreshCatalog, saveDiscountThreshold, searchCatalog } from "./catalog";
+import { findByBarcode, refreshCatalog, saveDiscountThreshold, saveStoreInfo, searchCatalog } from "./catalog";
 import { getOfflineDb } from "./db";
 
 type Product = Tables<"products">;
@@ -47,5 +48,10 @@ export async function refreshOfflineData(): Promise<void> {
     await saveDiscountThreshold(db, await fetchDiscountThresholdClient());
   } catch {
     // keep any previously cached threshold
+  }
+  try {
+    await saveStoreInfo(db, await fetchStoreInfoClient());
+  } catch {
+    // keep any previously cached store identity
   }
 }

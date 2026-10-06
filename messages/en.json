@@ -279,7 +279,8 @@
       "offlineDiscountBlocked": "This discount needs a manager approval, which requires a connection. Reduce the discount or reconnect.",
       "queuedDone": "Saved offline as P-{number}. It will sync automatically.",
       "cardReference": "Terminal approval code",
-      "cardReferenceHint": "Charge the card on the bank terminal first, then type the approval code (RRN) it prints. Never type a card number here."
+      "cardReferenceHint": "Charge the card on the bank terminal first, then type the approval code (RRN) it prints. Never type a card number here.",
+      "tenderedTooLarge": "That amount is too large. Scanned a barcode by mistake? Clear it and type the cash received."
     },
     "shortcuts": {
       "focusSearch": "search",
@@ -313,7 +314,8 @@
       "consentHint": "Leave off unless the customer clearly says yes. It can be withdrawn at any time.",
       "create": "Register and attach",
       "close": "Close"
-    }
+    },
+    "scanBlocked": "The scan was ignored: finish or close the open window first."
   },
   "shifts": {
     "title": "Shifts",
@@ -1140,7 +1142,17 @@
       "leadDays": "Default lead time (days)",
       "save": "Save",
       "saved": "Settings saved.",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "identityTitle": "Store identity on receipts",
+      "identityHint": "Printed on every receipt, return receipt and Z-report. Leave a field empty to leave it off the receipt.",
+      "nameAr": "Store name (Arabic)",
+      "nameEn": "Store name (English)",
+      "addressAr": "Address (Arabic)",
+      "addressEn": "Address (English)",
+      "phone": "Phone",
+      "taxNumber": "Tax registration number",
+      "footerAr": "Receipt footer (Arabic)",
+      "footerEn": "Receipt footer (English)"
     },
     "dayClosed": "Business day {day} closed.",
     "closeDay": "Close day",

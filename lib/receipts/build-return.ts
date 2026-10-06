@@ -1,4 +1,5 @@
-import { STORE_INFO } from "./store-info";
+import { DEFAULT_STORE_INFO } from "./store-info";
+import type { StoreInfo } from "./types";
 
 export type ReturnReceiptSource = {
   id: string;
@@ -20,7 +21,7 @@ export type ReturnReceiptSource = {
 };
 
 export type ReturnReceiptData = {
-  store: typeof STORE_INFO;
+  store: StoreInfo;
   returnId: string;
   returnNumber: number;
   originalSaleNumber: number;
@@ -33,9 +34,9 @@ export type ReturnReceiptData = {
   lines: ReturnReceiptSource["return_items"];
 };
 
-export function buildReturnReceipt(source: ReturnReceiptSource): ReturnReceiptData {
+export function buildReturnReceipt(source: ReturnReceiptSource, store: StoreInfo = DEFAULT_STORE_INFO): ReturnReceiptData {
   return {
-    store: STORE_INFO,
+    store,
     returnId: source.id,
     returnNumber: Number(source.return_number),
     originalSaleNumber: Number(source.sales.sale_number),

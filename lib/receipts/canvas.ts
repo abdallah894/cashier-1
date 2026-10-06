@@ -17,12 +17,12 @@ export type RowOptions = { locale: "ar" | "en"; gift?: boolean; copyNumber?: num
 export function buildReceiptRows(receipt: ReceiptData, labels: EscPosLabels, { locale, gift, copyNumber = 1, includeCashier, formatDate }: RowOptions): ReceiptRow[] {
   const isAr = locale === "ar";
   const money = (v: number) => formatEgp(v, locale);
-  const rows: ReceiptRow[] = [
-    { kind: "center", text: isAr ? receipt.store.nameAr : receipt.store.nameEn, bold: true },
-    { kind: "center", text: isAr ? receipt.store.addressAr : receipt.store.addressEn },
-    { kind: "center", text: receipt.store.phone },
-    { kind: "center", text: labels.taxId },
-  ];
+  // empty store fields (not yet configured) are left off rather than printed blank
+  const address = isAr ? receipt.store.addressAr : receipt.store.addressEn;
+  const rows: ReceiptRow[] = [{ kind: "center", text: isAr ? receipt.store.nameAr : receipt.store.nameEn, bold: true }];
+  if (address) rows.push({ kind: "center", text: address });
+  if (receipt.store.phone) rows.push({ kind: "center", text: receipt.store.phone });
+  if (receipt.store.taxId) rows.push({ kind: "center", text: labels.taxId });
   if (gift) rows.push({ kind: "gap" }, { kind: "center", text: labels.gift, bold: true });
   if (receipt.provisionalLabel) rows.push({ kind: "center", text: labels.provisional, bold: true });
   if (copyNumber > 1) rows.push({ kind: "center", text: labels.copy(copyNumber), bold: true });
@@ -55,6 +55,8 @@ export function buildReceiptRows(receipt: ReceiptData, labels: EscPosLabels, { l
       rows.push({ kind: "pair", start: labels.change, end: money(receipt.changeDue ?? 0) });
     }
     rows.push({ kind: "gap" }, { kind: "center", text: labels.thankYou });
+    const footer = isAr ? receipt.store.footerAr : receipt.store.footerEn;
+    if (footer) rows.push({ kind: "center", text: footer });
   }
   return rows;
 }

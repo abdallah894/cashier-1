@@ -1,4 +1,5 @@
 import type { Tables } from "@/lib/supabase/database.types";
+import type { StoreInfo } from "@/lib/receipts/types";
 import type { OfflineDb } from "./db";
 
 type Product = Tables<"products">;
@@ -50,4 +51,15 @@ export async function saveDiscountThreshold(db: OfflineDb, bp: number): Promise<
 export async function loadDiscountThreshold(db: OfflineDb): Promise<number | null> {
   const row = await db.meta.get("discountThresholdBp");
   return typeof row?.value === "number" ? row.value : null;
+}
+
+/** Store identity cached for provisional (offline) receipts. */
+export async function saveStoreInfo(db: OfflineDb, info: StoreInfo): Promise<void> {
+  await db.meta.put({ key: "storeInfo", value: info });
+}
+
+export async function loadStoreInfo(db: OfflineDb): Promise<StoreInfo | null> {
+  const row = await db.meta.get("storeInfo");
+  const v = row?.value as Partial<StoreInfo> | undefined;
+  return v && typeof v.nameEn === "string" && typeof v.nameAr === "string" ? { ...v } as StoreInfo : null;
 }

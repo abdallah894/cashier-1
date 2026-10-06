@@ -1,5 +1,5 @@
 import type { Tables } from "@/lib/supabase/database.types";
-import { STORE_INFO } from "./store-info";
+import { DEFAULT_STORE_INFO } from "./store-info";
 import type { StoreInfo } from "./types";
 
 // Defined here (not in the server-only queries module) so the tsx test
@@ -36,14 +36,15 @@ export function buildZReport(
     cardSales: number;
     saleCount: number;
     drawerEvents?: Array<{ event_type: "paid_in" | "paid_out" | "safe_drop" | "cash_refund" | "cash_sale"; amount: number }>;
-  }
+  },
+  store: StoreInfo = DEFAULT_STORE_INFO
 ): ZReportData {
   const expected = shift.expected_cash === null ? null : Number(shift.expected_cash);
   const counted = shift.closing_counted === null ? null : Number(shift.closing_counted);
   const totals = { paid_in: 0, paid_out: 0, safe_drop: 0, cash_refund: 0, cash_sale: 0 };
   for (const event of agg.drawerEvents ?? []) totals[event.event_type] += event.amount;
   return {
-    store: STORE_INFO,
+    store,
     shiftId: shift.id,
     cashierName: shift.profiles?.full_name ?? null,
     openedAt: shift.opened_at,

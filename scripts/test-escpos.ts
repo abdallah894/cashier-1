@@ -10,6 +10,7 @@ import {
 } from "../lib/receipts/escpos";
 import { buildTextReceipt, deliverReceipt, maskEmail, maskPhone } from "../lib/receipts/delivery";
 import type { ReceiptData } from "../lib/receipts/types";
+import { storeInfoFromSettings } from "../lib/receipts/store-info";
 
 let failures = 0;
 function check(name: string, condition: boolean, detail = "") {
@@ -45,6 +46,8 @@ const receipt: ReceiptData = {
     addressEn: "15 Tahrir St., Dokki, Giza",
     phone: "0100 000 0000",
     taxId: "100-200-300",
+    footerAr: "",
+    footerEn: "Exchange within 14 days",
   },
   saleId: "00000000-0000-0000-0000-000000000001",
   saleNumber: 42,
@@ -91,6 +94,26 @@ check(
   twoColumns("A very long product label indeed", "110.00", 20).endsWith("110.00") && twoColumns("A very long product label indeed", "110.00", 20).length === 20
 );
 check("the drawer pulse is ESC p 0 25 250", Array.from(drawerPulse()).join() === [0x1b, 0x70, 0, 25, 250].join());
+
+// ---- store identity (Phase 0): empty fields are left off, never printed blank or as demo data ----
+{
+  const bare: ReceiptData = { ...receipt, store: { ...receipt.store, addressEn: "", phone: "", taxId: "", footerEn: "" } };
+  const bareText = decode(buildReceiptEscPos(bare, { ...labels, taxId: "Tax ID: " }, { columns: 48, formatDate: () => "d" }));
+  check("an unset tax id is not printed", !bareText.includes("Tax ID"));
+  check("an unset phone is not printed", !bareText.includes("0100"));
+  check("a configured footer is printed", decode(buildReceiptEscPos(receipt, labels, { columns: 48, formatDate: () => "d" })).includes("Exchange within 14 days"));
+  const mapped = storeInfoFromSettings({
+    store_name_ar: "", store_name_en: "Green Market", address_ar: "", address_en: "1 Nile St",
+    phone: " 0102 ", tax_registration_number: "555-111", receipt_footer_ar: "", receipt_footer_en: "",
+  });
+  check("settings map to receipt store info", mapped.nameEn === "Green Market" && mapped.taxId === "555-111" && mapped.phone === "0102");
+  check("one language fills the other", mapped.nameAr === "Green Market" && mapped.addressAr === "1 Nile St");
+  const blank = storeInfoFromSettings({
+    store_name_ar: "", store_name_en: "", address_ar: "", address_en: "", phone: "",
+    tax_registration_number: "", receipt_footer_ar: "", receipt_footer_en: "",
+  });
+  check("a blank store falls back to a neutral name, no tax id", blank.nameEn === "Supermarket" && blank.taxId === "" && !JSON.stringify(blank).includes("100-200-300"));
+}
 
 // ---- sale receipt ----
 const job = buildReceiptEscPos(receipt, labels, { columns: 48, formatDate: () => "2026-10-05 12:30" });

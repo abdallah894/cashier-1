@@ -6,6 +6,7 @@ import { redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { switchCashierSchema } from "@/lib/validation/user";
+import { log } from "@/lib/observability/log";
 import type { ActionResult } from "./result";
 
 // Minimal auth for Phase 2 (products admin needs a session for RLS).
@@ -79,12 +80,22 @@ export async function switchCashier(input: unknown): Promise<ActionResult<{ name
   if (!user) return { ok: false, error: "notAuthorized" }; // switch never starts a session
 
   const admin = createAdminClient();
+  // The caller must still be an active member of staff: a deactivated account
+  // with a live token cannot hop into someone else's session.
+  const { data: caller } = await admin.from("profiles").select("active").eq("id", user.id).maybeSingle();
+  if (!caller?.active) return { ok: false, error: "notAuthorized" };
+
   const { data: profile } = await admin
     .from("profiles")
-    .select("full_name, active")
+    .select("full_name, active, role")
     .eq("id", parsed.data.targetUserId)
     .maybeSingle();
-  if (!profile || !profile.active) return { ok: false, error: "switchFailed" };
+  // Quick PIN switching is for cashiers only. Admins sign in with email and
+  // password: a 4-digit PIN must never open an admin session.
+  if (!profile || !profile.active || profile.role !== "cashier") {
+    log.warn("pin_switch_refused", { callerId: user.id, targetId: parsed.data.targetUserId });
+    return { ok: false, error: "switchFailed" };
+  }
 
   const { data: verdict, error: verifyError } = await admin.rpc("verify_pin", {
     p_user_id: parsed.data.targetUserId,
@@ -93,7 +104,10 @@ export async function switchCashier(input: unknown): Promise<ActionResult<{ name
   if (verifyError) return { ok: false, error: "switchFailed" };
   if (verdict === "locked") return { ok: false, error: "pinLocked" };
   if (verdict === "no_pin") return { ok: false, error: "pinNotSet" };
-  if (verdict !== "ok") return { ok: false, error: "pinIncorrect" };
+  if (verdict !== "ok") {
+    log.warn("pin_switch_failed", { callerId: user.id, targetId: parsed.data.targetUserId });
+    return { ok: false, error: "pinIncorrect" };
+  }
 
   const { data: target, error: userError } = await admin.auth.admin.getUserById(
     parsed.data.targetUserId

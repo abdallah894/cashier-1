@@ -5,6 +5,13 @@ const ARABIC_INDIC_ZERO = 0x0660; // ٠
 const EXTENDED_ARABIC_INDIC_ZERO = 0x06f0; // ۰
 
 /** Normalize Arabic-Indic digits (٠١٢٣ / ۰۱۲۳) and separators (٫ ,) to ASCII. */
+/**
+ * Largest cash amount a till accepts as "received" (EGP 100,000, in piasters).
+ * A scanned 13-digit barcode typed into the tendered box is far above this, so
+ * it can never be confirmed as a payment.
+ */
+export const MAX_TENDERED_PIASTERS = 10_000_000;
+
 export function normalizeDigits(input: string): string {
   let out = "";
   for (const ch of input) {

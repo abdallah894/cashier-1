@@ -4,8 +4,14 @@ import { useEffect, useRef } from "react";
 import { createScanDetector } from "@/lib/barcode/scan-detector";
 
 type Options = {
-  /** pause detection (e.g. while the checkout dialog is open) */
+  /**
+   * When false the scan is NOT delivered to `onScan`, but it is still
+   * recognised and swallowed (the closing Enter never reaches the page, so a
+   * burst typed into a dialog's input cannot submit it). `onBlockedScan` tells
+   * the user why nothing happened.
+   */
   enabled?: boolean;
+  onBlockedScan?: (barcode: string) => void;
   /** minimum barcode length (EAN-8 = 8, but Code 128 can be shorter) */
   minLength?: number;
   /** keystrokes further apart than this are human typing, not a scanner */
@@ -30,17 +36,19 @@ type Options = {
  */
 export function useBarcodeScanner(
   onScan: (barcode: string) => void,
-  { enabled = true, minLength = 4, maxIntervalMs = 50 }: Options = {}
+  { enabled = true, onBlockedScan, minLength = 4, maxIntervalMs = 50 }: Options = {}
 ) {
   // keep the latest callback without re-subscribing the listener
   const onScanRef = useRef(onScan);
+  const onBlockedRef = useRef(onBlockedScan);
+  const enabledRef = useRef(enabled);
   useEffect(() => {
     onScanRef.current = onScan;
+    onBlockedRef.current = onBlockedScan;
+    enabledRef.current = enabled;
   });
 
   useEffect(() => {
-    if (!enabled) return;
-
     // the burst-vs-typing decision lives in a pure, unit-tested module
     const detector = createScanDetector({ minLength, maxIntervalMs });
 
@@ -56,12 +64,13 @@ export function useBarcodeScanner(
         // don't submit whatever form the burst landed in
         event.preventDefault();
         event.stopPropagation();
-        onScanRef.current(result.scan);
+        if (enabledRef.current) onScanRef.current(result.scan);
+        else onBlockedRef.current?.(result.scan);
       }
     }
 
     // capture phase so we run even when an input has focus
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [enabled, minLength, maxIntervalMs]);
+  }, [minLength, maxIntervalMs]);
 }

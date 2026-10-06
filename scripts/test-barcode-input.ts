@@ -1,4 +1,6 @@
 import { createScanDetector } from "../lib/barcode/scan-detector";
+import { MAX_TENDERED_PIASTERS } from "../lib/money";
+import { checkoutSchema } from "../lib/validation/sale";
 
 let failures = 0;
 function check(name: string, condition: boolean, detail = "") {
@@ -92,6 +94,16 @@ const EAN13 = "6221031234567";
   for (const key of "1234") d.handleKey({ key, now: (now += 5) });
   d.reset();
   check("reset discards a half-received burst", d.handleKey({ key: "Enter", now: now + 5 }).scan === undefined);
+}
+
+// Phase 0 (P0-5): a barcode typed into the "amount received" box must never be a valid payment.
+{
+  const base = { items: [{ product_id: "00000000-0000-4000-8000-000000000001", qty: 1, line_discount: 0 }], payment_method: "cash" as const };
+  const eanAsPiasters = Number("6221031234567"); // a scanned EAN-13 read as piasters
+  check("a scanned EAN-13 is refused as cash received", !checkoutSchema.safeParse({ ...base, amount_tendered: eanAsPiasters }).success);
+  check("the cap itself is accepted", checkoutSchema.safeParse({ ...base, amount_tendered: MAX_TENDERED_PIASTERS }).success);
+  check("one piaster over the cap is refused", !checkoutSchema.safeParse({ ...base, amount_tendered: MAX_TENDERED_PIASTERS + 1 }).success);
+  check("a normal 200 EGP note is accepted", checkoutSchema.safeParse({ ...base, amount_tendered: 20000 }).success);
 }
 
 if (failures > 0) process.exit(1);

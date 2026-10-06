@@ -32,6 +32,17 @@ export function StoreSettingsDialog({ settings }: { settings: StoreSettings }) {
   const [cover, setCover] = useState(String(settings.reorder_cover_days));
   const [lookback, setLookback] = useState(String(settings.reorder_lookback_days));
   const [lead, setLead] = useState(String(settings.default_lead_time_days));
+  const [identity, setIdentity] = useState({
+    storeNameAr: settings.store_name_ar,
+    storeNameEn: settings.store_name_en,
+    addressAr: settings.address_ar,
+    addressEn: settings.address_en,
+    phone: settings.phone,
+    taxRegistrationNumber: settings.tax_registration_number,
+    receiptFooterAr: settings.receipt_footer_ar,
+    receiptFooterEn: settings.receipt_footer_en,
+  });
+  const setId = (key: keyof typeof identity, value: string) => setIdentity((prev) => ({ ...prev, [key]: value }));
 
   function save() {
     const [h, m] = cutoff.split(":").map(Number);
@@ -42,6 +53,7 @@ export function StoreSettingsDialog({ settings }: { settings: StoreSettings }) {
         reorderCoverDays: Number(cover),
         reorderLookbackDays: Number(lookback),
         defaultLeadTimeDays: Number(lead),
+        ...identity,
       });
       if (!result.ok) {
         toast.error(tErrors(result.error));
@@ -61,12 +73,40 @@ export function StoreSettingsDialog({ settings }: { settings: StoreSettings }) {
           {t("open")}
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
+          <p className="text-sm font-medium">{t("identityTitle")}</p>
+          <p className="text-muted-foreground -mt-2 text-xs">{t("identityHint")}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field id="nameAr" label={t("nameAr")}>
+              <Input id="nameAr" dir="rtl" value={identity.storeNameAr} onChange={(e) => setId("storeNameAr", e.target.value)} />
+            </Field>
+            <Field id="nameEn" label={t("nameEn")}>
+              <Input id="nameEn" dir="ltr" value={identity.storeNameEn} onChange={(e) => setId("storeNameEn", e.target.value)} />
+            </Field>
+            <Field id="addrAr" label={t("addressAr")}>
+              <Input id="addrAr" dir="rtl" value={identity.addressAr} onChange={(e) => setId("addressAr", e.target.value)} />
+            </Field>
+            <Field id="addrEn" label={t("addressEn")}>
+              <Input id="addrEn" dir="ltr" value={identity.addressEn} onChange={(e) => setId("addressEn", e.target.value)} />
+            </Field>
+            <Field id="phone" label={t("phone")}>
+              <Input id="phone" dir="ltr" inputMode="tel" value={identity.phone} onChange={(e) => setId("phone", e.target.value)} />
+            </Field>
+            <Field id="taxNo" label={t("taxNumber")}>
+              <Input id="taxNo" dir="ltr" value={identity.taxRegistrationNumber} onChange={(e) => setId("taxRegistrationNumber", e.target.value)} />
+            </Field>
+            <Field id="footAr" label={t("footerAr")}>
+              <Input id="footAr" dir="rtl" value={identity.receiptFooterAr} onChange={(e) => setId("receiptFooterAr", e.target.value)} />
+            </Field>
+            <Field id="footEn" label={t("footerEn")}>
+              <Input id="footEn" dir="ltr" value={identity.receiptFooterEn} onChange={(e) => setId("receiptFooterEn", e.target.value)} />
+            </Field>
+          </div>
           <Field id="tz" label={t("timezone")}>
             <Input id="tz" dir="ltr" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
           </Field>

@@ -95,6 +95,18 @@ async function main() {
   const settingAudits = await rows(`select count(*) as c from public.audit_events where action = 'store_settings_changed'`);
   check("each settings change emits an audit event", n(settingAudits[0].c) === 2);
 
+  // Phase 0: the store identity printed on receipts lives in store_settings.
+  const blankStore = await rows(`select store_name_en, tax_registration_number from public.store_settings`);
+  check("a fresh database prints no demo store identity", blankStore[0].store_name_en === "" && blankStore[0].tax_registration_number === "");
+  await db.query(`select public.update_store_settings('{"store_name_en":"  Green Market ","tax_registration_number":"555-111-222","phone":"0102 000 0000"}'::jsonb)`);
+  const savedStore = await rows(`select store_name_en, tax_registration_number, phone, store_name_ar from public.store_settings`);
+  check("store identity is saved trimmed and other fields untouched", savedStore[0].store_name_en === "Green Market" && savedStore[0].tax_registration_number === "555-111-222" && savedStore[0].phone === "0102 000 0000" && savedStore[0].store_name_ar === "");
+  await expectError(db.query(`select public.update_store_settings('{"phone":"${"9".repeat(41)}"}'::jsonb)`), "store_settings_phone_check", "an over-long phone number is refused");
+  await asUser(db, CASHIER);
+  const cashierSees = await rows(`select store_name_en from public.store_settings`);
+  check("any signed-in staff can read the store identity for receipts", cashierSees[0].store_name_en === "Green Market");
+  await asUser(db, ADMIN);
+
   // ---- data: sales on both sides of Cairo midnight ----
   await asUser(db, CASHIER);
   const sell = (items: string, method: string, tendered: string, ref: string) =>

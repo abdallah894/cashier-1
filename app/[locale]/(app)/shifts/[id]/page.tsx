@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getShiftWithSales } from "@/lib/supabase/queries/shifts";
 import { buildZReport } from "@/lib/receipts/z-report";
+import { getStoreInfo } from "@/lib/supabase/queries/ops-reports";
 import { ZReport80mm } from "@/components/shifts/z-report-80mm";
 import { PrintButton } from "@/components/receipts/print-button";
 
@@ -16,7 +17,7 @@ export default async function ZReportPage({
   const [t, data] = await Promise.all([getTranslations("shifts"), getShiftWithSales(id)]);
   if (!data) notFound();
 
-  const report = buildZReport(data.shift, data);
+  const report = buildZReport(data.shift, data, await getStoreInfo());
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-4">

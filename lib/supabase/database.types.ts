@@ -2185,27 +2185,51 @@ export type Database = {
       }
       store_settings: {
         Row: {
+          address_ar: string
+          address_en: string
           business_day_cutoff_minutes: number
           default_lead_time_days: number
           id: boolean
+          phone: string
+          receipt_footer_ar: string
+          receipt_footer_en: string
           reorder_cover_days: number
           reorder_lookback_days: number
+          store_name_ar: string
+          store_name_en: string
+          tax_registration_number: string
           timezone: string
         }
         Insert: {
+          address_ar?: string
+          address_en?: string
           business_day_cutoff_minutes?: number
           default_lead_time_days?: number
           id?: boolean
+          phone?: string
+          receipt_footer_ar?: string
+          receipt_footer_en?: string
           reorder_cover_days?: number
           reorder_lookback_days?: number
+          store_name_ar?: string
+          store_name_en?: string
+          tax_registration_number?: string
           timezone?: string
         }
         Update: {
+          address_ar?: string
+          address_en?: string
           business_day_cutoff_minutes?: number
           default_lead_time_days?: number
           id?: boolean
+          phone?: string
+          receipt_footer_ar?: string
+          receipt_footer_en?: string
           reorder_cover_days?: number
           reorder_lookback_days?: number
+          store_name_ar?: string
+          store_name_en?: string
+          tax_registration_number?: string
           timezone?: string
         }
         Relationships: []

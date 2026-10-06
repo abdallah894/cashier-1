@@ -1,6 +1,6 @@
 import { extractNet } from "@/lib/money";
-import { STORE_INFO } from "./store-info";
-import type { ReceiptData, SaleForReceipt, VatBreakdownRow } from "./types";
+import { DEFAULT_STORE_INFO } from "./store-info";
+import type { ReceiptData, SaleForReceipt, StoreInfo, VatBreakdownRow } from "./types";
 
 /**
  * Pure sale → receipt transform. Every renderer (80mm print view, PDF,
@@ -11,7 +11,7 @@ import type { ReceiptData, SaleForReceipt, VatBreakdownRow } from "./types";
  * create_sale — then summed by rate. Extracting from a per-rate gross sum
  * would round differently and drift from sale.tax_total.
  */
-export function buildReceipt(sale: SaleForReceipt): ReceiptData {
+export function buildReceipt(sale: SaleForReceipt, store: StoreInfo = DEFAULT_STORE_INFO): ReceiptData {
   const byRate = new Map<number, VatBreakdownRow>();
   for (const item of sale.sale_items) {
     const rateBp = Math.round(Number(item.tax_rate) * 10000);
@@ -24,7 +24,7 @@ export function buildReceipt(sale: SaleForReceipt): ReceiptData {
   }
 
   return {
-    store: STORE_INFO,
+    store,
     saleId: sale.id,
     saleNumber: Number(sale.sale_number),
     createdAt: sale.created_at,
