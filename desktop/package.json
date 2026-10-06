@@ -8,10 +8,13 @@
   "scripts": {
     "start": "electron . --dev",
     "check": "node check-config.cjs",
-    "dist": "node check-config.cjs && electron-builder",
-    "dist:win": "node check-config.cjs && electron-builder --win",
-    "dist:mac": "node check-config.cjs && electron-builder --mac",
-    "dist:linux": "node check-config.cjs && electron-builder --linux"
+    "dist": "node check-config.cjs && electron-builder --publish never",
+    "dist:win": "node check-config.cjs && electron-builder --win --publish never",
+    "dist:mac": "node check-config.cjs && electron-builder --mac --publish never",
+    "dist:linux": "node check-config.cjs && electron-builder --linux --publish never",
+    "release:win": "node check-config.cjs --release && electron-builder --win --publish always",
+    "smoke": "node smoke.cjs",
+    "pack:linux": "electron-builder --linux --dir --publish never"
   },
   "devDependencies": {
     "electron": "^39.0.0",
@@ -20,11 +23,54 @@
   "build": {
     "appId": "com.cachier.pos",
     "productName": "Cachier POS",
-    "files": ["main.cjs", "preload.cjs", "offline.html", "app-config.json", "package.json"],
-    "directories": { "output": "dist", "buildResources": "build" },
-    "win": { "target": ["nsis"] },
-    "nsis": { "oneClick": false, "perMachine": true, "allowToChangeInstallationDirectory": true },
-    "mac": { "target": ["dmg"], "category": "public.app-category.business" },
-    "linux": { "target": ["AppImage", "deb"], "category": "Office" }
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "print-bridge.cjs",
+      "updater.cjs",
+      "recovery.cjs",
+      "offline.html",
+      "app-config.json",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "Cachier-POS-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "YOUR-GITHUB-USER",
+        "repo": "cachier-pos-releases",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }

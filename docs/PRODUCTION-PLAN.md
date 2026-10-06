@@ -154,7 +154,22 @@ The original plan for this phase follows for reference.
 
 ---
 
-## Phase 3 — Desktop app (Electron) for the counter (10–15 days)
+## Phase 3 — Desktop app (Electron) for the counter (10–15 days) — ⚠️ BUILT, NOT YET TRIED ON WINDOWS (2026-10-06)
+
+Decisions: USB printers through the Windows driver only (no network/serial); updates from a separate public releases repo; unsigned installer for now. Details and your setup steps: [desktop-printing.md](desktop-printing.md).
+
+| Item | Status |
+| --- | --- |
+| 3.1 Native print bridge (Windows print queue, raw ESC/POS) | ✅ Built. Rules, command building and failures unit-tested (incl. a real child process). The **actual Windows spooler call has never run**: no Windows here. |
+| 3.1 Web side (`ShellTransport`, new `escpos_spooler_80mm` profile, Devices screen: choose printer, Test print, Check) | ✅ Built and tested; drawer kick uses the same printer. |
+| 3.2 Auto-update | ✅ Policy tested; the **packaged** app starts it correctly. Not tried against a real GitHub release. "Restart to update" banner (disabled during a sale) and "app too old" notice. |
+| 3.3 Code signing | Decided: skip for now. Build signs automatically once a certificate secret is added. |
+| 3.4 Till polish (auto-start, crash reload, per-user installer, icon placeholder) | ✅ Built. Auto-start and the installer not tried on Windows. |
+| Verification | ✅ **Real Electron launched headlessly** (source and packaged): bridge exposed, no Node leak, bad input refused, iframe gets nothing — 13 checks, also in CI. |
+| Still yours | Create the releases repo + token, tag `desktop-v1.0.0`, install on the counter PC, run the acceptance checklist with the real printer. |
+| Found and fixed | The old preload did `require("./package.json")` in a sandboxed renderer (not allowed) and the Devices form silently dropped any new device setting (`printerName`). |
+
+The original plan for this phase follows for reference.
 
 The shell exists in `desktop/` and already gives kiosk mode, a locked-down window, USB chooser and an offline page. To make it production grade:
 

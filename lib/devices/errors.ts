@@ -6,6 +6,13 @@
  */
 const RULES: [RegExp, string][] = [
   [/^no printer available$/i, "noPrinter"],
+  // reasons reported by the desktop app's print bridge (desktop/print-bridge.cjs)
+  [/^printer not installed$/i, "printerNotInstalled"],
+  [/print queue refused/i, "queueRefused"],
+  [/^print timed out$/i, "printTimeout"],
+  [/print service is not available/i, "printServiceMissing"],
+  [/^not allowed$/i, "bridgeNotAllowed"],
+  [/cannot list printers/i, "needDesktopApp"],
   [/exposes no interface/i, "noInterface"],
   [/no bulk OUT endpoint/i, "noEndpoint"],
   [/^USB transfer /i, "usbTransfer"],

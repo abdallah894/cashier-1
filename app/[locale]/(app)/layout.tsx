@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { NetworkIndicator } from "@/components/layout/network-indicator";
+import { ShellUpdateBanner } from "@/components/layout/shell-update-banner";
 import { SyncProvider } from "@/components/offline/sync-provider";
 import { ChatWidget } from "@/components/chat-widget";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -41,6 +42,7 @@ export default async function AppLayout({
             <UserMenu name={profile.full_name} role={profile.role} />
           </div>
         </header>
+        <ShellUpdateBanner />
         <main className="flex flex-1 flex-col p-3 sm:p-6">{children}</main>
       </SidebarInset>
       <ChatWidget />

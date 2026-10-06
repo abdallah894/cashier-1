@@ -1,4 +1,6 @@
 {
   "appUrl": "https://YOUR-POS-DOMAIN.example.com",
-  "kiosk": false
+  "kiosk": false,
+  "autoStart": false,
+  "autoUpdate": true
 }

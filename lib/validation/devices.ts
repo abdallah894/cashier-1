@@ -42,6 +42,14 @@ export const saveDeviceSchema = z.object({
       vendorId: z.number().int().min(0).max(0xffff).optional(),
       productId: z.number().int().min(0).max(0xffff).optional(),
       columns: z.number().int().min(24).max(64).optional(),
+      /** name of the Windows print queue (desktop app); no control characters */
+      printerName: z
+        .string()
+        .trim()
+        .min(1)
+        .max(200)
+        .refine((value) => !/[\u0000-\u001f]/.test(value), "invalid printer name")
+        .optional(),
     })
     .default({}),
 });

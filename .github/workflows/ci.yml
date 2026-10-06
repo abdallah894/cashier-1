@@ -91,3 +91,26 @@ jobs:
             playwright-report
             test-results
           retention-days: 7
+
+  # Launches the real Electron app headlessly and checks what the print bridge exposes.
+  desktop-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: desktop
+      - name: Install a virtual display
+        run: sudo apt-get update && sudo apt-get install -y xvfb libgbm1 libasound2t64 libnss3 libgtk-3-0t64
+      - run: xvfb-run -a npm run smoke
+        working-directory: desktop
+      # the same checks against a packaged build, where auto-update is switched on
+      - run: npm run pack:linux
+        working-directory: desktop
+      - run: xvfb-run -a npm run smoke
+        working-directory: desktop
+        env:
+          SMOKE_BINARY: dist/linux-unpacked/cachier-pos-desktop

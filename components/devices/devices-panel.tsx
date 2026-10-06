@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useSyncExternalStore, useTransition } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useDeviceErrorText } from "@/hooks/use-device-error";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import {
   saveDevice,
 } from "@/lib/actions/devices";
 import { runDrawerOpen } from "@/lib/devices/print-service";
+import { buildTestPage, getCachierShell, listShellPrinters, shellCanPrint, ShellTransport, type ShellPrinter } from "@/lib/devices/shell";
 import { findPairedUsbPrinter, pairUsbPrinter, webUsbSupported } from "@/lib/devices/transport";
 import { ESC_POS } from "@/lib/receipts/escpos";
 import type { Device, DeviceProfile, PrintJob } from "@/lib/supabase/queries/devices";
@@ -31,7 +32,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type Settings = { vendorId?: number; productId?: number; columns?: number };
+type Settings = { vendorId?: number; productId?: number; columns?: number; printerName?: string };
+
+const SPOOLER = "escpos_spooler_80mm";
 
 function settingsOf(device: Device): Settings {
   const raw = device.settings;
@@ -65,6 +68,25 @@ export function DevicesPanel({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerNote, setDrawerNote] = useState("");
   const [managerPin, setManagerPin] = useState("");
+
+  // the desktop app's bridge (window.cachierShell); null in an ordinary browser
+  const shell = useSyncExternalStore(
+    () => () => {},
+    getCachierShell,
+    () => null
+  );
+  const canPrintViaShell = shellCanPrint(shell);
+  const [queues, setQueues] = useState<ShellPrinter[] | null>(null);
+  useEffect(() => {
+    if (!shell || !shellCanPrint(shell)) return;
+    let cancelled = false;
+    listShellPrinters(shell)
+      .then((found) => !cancelled && setQueues(found))
+      .catch(() => !cancelled && setQueues([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [shell]);
 
   const tillId = tills[0]?.id ?? "";
   const profileLabel = (key: string) => profiles.find((p) => p.key === key)?.label ?? key;
@@ -112,7 +134,60 @@ export function DevicesPanel({
     }
   }
 
+  async function checkSpoolerHealth(device: Device) {
+    const name = settingsOf(device).printerName;
+    let health: "ok" | "offline" = "offline";
+    let detail = t("printerNotChosen");
+    try {
+      if (name && shell && shellCanPrint(shell)) {
+        const found = await listShellPrinters(shell);
+        queuesRefresh(found);
+        if (found.some((p) => p.name === name)) {
+          health = "ok";
+          detail = name;
+        } else {
+          detail = t("printerMissing", { name });
+        }
+      }
+    } catch (error) {
+      detail = error instanceof Error ? deviceError(error.message) : t("checkFailed");
+    }
+    run(() => reportDeviceHealth({ deviceId: device.id, health, detail }), health === "ok" ? "healthOk" : "healthOffline");
+  }
+
+  function queuesRefresh(found: ShellPrinter[]) {
+    setQueues(found);
+  }
+
+  async function testPrint(device: Device) {
+    const name = settingsOf(device).printerName;
+    if (!name || !shell || !shellCanPrint(shell)) return;
+    try {
+      await new ShellTransport(shell, name).send(buildTestPage());
+      toast.success(t("testPrinted"));
+    } catch (error) {
+      toast.error(error instanceof Error ? deviceError(error.message) : t("checkFailed"));
+    }
+  }
+
+  function choosePrinter(device: Device, printerName: string) {
+    run(
+      () =>
+        saveDevice({
+          id: device.id,
+          tillId,
+          kind: device.kind,
+          name: device.name,
+          profile: device.profile,
+          active: device.active,
+          settings: { ...settingsOf(device), printerName },
+        }),
+      "saved"
+    );
+  }
+
   async function checkHealth(device: Device) {
+    if (device.profile === SPOOLER) return checkSpoolerHealth(device);
     const settings = settingsOf(device);
     let health: "ok" | "offline" = "offline";
     let detail = t("notPaired");
@@ -132,7 +207,11 @@ export function DevicesPanel({
   async function testDrawer(drawerDevice: Device | undefined) {
     const printer = devices.find((d) => d.kind === "printer" && d.active && d.till_id === drawerDevice?.till_id);
     const settings = printer ? settingsOf(printer) : {};
-    const transport = await findPairedUsbPrinter({ vendorId: settings.vendorId, productId: settings.productId }).catch(() => null);
+    // the drawer is kicked through the receipt printer: a Windows print queue (desktop app) or the paired USB printer
+    const transport =
+      printer?.profile === SPOOLER && settings.printerName && shell && shellCanPrint(shell)
+        ? new ShellTransport(shell, settings.printerName)
+        : await findPairedUsbPrinter({ vendorId: settings.vendorId, productId: settings.productId }).catch(() => null);
     const outcome = await runDrawerOpen({
       transport,
       authorize: async () => {
@@ -160,7 +239,7 @@ export function DevicesPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      {!webUsbSupported() && <p className="rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">{t("noWebUsb")}</p>}
+      {!webUsbSupported() && !canPrintViaShell && <p className="rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">{t("noWebUsb")}</p>}
       {failedJobs.length > 0 && (
         <p className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-sm">{t("failedJobs", { count: failedJobs.length })}</p>
       )}
@@ -211,6 +290,32 @@ export function DevicesPanel({
                     </td>
                     <td className="p-3">
                       <div className="flex flex-wrap justify-end gap-2">
+                        {device.profile === SPOOLER &&
+                          (canPrintViaShell ? (
+                            <>
+                              <Select value={settings.printerName ?? ""} onValueChange={(value) => choosePrinter(device, value)}>
+                                <SelectTrigger className="w-56">
+                                  <SelectValue placeholder={t("choosePrinter")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {(queues ?? []).map((queue) => (
+                                    <SelectItem key={queue.name} value={queue.name}>
+                                      {queue.name}
+                                      {queue.isDefault ? ` (${t("defaultPrinter")})` : ""}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button size="sm" variant="outline" onClick={() => void testPrint(device)} disabled={pending || !settings.printerName}>
+                                {t("testPrint")}
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => void checkHealth(device)} disabled={pending}>
+                                {t("check")}
+                              </Button>
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground max-w-48 text-xs">{t("needsDesktopApp")}</span>
+                          ))}
                         {device.profile === "escpos_usb_80mm" && (
                           <>
                             <Button size="sm" variant="outline" onClick={() => void pair(device)} disabled={pending}>

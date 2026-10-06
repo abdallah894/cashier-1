@@ -1127,7 +1127,14 @@
     },
     "profilesTitle": "Declared hardware support",
     "supported": "Supported",
-    "notSupported": "Not supported yet"
+    "notSupported": "Not supported yet",
+    "choosePrinter": "Choose the printer",
+    "defaultPrinter": "Windows default",
+    "testPrint": "Test print",
+    "testPrinted": "Test page sent to the printer.",
+    "printerNotChosen": "No printer chosen yet.",
+    "printerMissing": "The printer \"{name}\" is not installed on this computer.",
+    "needsDesktopApp": "Open this page in the Cachier desktop app to choose a Windows printer."
   },
   "opsReports": {
     "from": "From",
@@ -1341,6 +1348,19 @@
     "accessDenied": "The browser was not allowed to use the device. Allow access when asked.",
     "printFailed": "The receipt could not be printed.",
     "drawerNotOpened": "The cash drawer did not open.",
-    "generic": "Device problem: {detail}"
+    "generic": "Device problem: {detail}",
+    "printerNotInstalled": "That printer is not installed on this computer. Check it in Windows 'Printers & scanners'.",
+    "queueRefused": "Windows did not accept the receipt. Check that the printer is on, has paper and is not paused or offline.",
+    "printTimeout": "The printer took too long. Check that it is on and connected, then try again.",
+    "printServiceMissing": "This computer's print service is not available.",
+    "bridgeNotAllowed": "This page is not allowed to use the printer.",
+    "needDesktopApp": "Printing through Windows needs the Cachier desktop app."
+  },
+  "shellUpdate": {
+    "tooOld": "This till app (version {version}) is too old for the current website. Please install the latest Cachier desktop app.",
+    "ready": "Version {version} is ready.",
+    "readyHint": "It installs when you close the app, or restart now.",
+    "finishSaleFirst": "Finish the current sale first.",
+    "restart": "Restart to update"
   }
 }

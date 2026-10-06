@@ -32,8 +32,11 @@ Serial/COM scanners and scanners that need a vendor driver are not supported.
 | Profile | Interface | Status | Verified on site |
 | --- | --- | --- | --- |
 | `browser_print_80mm` | any printer via the browser print dialog / PDF | Supported (fallback, always available) | _printer: ____ |
-| `escpos_usb_80mm` | ESC/POS thermal, **USB**, 80 mm, driven from the browser with **WebUSB** | Supported | _model: ____ date: ____ |
-| `escpos_network_80mm` | ESC/POS over TCP/IP | Not supported (needs a local print bridge) | n/a |
+| `escpos_spooler_80mm` | ESC/POS thermal (USB or any installed driver), 80 mm, through the **Windows print queue** in the **desktop app** | Supported (**recommended on Windows**) | _model: ____ date: ____ |
+| `escpos_usb_80mm` | ESC/POS thermal, **USB**, 80 mm, driven from the browser with **WebUSB** (needs the driver swapped to WinUSB) | Supported | _model: ____ date: ____ |
+| `escpos_network_80mm` | ESC/POS over TCP/IP | Not supported (the desktop app's bridge could carry it; not built) | n/a |
+
+**On Windows, prefer the desktop app and the print-queue profile** ([desktop-printing.md](desktop-printing.md)): it uses the printer's normal driver, so the Zadig/WinUSB driver swap described below is not needed. The WebUSB path remains for Chrome/Edge without the desktop app.
 
 Requirements for the USB path: a printer that speaks **ESC/POS** and exposes a
 USB **printer class (0x07)** interface with a bulk OUT endpoint; a

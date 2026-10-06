@@ -19,6 +19,12 @@ const cases: [string, string][] = [
   ["SecurityError: Access denied.", "accessDenied"],
   ["print failed", "printFailed"],
   ["drawer did not open", "drawerNotOpened"],
+  ["printer not installed", "printerNotInstalled"],
+  ["the print queue refused the document", "queueRefused"],
+  ["print timed out", "printTimeout"],
+  ["the print service is not available on this computer", "printServiceMissing"],
+  ["not allowed", "bridgeNotAllowed"],
+  ["this app cannot list printers", "needDesktopApp"],
 ];
 for (const [message, key] of cases) check(`"${message.slice(0, 40)}" → ${key}`, deviceErrorKey(message) === key, String(deviceErrorKey(message)));
 check("an unknown message has no key (shown after a translated generic line)", deviceErrorKey("something odd") === null);

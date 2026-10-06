@@ -80,6 +80,14 @@ async function main() {
     "not supported",
     "an undeclared-as-supported profile cannot be registered"
   );
+  // Phase 3: printing through the Windows print queue (desktop app)
+  const spooler = await read(`select kind, supported from public.device_profiles where key = 'escpos_spooler_80mm'`);
+  check("the Windows print-queue printer profile is declared and supported", spooler.length === 1 && spooler[0].kind === "printer" && spooler[0].supported === true);
+  await expectError(
+    db.query(`select public.upsert_device('{"till_id":"${tillId}","kind":"cash_drawer","name":"Wrong","profile":"escpos_spooler_80mm"}'::jsonb)`),
+    "does not match",
+    "the print-queue profile cannot be used for another device kind"
+  );
   const { rows: printer } = await db.query<{ id: string }>(
     `select public.upsert_device('{"till_id":"${tillId}","kind":"printer","name":"Counter printer","profile":"escpos_usb_80mm","settings":{"vendorId":1208}}'::jsonb) as id`
   );
