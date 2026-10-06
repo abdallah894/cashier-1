@@ -60,6 +60,11 @@ export async function updateStoreSettings(input: unknown): Promise<ActionResult>
       ...(v.taxRegistrationNumber === undefined ? {} : { tax_registration_number: v.taxRegistrationNumber }),
       ...(v.receiptFooterAr === undefined ? {} : { receipt_footer_ar: v.receiptFooterAr }),
       ...(v.receiptFooterEn === undefined ? {} : { receipt_footer_en: v.receiptFooterEn }),
+      ...(v.weighedBarcodeEnabled === undefined ? {} : { weighed_barcode_enabled: v.weighedBarcodeEnabled }),
+      ...(v.weighedPrefixMin === undefined ? {} : { weighed_prefix_min: v.weighedPrefixMin }),
+      ...(v.weighedPrefixMax === undefined ? {} : { weighed_prefix_max: v.weighedPrefixMax }),
+      ...(v.weighedItemCodeLength === undefined ? {} : { weighed_item_code_length: v.weighedItemCodeLength }),
+      ...(v.weighedValueKind === undefined ? {} : { weighed_value_kind: v.weighedValueKind }),
     },
   });
   if (error) return { ok: false, error: opsError(error.message) };

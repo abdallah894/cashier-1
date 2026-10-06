@@ -1,4 +1,5 @@
 import type { Tables } from "@/lib/supabase/database.types";
+import { DEFAULT_WEIGHED_CONFIG, type WeighedConfig } from "@/lib/barcode/weighed";
 import type { StoreInfo } from "@/lib/receipts/types";
 import type { OfflineDb } from "./db";
 
@@ -78,4 +79,21 @@ export function catalogFreshness(refreshedAt: string | null, now: number = Date.
   if (age > CATALOG_EXPIRED_AFTER_MS) return "expired";
   if (age > CATALOG_STALE_AFTER_MS) return "stale";
   return "fresh";
+}
+
+/** Offline lookup of a scale-label PLU in the cached catalog. */
+export async function findByPlu(db: OfflineDb, plu: string): Promise<Product | null> {
+  const product = await db.catalog.filter((p) => p.plu_code === plu && p.active).first();
+  return product ?? null;
+}
+
+/** Scale-label layout cached for offline scanning. */
+export async function saveWeighedConfig(db: OfflineDb, config: WeighedConfig): Promise<void> {
+  await db.meta.put({ key: "weighedConfig", value: config });
+}
+
+export async function loadWeighedConfig(db: OfflineDb): Promise<WeighedConfig | null> {
+  const row = await db.meta.get("weighedConfig");
+  const v = row?.value as Partial<WeighedConfig> | undefined;
+  return v && typeof v.enabled === "boolean" && typeof v.itemCodeLength === "number" ? ({ ...DEFAULT_WEIGHED_CONFIG, ...v } as WeighedConfig) : null;
 }

@@ -42,6 +42,14 @@ export function StoreSettingsDialog({ settings }: { settings: StoreSettings }) {
     receiptFooterAr: settings.receipt_footer_ar,
     receiptFooterEn: settings.receipt_footer_en,
   });
+  const [weighed, setWeighed] = useState({
+    enabled: settings.weighed_barcode_enabled,
+    prefixMin: String(settings.weighed_prefix_min),
+    prefixMax: String(settings.weighed_prefix_max),
+    codeLength: String(settings.weighed_item_code_length),
+    valueKind: settings.weighed_value_kind === "price_piasters" ? "price_piasters" : "weight_grams",
+  });
+  const setW = <K extends keyof typeof weighed>(key: K, value: (typeof weighed)[K]) => setWeighed((prev) => ({ ...prev, [key]: value }));
   const setId = (key: keyof typeof identity, value: string) => setIdentity((prev) => ({ ...prev, [key]: value }));
 
   function save() {
@@ -54,6 +62,11 @@ export function StoreSettingsDialog({ settings }: { settings: StoreSettings }) {
         reorderLookbackDays: Number(lookback),
         defaultLeadTimeDays: Number(lead),
         ...identity,
+        weighedBarcodeEnabled: weighed.enabled,
+        weighedPrefixMin: Number(weighed.prefixMin),
+        weighedPrefixMax: Number(weighed.prefixMax),
+        weighedItemCodeLength: Number(weighed.codeLength),
+        weighedValueKind: weighed.valueKind as "weight_grams" | "price_piasters",
       });
       if (!result.ok) {
         toast.error(tErrors(result.error));
@@ -105,6 +118,34 @@ export function StoreSettingsDialog({ settings }: { settings: StoreSettings }) {
             </Field>
             <Field id="footEn" label={t("footerEn")}>
               <Input id="footEn" dir="ltr" value={identity.receiptFooterEn} onChange={(e) => setId("receiptFooterEn", e.target.value)} />
+            </Field>
+          </div>
+          <p className="pt-2 text-sm font-medium">{t("weighedTitle")}</p>
+          <p className="text-muted-foreground -mt-2 text-xs">{t("weighedHint")}</p>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={weighed.enabled} onChange={(e) => setW("enabled", e.target.checked)} />
+            {t("weighedEnabled")}
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <Field id="wMin" label={t("weighedPrefixMin")}>
+              <Input id="wMin" dir="ltr" inputMode="numeric" value={weighed.prefixMin} onChange={(e) => setW("prefixMin", e.target.value)} />
+            </Field>
+            <Field id="wMax" label={t("weighedPrefixMax")}>
+              <Input id="wMax" dir="ltr" inputMode="numeric" value={weighed.prefixMax} onChange={(e) => setW("prefixMax", e.target.value)} />
+            </Field>
+            <Field id="wLen" label={t("weighedCodeLength")}>
+              <Input id="wLen" dir="ltr" inputMode="numeric" value={weighed.codeLength} onChange={(e) => setW("codeLength", e.target.value)} />
+            </Field>
+            <Field id="wKind" label={t("weighedValueKind")}>
+              <select
+                id="wKind"
+                value={weighed.valueKind}
+                onChange={(e) => setW("valueKind", e.target.value as "weight_grams" | "price_piasters")}
+                className="border-input bg-background h-9 rounded-md border px-2 text-sm"
+              >
+                <option value="weight_grams">{t("weighedKindWeight")}</option>
+                <option value="price_piasters">{t("weighedKindPrice")}</option>
+              </select>
             </Field>
           </div>
           <Field id="tz" label={t("timezone")}>

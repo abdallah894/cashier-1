@@ -7,7 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
 import { useOnline } from "@/hooks/use-online";
 import { usePromotionPreview } from "@/hooks/use-promotion-preview";
-import { lookupBarcode } from "@/lib/offline/register-data";
+import { lookupBarcode, lookupWeighed } from "@/lib/offline/register-data";
 import { useCart, computeTotals } from "@/lib/store/cart";
 import { CartPane } from "./cart-pane";
 import { SearchPane, type SearchPaneHandle } from "./search-pane";
@@ -69,7 +69,15 @@ export function Register({
       // live lookup online, last synced catalog offline
       const { product } = await lookupBarcode(barcode);
       if (!product) {
-        setUnknownBarcode(barcode);
+        // not a product barcode: maybe a label printed by the deli/produce scale (weight or price inside)
+        const weighed = await lookupWeighed(barcode);
+        if (!weighed) {
+          setUnknownBarcode(barcode);
+        } else if (!weighed.ok) {
+          toast.error(t(weighed.reason === "unknownPlu" ? "unknownPlu" : "notByWeight", { plu: weighed.plu }));
+        } else {
+          addProduct(weighed.product, weighed.qty); // adds the label's weight; a second pack of the same item adds up
+        }
         return;
       }
       addProduct(product); // increments qty if already in the cart

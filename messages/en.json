@@ -123,7 +123,9 @@
       "create": "Create product",
       "cancel": "Cancel",
       "saved": "Product saved.",
-      "created": "Product created."
+      "created": "Product created.",
+      "plu": "Scale code (PLU)",
+      "pluHint": "Only for items weighed on the shop scale: the 1–6 digit code the scale prints inside its labels. Leave empty otherwise."
     }
   },
   "categories": {
@@ -316,7 +318,9 @@
       "create": "Register and attach",
       "close": "Close"
     },
-    "scanBlocked": "The scan was ignored: finish or close the open window first."
+    "scanBlocked": "The scan was ignored: finish or close the open window first.",
+    "unknownPlu": "This scale label is for PLU {plu}, but no product has that PLU. Add the PLU code to the product first.",
+    "notByWeight": "PLU {plu} is on a weight label, but that product is not sold by the kilo."
   },
   "shifts": {
     "title": "Shifts",
@@ -655,7 +659,8 @@
     "reorderNoteRequired": "A note is required to dismiss an alert.",
     "reorderChooseOrder": "Choose a purchase order that contains this product.",
     "reorderResolved": "That alert is already resolved.",
-    "opsFailed": "The action failed. Please try again."
+    "opsFailed": "The action failed. Please try again.",
+    "duplicatePlu": "Another product already uses this scale code (PLU)."
   },
   "fieldErrors": {
     "required": "Required.",
@@ -669,7 +674,9 @@
     "unknownCategory": "Category not found — create it first or leave empty.",
     "invalidUnit": "Unit must be piece or kg.",
     "invalidBoolean": "Use yes/no.",
-    "qtyChangeZero": "Change cannot be zero."
+    "qtyChangeZero": "Change cannot be zero.",
+    "invalidPlu": "1–6 digits, no leading zero.",
+    "duplicatePlu": "Another product already uses this scale code."
   },
   "offline": {
     "title": "Pending sales",
@@ -1158,7 +1165,16 @@
       "phone": "Phone",
       "taxNumber": "Tax registration number",
       "footerAr": "Receipt footer (Arabic)",
-      "footerEn": "Receipt footer (English)"
+      "footerEn": "Receipt footer (English)",
+      "weighedTitle": "Scale labels (weighed barcodes)",
+      "weighedHint": "For deli/produce scales that print a barcode holding the item code and the weight or price. Give each such product its scale code (PLU) in the product form. Print one test label to confirm the layout before enabling.",
+      "weighedEnabled": "Read scale labels at the register",
+      "weighedPrefixMin": "First prefix (20–29)",
+      "weighedPrefixMax": "Last prefix (20–29)",
+      "weighedCodeLength": "Item code digits (4–6)",
+      "weighedValueKind": "The label holds",
+      "weighedKindWeight": "Weight in grams",
+      "weighedKindPrice": "Price in piasters"
     },
     "dayClosed": "Business day {day} closed.",
     "closeDay": "Close day",

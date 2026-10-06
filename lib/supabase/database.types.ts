@@ -1102,6 +1102,7 @@ export type Database = {
           low_stock_threshold: number
           name_ar: string
           name_en: string
+          plu_code: string | null
           price: number
           stock_qty: number
           tax_rate: number
@@ -1119,6 +1120,7 @@ export type Database = {
           low_stock_threshold?: number
           name_ar: string
           name_en: string
+          plu_code?: string | null
           price: number
           stock_qty?: number
           tax_rate?: number
@@ -1136,6 +1138,7 @@ export type Database = {
           low_stock_threshold?: number
           name_ar?: string
           name_en?: string
+          plu_code?: string | null
           price?: number
           stock_qty?: number
           tax_rate?: number
@@ -2199,6 +2202,11 @@ export type Database = {
           store_name_en: string
           tax_registration_number: string
           timezone: string
+          weighed_barcode_enabled: boolean
+          weighed_item_code_length: number
+          weighed_prefix_max: number
+          weighed_prefix_min: number
+          weighed_value_kind: string
         }
         Insert: {
           address_ar?: string
@@ -2215,6 +2223,11 @@ export type Database = {
           store_name_en?: string
           tax_registration_number?: string
           timezone?: string
+          weighed_barcode_enabled?: boolean
+          weighed_item_code_length?: number
+          weighed_prefix_max?: number
+          weighed_prefix_min?: number
+          weighed_value_kind?: string
         }
         Update: {
           address_ar?: string
@@ -2231,6 +2244,11 @@ export type Database = {
           store_name_en?: string
           tax_registration_number?: string
           timezone?: string
+          weighed_barcode_enabled?: boolean
+          weighed_item_code_length?: number
+          weighed_prefix_max?: number
+          weighed_prefix_min?: number
+          weighed_value_kind?: string
         }
         Relationships: []
       }
