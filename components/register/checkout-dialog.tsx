@@ -12,8 +12,9 @@ import { useOnline } from "@/hooks/use-online";
 import { getOfflineDb } from "@/lib/offline/db";
 import { catalogFreshness, catalogRefreshedAt, loadDiscountThreshold } from "@/lib/offline/catalog";
 import { enqueueSale } from "@/lib/offline/outbox";
+import type { OutboxEntry } from "@/lib/offline/types";
 import { buildProvisionalReceipt, discountNeedsApproval } from "@/lib/offline/provisional";
-import { formatEgp, MAX_TENDERED_PIASTERS, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
+import { formatEgp, isTenderedTooLarge, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
 import { isValidPaymentReference } from "@/lib/payments/providers";
 import { useCart, toSaleItems, toQueuedSaleItems, type CartTotals } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ export function CheckoutDialog({
   userId,
   shiftId,
   cashierName,
+  onQueued,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -45,6 +47,8 @@ export function CheckoutDialog({
   userId: string;
   shiftId: string;
   cashierName: string | null;
+  /** called with the queued sale when it was rung offline (lets the register show its receipt in place) */
+  onQueued?: (entry: OutboxEntry) => void;
 }) {
   const t = useTranslations("register.checkoutDialog");
   const tErrors = useTranslations("errors");
@@ -84,7 +88,7 @@ export function CheckoutDialog({
 
   const tendered = parseEgpToPiasters(tenderedInput);
   const change = tendered !== null ? tendered - totals.total : null;
-  const tenderedTooLarge = tendered !== null && tendered > MAX_TENDERED_PIASTERS;
+  const tenderedTooLarge = isTenderedTooLarge(tenderedInput);
   const cashInvalid = method === "cash" && (tendered === null || tendered < totals.total || tenderedTooLarge);
   // a card sale is only recorded with the terminal's approval code
   const cardInvalid = method === "card" && !isValidPaymentReference(cardReference.trim());
@@ -116,7 +120,9 @@ export function CheckoutDialog({
     toast.success(t("queuedDone", { number: entry.localNumber }));
     resetForm();
     onOpenChange(false);
-    router.push(`/offline-sales/${entry.id}?new=1`);
+    // show the receipt right here: a server page that was never loaded cannot open offline
+    if (onQueued) onQueued(entry);
+    else router.push(`/offline-sales/${entry.id}?new=1`);
   }
 
   async function confirm() {
@@ -306,7 +312,7 @@ export function CheckoutDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             {t("cancel")}
           </Button>
-          <Button onClick={confirm} disabled={submitting || cashInvalid || cardInvalid} className="min-w-32">
+          <Button onClick={confirm} disabled={submitting || cashInvalid || cardInvalid} className="min-w-32" data-testid="checkout-confirm">
             {submitting && <Loader2 className="size-4 animate-spin" />}
             {t("confirm")}
           </Button>

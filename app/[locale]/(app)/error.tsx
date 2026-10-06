@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { reportClientError } from "@/lib/actions/ops-health";
 
 // Error boundary for the signed-in shell: a page that throws shows this instead
 // of a blank screen, and the sidebar keeps working (Vue/Nuxt: <NuxtErrorBoundary>).
@@ -11,6 +12,8 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
 
   useEffect(() => {
     console.error("page error", { digest: error.digest, message: error.message });
+    // tell the owner: a till showing this screen is otherwise invisible to them
+    void reportClientError({ message: error.message || "unknown error", digest: error.digest, path: window.location.pathname }).catch(() => undefined);
   }, [error]);
 
   return (

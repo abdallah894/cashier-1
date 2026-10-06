@@ -1,5 +1,5 @@
 import { createScanDetector } from "../lib/barcode/scan-detector";
-import { MAX_TENDERED_PIASTERS } from "../lib/money";
+import { isTenderedTooLarge, MAX_TENDERED_PIASTERS } from "../lib/money";
 import { checkoutSchema } from "../lib/validation/sale";
 
 let failures = 0;
@@ -104,6 +104,12 @@ const EAN13 = "6221031234567";
   check("the cap itself is accepted", checkoutSchema.safeParse({ ...base, amount_tendered: MAX_TENDERED_PIASTERS }).success);
   check("one piaster over the cap is refused", !checkoutSchema.safeParse({ ...base, amount_tendered: MAX_TENDERED_PIASTERS + 1 }).success);
   check("a normal 200 EGP note is accepted", checkoutSchema.safeParse({ ...base, amount_tendered: 20000 }).success);
+  check("a typed 13-digit barcode is flagged too large", isTenderedTooLarge("6221000000024"));
+  check("an Arabic-digit barcode is flagged too large", isTenderedTooLarge("٦٢٢١٠٠٠٠٠٠٠٠٢٤"));
+  check("100 is not too large", !isTenderedTooLarge("100"));
+  check("the cap in EGP is not too large", !isTenderedTooLarge("100000"));
+  check("just over the cap is too large", isTenderedTooLarge("100000.01"));
+  check("empty input is not flagged", !isTenderedTooLarge(""));
 }
 
 if (failures > 0) process.exit(1);

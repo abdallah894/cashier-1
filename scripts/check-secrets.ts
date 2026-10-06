@@ -63,7 +63,8 @@ for (const file of mustBeServerOnly) {
 
 // ---- the service-role key is only ever referenced by server code ----
 for (const file of code) {
-  if (file.startsWith("scripts/") || file.startsWith("lib/supabase/admin.ts")) continue;
+  // developer tooling that never ships (seed/test scripts, the browser-test config) may pass the key through
+  if (file.startsWith("scripts/") || file.startsWith("e2e/") || file === "playwright.config.ts" || file.startsWith("lib/supabase/admin.ts")) continue;
   const text = readFileSync(file, "utf8");
   if (/SUPABASE_SERVICE_ROLE_KEY/.test(text)) fail(`${file} references SUPABASE_SERVICE_ROLE_KEY; use createAdminClient()`);
 }

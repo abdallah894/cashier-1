@@ -126,7 +126,18 @@ Map transport errors to message keys in `lib/devices/print-service.ts` instead o
 
 ---
 
-## Phase 2 — Quality gate (8–10 days)
+## Phase 2 — Quality gate (8–10 days) — ⚠️ MOSTLY DONE (2026-10-06)
+
+| Item | Status |
+| --- | --- |
+| Browser tests (Playwright) | ✅ **Backend-free tier: 30 tests pass in real Chromium** (sign-in page AR/EN, redirects, headers, CSP, public API). ⚠️ **Signed-in tier written but never run** (needs Docker + Supabase, which this environment cannot start): CI job `e2e-app`, non-blocking until it passes once. See [testing.md](testing.md). |
+| Content-Security-Policy | ✅ Built with nonces, tested, **shipped in report-only mode**. Enforced mode is verified on the sign-in page only. Roll out per [security.md](security.md) before switching to `enforce`. |
+| Rate limits | ✅ Ops routes, webhook, health, CSP reports. |
+| Error monitoring | ✅ Server errors already reached the webhook; **browser page crashes now do too**. |
+| Small hardening | ✅ webhook returns fixed codes, `requireAdmin` checks `active`, ids validated. ❌ **Hiding product cost from cashiers is not done** (needs a schema change, see security.md). |
+| Found and fixed along the way | After sign-in the app showed a leftover "Phase 1 — Foundation" placeholder: now cashiers land on the register and admins on Reports. After an offline sale the register navigated to a server page that cannot load offline: the provisional receipt now shows in place. The theme script had no CSP nonce. |
+
+The original plan for this phase follows for reference.
 
 1. **Browser E2E with Playwright** (4–5 days). Run against a local Supabase (`npx supabase start`) in a new CI job. Scenarios:
    - cashier signs in → opens shift → scans (simulated keyboard burst) → sells per-piece + per-kg → pays cash → receipt shows correct change;
@@ -143,7 +154,22 @@ Map transport errors to message keys in `lib/devices/print-service.ts` instead o
 
 ---
 
-## Phase 3 — Desktop app (Electron) for the counter (10–15 days)
+## Phase 3 — Desktop app (Electron) for the counter (10–15 days) — ⚠️ BUILT, NOT YET TRIED ON WINDOWS (2026-10-06)
+
+Decisions: USB printers through the Windows driver only (no network/serial); updates from a separate public releases repo; unsigned installer for now. Details and your setup steps: [desktop-printing.md](desktop-printing.md).
+
+| Item | Status |
+| --- | --- |
+| 3.1 Native print bridge (Windows print queue, raw ESC/POS) | ✅ Built. Rules, command building and failures unit-tested (incl. a real child process). The **actual Windows spooler call has never run**: no Windows here. |
+| 3.1 Web side (`ShellTransport`, new `escpos_spooler_80mm` profile, Devices screen: choose printer, Test print, Check) | ✅ Built and tested; drawer kick uses the same printer. |
+| 3.2 Auto-update | ✅ Policy tested; the **packaged** app starts it correctly. Not tried against a real GitHub release. "Restart to update" banner (disabled during a sale) and "app too old" notice. |
+| 3.3 Code signing | Decided: skip for now. Build signs automatically once a certificate secret is added. |
+| 3.4 Till polish (auto-start, crash reload, per-user installer, icon placeholder) | ✅ Built. Auto-start and the installer not tried on Windows. |
+| Verification | ✅ **Real Electron launched headlessly** (source and packaged): bridge exposed, no Node leak, bad input refused, iframe gets nothing — 13 checks, also in CI. |
+| Still yours | Create the releases repo + token, tag `desktop-v1.0.0`, install on the counter PC, run the acceptance checklist with the real printer. |
+| Found and fixed | The old preload did `require("./package.json")` in a sandboxed renderer (not allowed) and the Devices form silently dropped any new device setting (`printerName`). |
+
+The original plan for this phase follows for reference.
 
 The shell exists in `desktop/` and already gives kiosk mode, a locked-down window, USB chooser and an offline page. To make it production grade:
 

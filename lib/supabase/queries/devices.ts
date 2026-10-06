@@ -6,7 +6,7 @@ export type Device = Tables<"devices">;
 export type DeviceProfile = Tables<"device_profiles">;
 export type PrintJob = Tables<"print_jobs">;
 
-export type DeviceSettings = { vendorId?: number; productId?: number; columns?: number };
+export type DeviceSettings = { vendorId?: number; productId?: number; columns?: number; /** Windows print queue name (desktop app) */ printerName?: string };
 
 export function deviceSettings(device: Device): DeviceSettings {
   const raw = device.settings;

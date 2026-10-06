@@ -1,5 +1,5 @@
 import type { OfflineDb } from "./db";
-import { claimNext, markRejected, markSynced, releaseToQueue } from "./outbox";
+import { claimNext, markRejected, markSynced, recoverStuck, releaseToQueue } from "./outbox";
 import type { OutboxEntry } from "./types";
 
 export type SubmitResult =
@@ -20,6 +20,30 @@ export type DrainResult = {
 /** After this many server-side "retry" answers the sale is surfaced to staff instead of looping silently. */
 export const MAX_SERVER_ATTEMPTS = 5;
 
+/**
+ * A submit that has not answered by then is treated like a network loss: the
+ * sale goes back to the queue and the drain ends, so one hung request can never
+ * hold the queue (and the drain lock) until the page is reloaded. Resending is
+ * safe: the server de-duplicates on the sale's idempotency key.
+ */
+export const SUBMIT_TIMEOUT_MS = 45_000;
+
+export type DrainOptions = { submitTimeoutMs?: number };
+
+class SubmitTimeoutError extends Error {
+  constructor() {
+    super("submitTimeout");
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new SubmitTimeoutError()), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 const inflight = new WeakMap<OfflineDb, Promise<DrainResult>>();
 
 /**
@@ -31,11 +55,12 @@ const inflight = new WeakMap<OfflineDb, Promise<DrainResult>>();
 export function drainOutbox(
   db: OfflineDb,
   userId: string,
-  submit: (entry: OutboxEntry) => Promise<SubmitResult>
+  submit: (entry: OutboxEntry) => Promise<SubmitResult>,
+  options: DrainOptions = {}
 ): Promise<DrainResult> {
   const running = inflight.get(db);
   if (running) return running;
-  const run = drain(db, userId, submit).finally(() => inflight.delete(db));
+  const run = drain(db, userId, submit, options.submitTimeoutMs ?? SUBMIT_TIMEOUT_MS).finally(() => inflight.delete(db));
   inflight.set(db, run);
   return run;
 }
@@ -43,7 +68,8 @@ export function drainOutbox(
 async function drain(
   db: OfflineDb,
   userId: string,
-  submit: (entry: OutboxEntry) => Promise<SubmitResult>
+  submit: (entry: OutboxEntry) => Promise<SubmitResult>,
+  submitTimeoutMs: number
 ): Promise<DrainResult> {
   let synced = 0;
   let rejected = 0;
@@ -55,9 +81,9 @@ async function drain(
 
     let result: SubmitResult;
     try {
-      result = await submit(entry);
+      result = await withTimeout(submit(entry), submitTimeoutMs);
     } catch (error) {
-      // network loss (or an expired login): put it back untouched and stop so FIFO order holds
+      // network loss, no answer in time, or an expired login: put it back untouched and stop so FIFO order holds
       needsSignIn = error instanceof Error && error.message === "notAuthorized";
       await releaseToQueue(db, entry.id, { countAttempt: false });
       break;
@@ -107,6 +133,11 @@ export async function drainOutboxExclusive(
   if (!locks) return drainOutbox(db, userId, submit);
   return locks.request(DRAIN_LOCK_NAME, { ifAvailable: true }, async (lock) => {
     if (!lock) return null;
+    // Every drain in this browser runs inside this lock, so holding it means no
+    // tab is mid-submit: a sale still marked `syncing` was left by a page that
+    // reloaded or closed mid-request. Send it again now (the idempotency key
+    // makes that safe) instead of leaving it stuck until a later reload.
+    await recoverStuck(db, 0, userId);
     return drainOutbox(db, userId, submit);
   });
 }

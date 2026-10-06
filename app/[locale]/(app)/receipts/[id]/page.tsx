@@ -29,7 +29,10 @@ export default async function ReceiptPage({
   const receipt = buildReceipt(sale, await getStoreInfo());
   const tillId = await getCurrentTillId();
   const [devices, printedCount] = await Promise.all([getDevices(tillId ?? undefined), getPrintedCount("sale_receipt", id)]);
-  const printerDevice = devices.find((d) => d.kind === "printer" && d.active && d.profile === "escpos_usb_80mm");
+  // a thermal printer is either a paired USB device (WebUSB) or a Windows print queue (desktop app)
+  const printerDevice = devices.find(
+    (d) => d.kind === "printer" && d.active && (d.profile === "escpos_usb_80mm" || (d.profile === "escpos_spooler_80mm" && !!deviceSettings(d).printerName))
+  );
   const drawerDevice = devices.find((d) => d.kind === "cash_drawer" && d.active);
   const printerSettings = printerDevice ? deviceSettings(printerDevice) : null;
   const gift = sp.gift === "1";
@@ -43,7 +46,15 @@ export default async function ReceiptPage({
         <ReceiptActions
           receipt={receipt}
           justCompleted={sp.new === "1"}
-          printer={printerDevice ? { deviceId: printerDevice.id, ...printerSettings } : null}
+          printer={
+            printerDevice
+              ? {
+                  deviceId: printerDevice.id,
+                  ...printerSettings,
+                  shellPrinter: printerDevice.profile === "escpos_spooler_80mm" ? printerSettings?.printerName : undefined,
+                }
+              : null
+          }
           drawerDeviceId={drawerDevice?.id ?? null}
           printedCount={printedCount}
           paidWithCash={tenders.includes("cash")}

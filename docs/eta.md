@@ -14,7 +14,7 @@ The authority's technical specification (the document format, how the receipt UU
   - `rejected`: the authority refused the document (needs a person).
   - `failed`: 8 temporary failures in a row (backoff 2, 4, 8 … up to 360 minutes).
   - A worker that crashes mid-send is recovered after 10 minutes — so a provider **must treat resubmitting the same document as safe**.
-- `GET /api/ops/eta` (Vercel Cron, every 5 minutes, `CRON_SECRET`) drains the queue through the provider chosen by `ETA_PROVIDER`. With no provider it does nothing.
+- `GET /api/ops/eta` (called every 30 minutes by `.github/workflows/ops-cron.yml` once you set the repository variable `ETA_QUEUE_ENABLED=true`; `CRON_SECRET`) drains the queue through the provider chosen by `ETA_PROVIDER`. With no provider it does nothing.
 - Alerts (existing webhook): `eta_backlog` (warning: something waited over 30 minutes) and `eta_rejected` (critical: rejected or failed documents exist). Both are silent while the switch is off.
 - `lib/eta/types.ts` (the `EtaProvider` interface), `lib/eta/worker.ts` (tested), `lib/eta/providers.ts` (the place a provider is registered).
 

@@ -1,0 +1,45 @@
+name: Ops checks
+
+# Scheduled checks for the deployed website, run from GitHub because Vercel's free plan
+# only allows one scheduled job a day. Every 30 minutes (about 1,440 free Actions minutes a
+# month for a private repository; the alert rules look back 30 minutes to match).
+# Scheduled workflows run from the default branch, so this starts working once merged.
+#
+# Needs: repository variable POS_APP_URL (the website address, no trailing slash) and secret
+# CRON_SECRET (the same value as CRON_SECRET in Vercel). Optional variable ETA_QUEUE_ENABLED=true
+# turns on the tax-authority queue worker (only once a provider is installed, see docs/eta.md).
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  checks:
+    # stay quiet until the website exists
+    if: ${{ vars.POS_APP_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      APP_URL: ${{ vars.POS_APP_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+    steps:
+      - name: Require the secret
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Add the secret CRON_SECRET (same value as in Vercel) to this repository's Actions secrets."
+            exit 1
+          fi
+      - name: Evaluate alerts and notify
+        run: |
+          status=$(curl -sS -o body.json -w "%{http_code}" --max-time 90 -H "Authorization: Bearer $CRON_SECRET" "${APP_URL%/}/api/ops/check")
+          echo "HTTP $status"; cat body.json; echo
+          # 200 means the check ran (even when it reported active alerts, which go to ALERT_WEBHOOK_URL)
+          [ "$status" = "200" ]
+      - name: Send queued receipts to the tax authority
+        if: ${{ vars.ETA_QUEUE_ENABLED == 'true' }}
+        run: |
+          status=$(curl -sS -o body.json -w "%{http_code}" --max-time 90 -H "Authorization: Bearer $CRON_SECRET" "${APP_URL%/}/api/ops/eta")
+          echo "HTTP $status"; cat body.json; echo
+          [ "$status" = "200" ]

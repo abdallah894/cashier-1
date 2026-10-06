@@ -15,6 +15,8 @@ import { useCart, computeTotals } from "@/lib/store/cart";
 import { CartPane } from "./cart-pane";
 import { SearchPane, type SearchPaneHandle } from "./search-pane";
 import { CheckoutDialog } from "./checkout-dialog";
+import { ProvisionalReceiptDialog } from "@/components/offline/provisional-receipt-dialog";
+import type { OutboxEntry } from "@/lib/offline/types";
 import { CameraScanDialog } from "./camera-scan-dialog";
 import { PinSwitchDialog, type SwitchableCashier } from "./pin-switch-dialog";
 import { ShortcutsBar } from "./shortcuts-bar";
@@ -62,6 +64,9 @@ export function Register({
   const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null);
   const searchRef = useRef<SearchPaneHandle>(null);
 
+  // receipt of a sale just rung offline, shown in place (no server page can load without a network)
+  const [provisional, setProvisional] = useState<OutboxEntry | null>(null);
+
   // "3*" typed in the search box: the next item added counts this many
   const [pendingQty, setPendingQty] = useState<number | null>(null);
 
@@ -80,7 +85,7 @@ export function Register({
   }
 
   const unknownBarcodeOpen = unknownBarcode !== null;
-  const dialogOpen = checkoutOpen || cameraOpen || switchOpen || unknownBarcodeOpen;
+  const dialogOpen = checkoutOpen || cameraOpen || switchOpen || unknownBarcodeOpen || provisional !== null;
 
   async function handleScan(barcode: string) {
     // the burst may have landed in the search box — wipe it
@@ -252,7 +257,9 @@ export function Register({
         userId={userId}
         shiftId={shiftId}
         cashierName={cashierName}
+        onQueued={setProvisional}
       />
+      <ProvisionalReceiptDialog entry={provisional} onClose={() => setProvisional(null)} />
       <CameraScanDialog open={cameraOpen} onOpenChange={setCameraOpen} onScan={handleScan} />
       <UnknownBarcodeDialog
         barcode={unknownBarcode}

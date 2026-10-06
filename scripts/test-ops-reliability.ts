@@ -100,6 +100,16 @@ async function main() {
   const checkout = (await alerts()).find((a) => a.alert === "checkout_failures");
   check("repeated checkout failures raise a critical alert", checkout !== undefined && checkout.severity === "critical");
 
+  // The check now runs every 30 minutes, so the look-back is 30 minutes: a burst from 20 minutes
+  // ago is still caught between two runs, one older than 30 minutes is history. (The log is
+  // immutable, so aged rows are inserted rather than updated.) One fresh rpc_failed exists so far.
+  const aged = (minutes: number) =>
+    db.query(`insert into public.ops_events (kind, severity, detail, created_at) select 'rpc_failed', 'warning', '{}'::jsonb, now() - interval '${minutes} minutes' from generate_series(1, 4)`);
+  await aged(40);
+  check("failures older than 30 minutes do not alert", !(await alerts()).some((a) => a.alert === "rpc_failures"));
+  await aged(20);
+  check("failures from 20 minutes ago still count (a burst between two 30-minute runs)", (await alerts()).some((a) => a.alert === "rpc_failures"));
+
   for (let i = 0; i < 5; i++) await db.query(`select public.record_ops_event('rpc_failed', 'warning', '{"rpc":"create_return"}'::jsonb)`);
   check("repeated RPC failures raise an alert", (await alerts()).some((a) => a.alert === "rpc_failures"));
 

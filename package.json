@@ -19,7 +19,9 @@
     "test:zreport": "tsx scripts/test-zreport.ts",
     "test:reports": "tsx scripts/test-reports.ts",
     "test:hardening": "tsx scripts/test-hardening.ts",
-    "test:all": "tsx scripts/run-all-tests.ts"
+    "test:all": "tsx scripts/run-all-tests.ts",
+    "test:e2e": "playwright test --project=public --project=public-enforce",
+    "test:e2e:app": "playwright test --project=app --workers=1"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -55,6 +57,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.4",
+    "@playwright/test": "^1.56.1",
     "@serwist/next": "^9.5.11",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",

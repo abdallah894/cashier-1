@@ -90,7 +90,7 @@ export function Receipt80mm({ receipt, gift = false }: { receipt: ReceiptData; g
 
         <div className="mt-1 flex items-baseline justify-between border-t border-dashed border-black pt-1 text-sm font-bold">
           <span>{t("total")}</span>
-          <span className="tabular-nums" dir="ltr">
+          <span className="tabular-nums" dir="ltr" data-testid="receipt-total">
             {money(receipt.total)}
           </span>
         </div>

@@ -5,13 +5,17 @@ import type { EtaSubmission } from "@/lib/eta/types";
 import { log } from "@/lib/observability/log";
 import { verifyBearer } from "@/lib/ops/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { limitByIp } from "@/lib/ops/rate-limit";
 
-// Cron entry point (vercel.json): sends queued sales/returns to the tax
+// Scheduled entry point (.github/workflows/ops-cron.yml): sends queued sales/returns to the tax
 // authority through the configured provider. Authenticated like /api/ops/check.
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function GET(request: Request) {
+  // before the secret check, so guessing the token is rate limited too
+  const limited = await limitByIp(request, "ops", 30, 60);
+  if (limited) return limited;
   if (!verifyBearer(request.headers.get("authorization"), process.env.CRON_SECRET)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
