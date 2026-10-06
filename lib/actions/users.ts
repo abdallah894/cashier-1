@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { routing } from "@/i18n/routing";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { log } from "@/lib/observability/log";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/queries/profiles";
 import {
@@ -114,6 +115,19 @@ export async function toggleStaffActive(input: unknown): Promise<ActionResult<vo
     .update({ active: parsed.data.active })
     .eq("id", parsed.data.userId);
   if (error) return { ok: false, error: "unknown" };
+
+  // `profiles.active` is enforced by RLS and the RPCs, but a deactivated user
+  // keeps a valid login token until it expires. Ban the auth account too (and
+  // lift the ban on reactivation) so the session really ends.
+  const { error: banError } = await admin.auth.admin.updateUserById(parsed.data.userId, {
+    ban_duration: parsed.data.active ? "none" : "876000h",
+  });
+  if (banError) {
+    log.error("staff_ban_failed", { userId: parsed.data.userId, reason: banError.message });
+    // roll the flag back: half-deactivated is worse than not deactivated
+    await admin.from("profiles").update({ active: !parsed.data.active }).eq("id", parsed.data.userId);
+    return { ok: false, error: "unknown" };
+  }
 
   revalidateUsers();
   return { ok: true, data: undefined };

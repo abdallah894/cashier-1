@@ -149,6 +149,12 @@ async function main() {
 
   // ---- provider callbacks: idempotent, amount-checked, ordered ----
   const sandbox = await db.query<{ id: string }>(`select public.begin_payment(5000, 'card', 'sandbox', '${key(6)}'::uuid, 'SBX-1') as id`);
+  // Phase 0 (P1-4): staff cannot confirm a gateway payment themselves; only the provider's callback can.
+  await expectError(
+    db.query(`select public.record_payment_result('${sandbox.rows[0].id}', 'captured', 'SBX-1')`),
+    "confirmed by the provider",
+    "staff cannot mark a gateway payment captured"
+  );
   await asAdminService(db);
   const salesBefore = n((await db.query<{ c: string }>(`select count(*) as c from public.sales`)).rows[0].c);
   const returnsBefore = n((await db.query<{ c: string }>(`select count(*) as c from public.returns`)).rows[0].c);

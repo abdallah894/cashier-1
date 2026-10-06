@@ -99,9 +99,7 @@ export function ProductForm({ categories, product, defaultBarcode }: Props) {
         return;
       }
       // Stock is only set at creation; afterwards it changes exclusively
-      // through audited stock adjustments.
-      if (isEdit) input.stock_qty = Number(product.stock_qty);
-
+      // through audited stock adjustments (updateProduct ignores stock_qty).
       const result = isEdit ? await updateProduct(product.id, input) : await createProduct(input);
       if (!result.ok) {
         if (result.error === "duplicateBarcode") {

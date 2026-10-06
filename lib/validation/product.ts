@@ -29,6 +29,17 @@ export const productInputSchema = z.object({
 
 export type ProductInput = z.infer<typeof productInputSchema>;
 
+/**
+ * Editing a product never touches stock: stock changes only through the
+ * ledgered paths (sales, returns, receiving, stocktakes, adjust_stock).
+ * Writing the quantity the form loaded earlier would silently undo any sale
+ * made while the form was open. z.object strips unknown keys, so a client
+ * that still sends stock_qty is simply ignored.
+ */
+export const productUpdateSchema = productInputSchema.omit({ stock_qty: true });
+
+export const idSchema = z.uuid();
+
 // ---------- form values (react-hook-form works in strings) ----------
 
 export const productFormSchema = z.object({
