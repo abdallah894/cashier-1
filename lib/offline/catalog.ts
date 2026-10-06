@@ -63,3 +63,19 @@ export async function loadStoreInfo(db: OfflineDb): Promise<StoreInfo | null> {
   const v = row?.value as Partial<StoreInfo> | undefined;
   return v && typeof v.nameEn === "string" && typeof v.nameAr === "string" ? { ...v } as StoreInfo : null;
 }
+
+/** Offline prices older than this show a warning; older than EXPIRED refuse offline sales. */
+export const CATALOG_STALE_AFTER_MS = 24 * 60 * 60 * 1000;
+export const CATALOG_EXPIRED_AFTER_MS = 72 * 60 * 60 * 1000;
+
+export type CatalogFreshness = "fresh" | "stale" | "expired";
+
+/** How trustworthy the cached prices are. Never synced (null) counts as expired. */
+export function catalogFreshness(refreshedAt: string | null, now: number = Date.now()): CatalogFreshness {
+  if (!refreshedAt) return "expired";
+  const age = now - Date.parse(refreshedAt);
+  if (!Number.isFinite(age)) return "expired";
+  if (age > CATALOG_EXPIRED_AFTER_MS) return "expired";
+  if (age > CATALOG_STALE_AFTER_MS) return "stale";
+  return "fresh";
+}

@@ -46,7 +46,17 @@ Total to go-live: roughly **3–4 months** part-time, **8–10 weeks** full-time
 
 ---
 
-## Phase 0 — Fix the blockers (8–10 days)
+## Phase 0 — Fix the blockers (8–10 days) — ✅ DONE (2026-10-06)
+
+All items below are implemented, each with a regression test (suite count 36 → 40; `npm run test:all`, lint, typecheck, migration validation and the production build all pass). Notes where the implementation differs from the plan:
+
+- **0.2** Instead of a new `open_shift` RPC, the insert policy stays (a cashier legitimately chooses their opening float) and a trigger refuses any shift that is created already closed; the cashier _update_ policy is dropped, so closing is only possible through `close_shift`. Same protection with far fewer code changes.
+- **0.3** Failed PIN switches are written to the structured log (`pin_switch_failed`, `pin_switch_refused`), not the audit table, whose event kinds are a fixed whitelist.
+- **0.6** The backup script now needs `BACKUP_AGE_RECIPIENT`/`BACKUP_GPG_RECIPIENT` and `BACKUP_UPLOAD_CMD` and refuses to run without them. **You must still do the one-time setup**: pick an off-site storage, create an `age` key pair and store the private key safely, then schedule the script.
+- **0.10** Offline policy chosen: a sale whose total no longer matches the receipt the customer holds is **rejected** for a manager to resolve (it is never silently re-priced). Cached prices older than 24 h show a warning and older than 72 h (or never synced) block offline selling.
+- Extra: the public `/api/health` caches its database answer for 5 s, and `?deep=1` now exists as documented.
+
+**Migrations added:** `20261015090000_phase0_rls_lockdown`, `…090100_store_identity`, `…090200_create_sale_hardening`, `…090300_payment_capture_provider_only`. Apply with `supabase db push` outside trading hours, then test one sale (see the go-live checklist).
 
 Rule for every item: write a failing test first in `scripts/test-*.ts` (follow `scripts/test-rls.ts`), fix, see it pass, then `npm run test:all`.
 

@@ -1,7 +1,7 @@
 # Operations runbook
 
 ## Monitoring
-- `GET /api/health` is public and cheap (liveness). `GET /api/health?deep=1` with `Authorization: Bearer $OPS_API_TOKEN` also checks the database and AI providers.
+- `GET /api/health` is public and cheap (liveness; the database answer is cached for 5 seconds). `GET /api/health?deep=1` with `Authorization: Bearer $OPS_API_TOKEN` also checks the database and AI providers.
 - Vercel Cron calls `/api/ops/check` every 15 minutes (`vercel.json`, authenticated by `CRON_SECRET`). It evaluates `ops_alerts()` in SQL and posts new alerts to `ALERT_WEBHOOK_URL`.
 - Server errors are logged as structured, redacted JSON and recorded in `ops_events`; `ERROR_WEBHOOK_URL` receives the critical ones.
 - Alerts: stuck offline sync backlog, rejected offline sales, failed payments awaiting resolution, error spikes, missing/failed backup, integrity failures.

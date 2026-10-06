@@ -18,6 +18,12 @@ export async function submitQueuedSale(entry: OutboxEntry): Promise<SubmitResult
     // The till already printed a provisional total without promotions; applying
     // promotions at sync time would change what the customer paid.
     applyPromotions: false,
+    // The receipt in the customer's hand says this total. If a price moved
+    // while the till was offline the server refuses (totalChanged) and the sale
+    // lands in Offline sales for a manager, instead of being recorded at a
+    // different amount than the customer actually paid.
+    expectedTotal: entry.provisional.total,
+    customerId: entry.customerId ?? undefined,
   });
 
   if (result.ok) {

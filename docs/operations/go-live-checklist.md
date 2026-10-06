@@ -34,7 +34,7 @@ Generate secrets with `openssl rand -hex 32`. Server-only values must never star
 - [ ] Redeploy after changing variables.
 
 ## 4. Store setup (in the app, as admin)
-- [ ] Store name, address, tax number, receipt footer.
+- [ ] Store name (AR + EN), address, phone, **tax registration number** and receipt footer: Reports → Store settings. Print a receipt and check every line; until this is filled in, receipts show a neutral "Supermarket" and no tax number.
 - [ ] Business-day cutoff and timezone (`Africa/Cairo`).
 - [ ] Categories, products (barcode, AR/EN names, price, cost, tax rate, unit, low-stock threshold) via CSV import; spot-check 10 products.
 - [ ] Suppliers and product-supplier links.
@@ -46,12 +46,12 @@ Generate secrets with `openssl rand -hex 32`. Server-only values must never star
 - [ ] `GET /api/health` returns ok; `GET /api/health?deep=1` with `Authorization: Bearer $OPS_API_TOKEN` shows database ok.
 - [ ] Vercel cron for `/api/ops/check` is listed under Cron Jobs and ran at least once.
 - [ ] A test alert reaches your webhook (trigger one by temporarily skipping a backup report, or call `/api/ops/check`).
-- [ ] `scripts/backup-db.sh` scheduled daily; first run reported `ok` (check `backup_runs` / no `backup_overdue` alert).
-- [ ] One restore drill done into a scratch project with `scripts/restore-verify.ts`; date and result written down.
+- [ ] `scripts/backup-db.sh` scheduled daily on a machine that is not the till, with `BACKUP_AGE_RECIPIENT` (or `BACKUP_GPG_RECIPIENT`) and `BACKUP_UPLOAD_CMD` set; first run reported `ok` and both files (`pos-*.dump.age` and `pos-*-auth.dump.age`) are in the off-site storage. The age **private key** is stored somewhere else (password manager + printed copy).
+- [ ] One restore drill done into a scratch project (auth dump first, then public) with `scripts/restore-verify.ts`, **and** a real staff member signed in on the restored project; date and result written down.
 
 ## 6. Counter-device test (staging, then production)
 - [ ] Chrome or Edge on the counter PC; app installed as PWA and opens full screen.
-- [ ] Scan with the USB scanner (bursts ending in Enter) and with the camera; unknown barcode flow works.
+- [ ] Scan with the USB scanner (bursts ending in Enter) and with the camera; unknown barcode flow works. Scan while the payment window is open: nothing is typed or confirmed and a message appears.
 - [ ] Open shift with a float; register is blocked without one.
 - [ ] Sell: per-piece, per-kg (e.g. 1.25 kg), a line discount, a sale discount, a promotion, a customer attached.
 - [ ] Large discount asks for manager approval; cashier cannot bypass it.
@@ -59,7 +59,7 @@ Generate secrets with `openssl rand -hex 32`. Server-only values must never star
 - [ ] Print the receipt (80 mm), reprint, gift receipt, PDF download with correct Arabic.
 - [ ] Open the cash drawer from the receipt screen; it is audited.
 - [ ] Return a restocked item and a card refund; stock and drawer move as expected.
-- [ ] Go offline (unplug or dev-tools offline), make 2 sales, reconnect: they sync, stock decrements, no duplicates.
+- [ ] Go offline (unplug or dev-tools offline), make 2 sales, reconnect: they sync, stock decrements, no duplicates. The header shows "Prices from …" while offline. Change a price while the till is offline: that sale is rejected as "total changed" and appears in Offline sales for a manager.
 - [ ] Paid-in / paid-out / safe drop recorded with a reason.
 - [ ] Close shift: counted cash vs expected; a large variance needs a manager; Z-report prints and matches the drawer.
 - [ ] Reports: daily summary, VAT, stock valuation, reorder suggestions match a hand calculation from 3 known sales.

@@ -16,6 +16,8 @@ The fixes are scheduled in [PRODUCTION-PLAN.md](PRODUCTION-PLAN.md). If you are 
 
 ---
 
+> **Status (2026-10-06): all six P0 and all eight P1 findings below are fixed** (see "Phase 0" in [PRODUCTION-PLAN.md](PRODUCTION-PLAN.md)), along with the P2 items "stale `app/sw.ts` comment", "no deep health check", "unvalidated id arguments" and the offline catalog-age warning. The findings are kept below as the record of what was wrong. The remaining P2 items are scheduled in Phases 1–4.
+
 ## Summary
 
 The project is in much better shape than a typical first POS. The core money path is correct: integer piasters everywhere, a single-transaction checkout, immutable receipts and ledgers, idempotent offline sync, and 36 database test suites in CI. The problems found are mostly **old permissive database policies from Phase 1 that later phases forgot to remove**, plus the pieces a real Egyptian supermarket needs that are not built yet (tax-authority e-receipts, scale barcodes, a native printer path).

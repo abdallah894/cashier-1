@@ -10,7 +10,7 @@ import { createSale } from "@/lib/actions/sales";
 import { approvalRequestHash } from "@/lib/approvals/hash";
 import { useOnline } from "@/hooks/use-online";
 import { getOfflineDb } from "@/lib/offline/db";
-import { loadDiscountThreshold } from "@/lib/offline/catalog";
+import { catalogFreshness, catalogRefreshedAt, loadDiscountThreshold } from "@/lib/offline/catalog";
 import { enqueueSale } from "@/lib/offline/outbox";
 import { buildProvisionalReceipt, discountNeedsApproval } from "@/lib/offline/provisional";
 import { formatEgp, MAX_TENDERED_PIASTERS, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
@@ -93,6 +93,11 @@ export function CheckoutDialog({
   async function queueOffline(key: string): Promise<void> {
     if (tendered === null) return;
     const db = getOfflineDb();
+    // Prices cached more than 3 days ago (or never) are too old to sell from.
+    if (catalogFreshness(await catalogRefreshedAt(db)) === "expired") {
+      toast.error(t("offlineCatalogExpired"));
+      return;
+    }
     // Large discounts need a live manager approval, which needs the server.
     if (discountNeedsApproval(totals, await loadDiscountThreshold(db))) {
       toast.error(t("offlineDiscountBlocked"));
@@ -104,6 +109,7 @@ export function CheckoutDialog({
       shiftId,
       items: toQueuedSaleItems(totals),
       amountTendered: tendered,
+      customerId: customer?.id ?? null,
       provisional: buildProvisionalReceipt(totals, tendered, cashierName),
     });
     clearCart();
