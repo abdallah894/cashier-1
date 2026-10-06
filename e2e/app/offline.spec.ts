@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { CASHIER, RICE, messages, openRegister, readOfflineStore, scan, signIn } from "./helpers";
 
 test("a sale rung while offline shows its receipt on the register and syncs once, later", async ({ page, context }) => {
+  test.setTimeout(120_000); // catalog copy + offline sale + sync after reconnect
   await signIn(page, CASHIER);
   await openRegister(page);
 

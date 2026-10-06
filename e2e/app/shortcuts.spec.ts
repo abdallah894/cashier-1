@@ -17,6 +17,7 @@ test("3* then a scan adds three", async ({ page }) => {
 
 test("plus and minus work from the empty search box", async ({ page }) => {
   await scan(page, RICE);
+  await expect(page.locator("[data-line]")).toHaveCount(1); // keys are ignored until the scan reaches the cart
   await page.keyboard.press("/"); // focus the (empty) search box
   await page.keyboard.press("+");
   await expect.poll(async () => latin((await page.getByTestId("cart-total").textContent()) ?? "")).toContain("96.00");
@@ -36,6 +37,7 @@ test("arrow keys move between lines and Delete removes the selected one", async 
 
 test("F5 opens the sale discount instead of reloading the till", async ({ page }) => {
   await scan(page, RICE);
+  await expect(page.locator("[data-line]")).toHaveCount(1); // keys are ignored until the scan reaches the cart
   await page.keyboard.press("F5");
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.locator("[data-line]")).toHaveCount(1); // the cart survived: the page did not reload
@@ -43,18 +45,21 @@ test("F5 opens the sale discount instead of reloading the till", async ({ page }
 
 test("F4 opens the discount of the selected line", async ({ page }) => {
   await scan(page, RICE);
+  await expect(page.locator("[data-line]")).toHaveCount(1); // keys are ignored until the scan reaches the cart
   await page.keyboard.press("F4");
   await expect(page.getByRole("dialog")).toBeVisible();
 });
 
 test("Ctrl+Delete opens the void-cart confirmation", async ({ page }) => {
   await scan(page, RICE);
+  await expect(page.locator("[data-line]")).toHaveCount(1); // keys are ignored until the scan reaches the cart
   await page.keyboard.press("Control+Delete");
   await expect(page.getByRole("dialog")).toBeVisible();
 });
 
 test("F7 focuses the promo code box", async ({ page }) => {
   await scan(page, RICE);
+  await expect(page.locator("[data-line]")).toHaveCount(1); // keys are ignored until the scan reaches the cart
   await page.keyboard.press("F7");
   await expect(page.locator('[data-shortcut="promo-code"]')).toBeFocused();
 });
