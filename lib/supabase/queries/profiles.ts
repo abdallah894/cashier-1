@@ -25,7 +25,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
  */
 export async function requireAdmin(): Promise<Profile> {
   const profile = await getCurrentProfile();
-  if (profile?.role === "admin") return profile;
+  if (profile?.role === "admin" && profile.active) return profile;
   redirect({ href: "/register", locale: await getLocale() });
   throw new Error("unreachable"); // redirect throws
 }

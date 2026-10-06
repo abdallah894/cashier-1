@@ -3,6 +3,7 @@ import { log } from "@/lib/observability/log";
 import { dispatchAlerts, DEDUPE_MINUTES, type OpsAlert } from "@/lib/ops/alerts";
 import { verifyBearer } from "@/lib/ops/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { limitByIp } from "@/lib/ops/rate-limit";
 
 // Cron entry point (vercel.json): evaluates the alert rules and pushes new
 // alerts to ALERT_WEBHOOK_URL. Vercel Cron authenticates with
@@ -10,6 +11,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  // before the secret check, so guessing the token is rate limited too
+  const limited = await limitByIp(request, "ops", 30, 60);
+  if (limited) return limited;
   if (!verifyBearer(request.headers.get("authorization"), process.env.CRON_SECRET)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }

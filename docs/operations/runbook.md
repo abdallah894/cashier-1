@@ -6,6 +6,12 @@
 - Server errors are logged as structured, redacted JSON and recorded in `ops_events`; `ERROR_WEBHOOK_URL` receives the critical ones.
 - Alerts: stuck offline sync backlog, rejected offline sales, failed payments awaiting resolution, error spikes, missing/failed backup, integrity failures.
 
+## Security signals in the logs
+- `csp_violation`: the browser's CSP reported something it would block (see `docs/security.md`). A new one right after a deploy usually means a new external address the policy does not allow.
+- `ip_rate_limit_unavailable`: the shared rate limiter could not reach the database (requests were let through).
+- `client_render_error`: a page crashed in someone's browser; the same line goes to `ERROR_WEBHOOK_URL`.
+- Responses of `429` on `/api/ops/*` or `/api/health` come from the per-IP limits.
+
 ## Backups and restore drill
 1. Daily: run `scripts/backup-db.sh` from a scheduler (needs `SUPABASE_DB_URL`, `APP_URL`, `OPS_API_TOKEN`). It makes **two** dumps: the `public` schema and the **data of `auth.users` / `auth.identities`** (staff cannot sign in without them, because `profiles.id` references `auth.users`). Both are encrypted (`BACKUP_AGE_RECIPIENT` for `age`, or `BACKUP_GPG_RECIPIENT`) and uploaded off-site with `BACKUP_UPLOAD_CMD` (for example `rclone copyto "$1" remote:pos-backups/$(basename "$1")`). The script refuses to run without both, and deletes the local copies after a successful upload. It reports to `/api/ops/backup-result`; no report in 36 h raises `backup_overdue`. Keep the **age private key** somewhere other than the machine that makes backups (password manager + a printed copy in the safe): without it the backups cannot be opened.
 2. Also keep Supabase's own PITR/daily backups enabled (paid plans).

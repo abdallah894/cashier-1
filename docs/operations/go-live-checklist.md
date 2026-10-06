@@ -49,6 +49,9 @@ Generate secrets with `openssl rand -hex 32`. Server-only values must never star
 - [ ] `scripts/backup-db.sh` scheduled daily on a machine that is not the till, with `BACKUP_AGE_RECIPIENT` (or `BACKUP_GPG_RECIPIENT`) and `BACKUP_UPLOAD_CMD` set; first run reported `ok` and both files (`pos-*.dump.age` and `pos-*-auth.dump.age`) are in the off-site storage. The age **private key** is stored somewhere else (password manager + printed copy).
 - [ ] One restore drill done into a scratch project (auth dump first, then public) with `scripts/restore-verify.ts`, **and** a real staff member signed in on the restored project; date and result written down.
 
+### Security headers rollout
+- [ ] `CSP_MODE=report-only` in production. After a few trading days with nothing in the logs for `csp_violation`, switch to `enforce` ([../security.md](../security.md)).
+
 ## 6. Counter-device test (staging, then production)
 - [ ] Chrome or Edge on the counter PC; app installed as PWA and opens full screen.
 - [ ] Scan with the USB scanner (bursts ending in Enter) and with the camera; unknown barcode flow works. Scan while the payment window is open: nothing is typed or confirmed and a message appears.

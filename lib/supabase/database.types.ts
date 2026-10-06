@@ -2467,6 +2467,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      consume_ip_rate_limit: {
+        Args: { p_key: string; p_limit: number; p_window_seconds: number }
+        Returns: {
+          allowed: boolean
+          remaining: number
+          retry_after_seconds: number
+        }[]
+      }
       consume_manager_approval: {
         Args: {
           p_action: string

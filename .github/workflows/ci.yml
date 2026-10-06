@@ -29,3 +29,65 @@ jobs:
       - name: Tests (database, flows, offline, AI, ops)
         run: npm run test:all
       - run: npm run build
+      # Real-browser checks that need no backend: login/RTL, redirects, security
+      # headers, the CSP in report-only AND enforced mode, public API routes.
+      # The build above used the same NEXT_PUBLIC_* values as playwright.config.ts.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser tests (no backend)
+        run: npx playwright test --project=public --project=public-enforce
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-public
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
+  # Signed-in till flows against a real local Supabase (Docker). NOT required yet:
+  # these specs were written without being able to run them, so the first runs may
+  # need selector fixes. Remove `continue-on-error` once the job has passed once.
+  e2e-app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    env:
+      SEED_ADMIN_EMAIL: admin@cachier.local
+      SEED_ADMIN_PASSWORD: change-me-admin
+      SEED_CASHIER_EMAIL: cashier@cachier.local
+      SEED_CASHIER_PASSWORD: change-me-cashier
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start Supabase (applies supabase/migrations)
+        run: |
+          npx supabase init
+          npx supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor,postgres-meta
+      - name: Export Supabase settings
+        run: |
+          npx supabase status -o env > supabase.env
+          get() { grep -E "^$1=" supabase.env | head -1 | cut -d= -f2- | tr -d '"'; }
+          echo "NEXT_PUBLIC_SUPABASE_URL=$(get API_URL)" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(get ANON_KEY)" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$(get SERVICE_ROLE_KEY)" >> "$GITHUB_ENV"
+      - run: npm run seed
+      - run: npm run build
+      - name: Signed-in browser tests
+        run: npx playwright test --project=app --workers=1
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-app
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7

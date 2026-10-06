@@ -126,7 +126,18 @@ Map transport errors to message keys in `lib/devices/print-service.ts` instead o
 
 ---
 
-## Phase 2 — Quality gate (8–10 days)
+## Phase 2 — Quality gate (8–10 days) — ⚠️ MOSTLY DONE (2026-10-06)
+
+| Item | Status |
+| --- | --- |
+| Browser tests (Playwright) | ✅ **Backend-free tier: 30 tests pass in real Chromium** (sign-in page AR/EN, redirects, headers, CSP, public API). ⚠️ **Signed-in tier written but never run** (needs Docker + Supabase, which this environment cannot start): CI job `e2e-app`, non-blocking until it passes once. See [testing.md](testing.md). |
+| Content-Security-Policy | ✅ Built with nonces, tested, **shipped in report-only mode**. Enforced mode is verified on the sign-in page only. Roll out per [security.md](security.md) before switching to `enforce`. |
+| Rate limits | ✅ Ops routes, webhook, health, CSP reports. |
+| Error monitoring | ✅ Server errors already reached the webhook; **browser page crashes now do too**. |
+| Small hardening | ✅ webhook returns fixed codes, `requireAdmin` checks `active`, ids validated. ❌ **Hiding product cost from cashiers is not done** (needs a schema change, see security.md). |
+| Found and fixed along the way | After sign-in the app showed a leftover "Phase 1 — Foundation" placeholder: now cashiers land on the register and admins on Reports. After an offline sale the register navigated to a server page that cannot load offline: the provisional receipt now shows in place. The theme script had no CSP nonce. |
+
+The original plan for this phase follows for reference.
 
 1. **Browser E2E with Playwright** (4–5 days). Run against a local Supabase (`npx supabase start`) in a new CI job. Scenarios:
    - cashier signs in → opens shift → scans (simulated keyboard burst) → sells per-piece + per-kg → pays cash → receipt shows correct change;

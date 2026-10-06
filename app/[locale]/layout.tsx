@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Geist, Geist_Mono, Cairo } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { routing, getDirection } from "@/i18n/routing";
+import { nonceFromHeaders } from "@/lib/security/nonce";
 import { Providers } from "@/components/providers";
 import "../globals.css";
 
@@ -67,6 +69,8 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const dir = getDirection(locale);
+  // the theme script is inline: it needs this request's CSP nonce
+  const nonce = nonceFromHeaders(await headers());
 
   return (
     <html
@@ -78,7 +82,7 @@ export default async function LocaleLayout({
     >
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
-          <Providers dir={dir}>
+          <Providers dir={dir} nonce={nonce}>
             {children}
           </Providers>
         </NextIntlClientProvider>

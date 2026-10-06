@@ -14,8 +14,8 @@ const withSerwist = withSerwistInit({
 
 // Baseline hardening. camera and usb are needed for barcode scanning and
 // WebUSB receipt printers; everything else sensitive is switched off.
-// A strict Content-Security-Policy is intentionally not set here: Next.js
-// inlines scripts and a nonce-based CSP needs its own rollout and testing.
+// The Content-Security-Policy is set per request in proxy.ts (it needs a nonce);
+// see lib/security/csp.ts and docs/security.md.
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },

@@ -50,7 +50,7 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   }
 
   redirect({
-    href: profile.role === "admin" ? "/" : "/register",
+    href: profile.role === "admin" ? "/reports" : "/register",
     locale: await getLocale(),
   });
   return {}; // unreachable — redirect throws

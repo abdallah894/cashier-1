@@ -103,7 +103,7 @@ export function CartPane({ totals, selectedIndex, onSelect, onQtyChange, onRemov
         <Separator className="my-2" />
         <div className="flex items-baseline justify-between">
           <span className="text-lg font-semibold">{t("total")}</span>
-          <span className="text-2xl font-bold tabular-nums" dir="ltr">
+          <span className="text-2xl font-bold tabular-nums" dir="ltr" data-testid="cart-total">
             {formatEgp(totals.total, locale)}
           </span>
         </div>

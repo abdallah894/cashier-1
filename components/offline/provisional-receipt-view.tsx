@@ -13,7 +13,7 @@ import type { OutboxEntry } from "@/lib/offline/types";
 import { Receipt80mm } from "@/components/receipts/receipt-80mm";
 import { Button } from "@/components/ui/button";
 
-function toReceipt(entry: OutboxEntry, store: StoreInfo): ReceiptData {
+export function toProvisionalReceipt(entry: OutboxEntry, store: StoreInfo): ReceiptData {
   const p = entry.provisional;
   return {
     store,
@@ -74,7 +74,7 @@ export function ProvisionalReceiptView({ id }: { id: string }) {
         </Button>
       </div>
       <div className="receipt-print-area self-center overflow-hidden rounded-md border shadow-sm">
-        <Receipt80mm receipt={toReceipt(entry, store)} />
+        <Receipt80mm receipt={toProvisionalReceipt(entry, store)} />
       </div>
     </div>
   );

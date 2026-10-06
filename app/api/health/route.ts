@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { providerHealth } from "@/lib/ai/health";
 import { verifyBearer } from "@/lib/ops/auth";
+import { clientIp, memoryRateLimit } from "@/lib/ops/rate-limit-core";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Liveness + database reachability for uptime monitors.
@@ -25,6 +26,9 @@ async function databaseOk(): Promise<boolean> {
 }
 
 export async function GET(request: Request) {
+  // an uptime monitor polls once a minute; this only stops a flood
+  const limit = memoryRateLimit(`health:${clientIp(request)}`, 120, 60_000);
+  if (!limit.allowed) return NextResponse.json({ status: "rate_limited" }, { status: 429, headers: { ...headers, "retry-after": String(limit.retryAfterSeconds) } });
   const deep = new URL(request.url).searchParams.get("deep") === "1";
 
   if (deep) {

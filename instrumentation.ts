@@ -21,17 +21,6 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
     routeType: context.routeType,
   });
 
-  const url = process.env.ERROR_WEBHOOK_URL;
-  if (!url) return;
-  try {
-    const { redactString } = await import("@/lib/observability/log");
-    await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text: `Cachier POS error on ${request.method} ${request.path}: ${redactString(err.message)}` }),
-      signal: AbortSignal.timeout(5000),
-    });
-  } catch {
-    // reporting must never throw back into the request
-  }
+  const { forwardToErrorWebhook } = await import("@/lib/observability/report");
+  await forwardToErrorWebhook(`Cachier POS error on ${request.method} ${request.path}: ${err.message}`);
 };

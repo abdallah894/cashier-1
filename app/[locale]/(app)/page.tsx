@@ -1,17 +1,12 @@
-import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Badge } from "@/components/ui/badge";
+import { setRequestLocale } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
+import { getCurrentProfile } from "@/lib/supabase/queries/profiles";
 
+// There is no separate home screen: the till is where a cashier works and the
+// reports are where the owner starts. (A bare "/" must never show a placeholder.)
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("home");
-
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-      <Badge variant="secondary">{t("phase")}</Badge>
-      <h1 className="text-4xl font-semibold tracking-tight">{t("title")}</h1>
-      <p className="text-muted-foreground text-lg">{t("subtitle")}</p>
-      <p className="text-muted-foreground max-w-md text-sm">{t("description")}</p>
-    </div>
-  );
+  const profile = await getCurrentProfile();
+  redirect({ href: profile?.role === "admin" ? "/reports" : "/register", locale });
 }

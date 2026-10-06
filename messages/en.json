@@ -37,12 +37,6 @@
     "offline": "Offline",
     "offlineHint": "No connection — reconnect to sync."
   },
-  "home": {
-    "title": "Welcome to Cachier",
-    "subtitle": "Supermarket point of sale",
-    "description": "The foundation is ready: bilingual layout, theme, Supabase schema and checkout function. The register screen arrives in the next phase.",
-    "phase": "Phase 1 — Foundation"
-  },
   "placeholder": {
     "register": "The register screen will be built in Phase 2.",
     "products": "Product management will be built in Phase 3.",
