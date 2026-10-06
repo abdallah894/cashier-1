@@ -57,11 +57,10 @@ export async function createTestDb(): Promise<PGlite> {
     }
   }
 
-  // Supabase grants table access broadly and lets RLS do the row gating —
-  // mirror that so `set role authenticated` behaves like production.
+  // Table and sequence privileges now come from the migrations themselves
+  // (20261021090000_explicit_table_grants.sql): this database starts with no default
+  // privileges, like a new Supabase project, so a missing grant fails the tests.
   await db.exec(`
-    grant all on all tables in schema public to authenticated, service_role;
-    grant usage, select on all sequences in schema public to authenticated, service_role;
     grant execute on all functions in schema extensions to authenticated, service_role;
   `);
   return db;
