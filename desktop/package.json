@@ -64,7 +64,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "YOUR-GITHUB-USER",
+        "owner": "abdallah894",
         "repo": "cachier-pos-releases",
         "releaseType": "release"
       }

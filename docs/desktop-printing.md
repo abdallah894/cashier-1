@@ -4,18 +4,20 @@ The Cachier desktop app is the website inside a Windows program. It adds what a 
 
 ## 1. One-time setup by you (the owner / developer)
 
-1. **Create a public GitHub repository for releases**, for example `cachier-pos-releases` (empty is fine). It will only ever contain installers and update files, no code and no secrets.
-2. **Create a token** that can write to that repository: GitHub → Settings → Developer settings → Personal access tokens → _Fine-grained_ → only the releases repository → permission **Contents: Read and write**.
-3. In the **code repository** (Settings → Secrets and variables → Actions):
-   - secret `RELEASES_REPO_TOKEN` = the token from step 2;
-   - variable `POS_APP_URL` = your production address, for example `https://pos.yourshop.com`.
-4. In `desktop/package.json`, under `build.publish`, replace `YOUR-GITHUB-USER` with your GitHub user name (and the repo name if you chose another). Commit.
-5. **Publish the first version:** create and push a tag that matches the version in `desktop/package.json`:
+Do these in order. (Step 4 is already done in the code.)
+
+1. **Create the public releases repository** (GitHub would not let the Claude app create it): https://github.com/new → owner `abdallah894`, name **`cachier-pos-releases`**, **Public**, tick _Add a README_. It will only ever contain installers and update files, no code and no secrets.
+2. **Create an access token** for it: https://github.com/settings/personal-access-tokens/new → _Fine-grained token_ → name `cachier-releases` → expiry as you prefer (set a reminder to renew it) → **Repository access: Only select repositories → `cachier-pos-releases`** → Permissions → Repository permissions → **Contents: Read and write** → Generate, and copy the token (it is shown once).
+3. In the **code repository** `cashier-1`:
+   - secret `RELEASES_REPO_TOKEN` = the token from step 2: https://github.com/abdallah894/cashier-1/settings/secrets/actions
+   - variable `POS_APP_URL` = your **production website address**, for example `https://pos.yourshop.com` (the website must be deployed first, see `docs/operations/go-live-checklist.md`): https://github.com/abdallah894/cashier-1/settings/variables/actions
+4. ✅ Done: `desktop/package.json` → `build.publish` already points at `abdallah894/cachier-pos-releases`.
+5. **Publish the first version** (only after steps 1-3): create and push a tag that matches the version in `desktop/package.json`:
    ```
    git tag desktop-v1.0.0
    git push origin desktop-v1.0.0
    ```
-   The _Build apps_ workflow builds the installer and publishes it to the releases repository (`Cachier-POS-Setup-1.0.0.exe`).
+   The _Build apps_ workflow builds the installer and publishes it to the releases repository (`Cachier-POS-Setup-1.0.0.exe`). If it fails, open the run in the Actions tab; the first lines say which setting is missing.
 
 To release a new version later: raise `version` in `desktop/package.json`, commit, tag `desktop-v<that version>`, push the tag. Every till updates itself.
 
