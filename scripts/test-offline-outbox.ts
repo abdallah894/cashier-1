@@ -56,6 +56,19 @@ async function main() {
     check("outbox lists FIFO", (await listOutbox(db)).map((e) => e.id).join() === [a.id, b.id].join());
   }
 
+  // ---- a submit that never answers does not hold the queue ----
+  {
+    const db = freshDb();
+    const entry = await enqueueSale(db, input(1));
+    const hung = await drainOutbox(db, USER, () => new Promise<SubmitResult>(() => undefined), { submitTimeoutMs: 20 });
+    const [row] = await listOutbox(db);
+    check("a hung submit ends the drain", hung.synced === 0 && hung.remaining === 1);
+    check("a hung submit puts the sale back in the queue", row.status === "queued" && row.syncingSince === null);
+    check("a timeout does not count as a server attempt", row.attempts === 0);
+    const retry = await drainOutbox(db, USER, async (claimed) => ok(claimed.id === entry.id ? 1 : 0), { submitTimeoutMs: 20 });
+    check("the next drain sends it", retry.synced === 1 && (await listOutbox(db))[0].status === "synced");
+  }
+
   // ---- reconnect: FIFO drain delivers in order ----
   {
     const db = freshDb();

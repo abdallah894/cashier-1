@@ -3,6 +3,20 @@ import { CASHIER, RICE, messages, openRegister, readOfflineStore, scan, signIn }
 
 test("a sale rung while offline shows its receipt on the register and syncs once, later", async ({ page, context }) => {
   test.setTimeout(120_000); // catalog copy + offline sale + sync after reconnect
+  // what the page and network did, printed if the sync does not finish
+  const trail: string[] = [];
+  page.on("console", (msg) => {
+    if (msg.type() === "error" || msg.type() === "warning") trail.push(`console.${msg.type()}: ${msg.text()}`);
+  });
+  page.on("pageerror", (error) => trail.push(`pageerror: ${error.message}`));
+  page.on("requestfailed", (request) => trail.push(`requestfailed: ${request.method()} ${request.url()} ${request.failure()?.errorText ?? ""}`));
+  page.on("response", (response) => {
+    if (response.request().method() === "POST") trail.push(`POST ${response.status()} ${response.url()}`);
+  });
+  page.on("framenavigated", (frame) => {
+    if (frame === page.mainFrame()) trail.push(`navigated: ${frame.url()}`);
+  });
+
   await signIn(page, CASHIER);
   await openRegister(page);
 
@@ -32,7 +46,15 @@ test("a sale rung while offline shows its receipt on the register and syncs once
 
   // back online: it is sent exactly once
   await context.setOffline(false);
-  await expect
-    .poll(async () => (await readOfflineStore(page, "outbox")).map((row) => row.status), { timeout: 60_000 })
-    .toEqual(["synced"]);
+  trail.push("--- back online ---");
+  try {
+    await expect
+      .poll(async () => (await readOfflineStore(page, "outbox")).map((row) => row.status), { timeout: 60_000 })
+      .toEqual(["synced"]);
+  } catch (error) {
+    const rows = await readOfflineStore(page, "outbox").catch(() => []);
+    const detail = rows.map(({ status, attempts, error: rowError, syncingSince }) => ({ status, attempts, error: rowError, syncingSince }));
+    console.log(`offline sync did not finish.\noutbox: ${JSON.stringify(detail)}\n${trail.join("\n")}`);
+    throw error;
+  }
 });
