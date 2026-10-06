@@ -34,6 +34,7 @@ test("a scanned barcode never lands in the payment box or confirms the sale", as
   await signIn(page, CASHIER);
   await openRegister(page);
   await scan(page, RICE);
+  await expect(page.locator("[data-line]")).toHaveCount(1); // F2 is ignored on an empty cart
   await page.keyboard.press("F2");
   const received = page.getByLabel(messages.en.register.checkoutDialog.tendered);
   await expect(received).toBeVisible();
@@ -48,6 +49,7 @@ test("an amount that is clearly a barcode is refused as cash received", async ({
   await signIn(page, CASHIER);
   await openRegister(page);
   await scan(page, RICE);
+  await expect(page.locator("[data-line]")).toHaveCount(1); // F2 is ignored on an empty cart
   await page.keyboard.press("F2");
   const received = page.getByLabel(messages.en.register.checkoutDialog.tendered);
   await received.fill(SUGAR);

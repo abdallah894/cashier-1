@@ -42,6 +42,16 @@ export function parseEgpToPiasters(input: string): number | null {
   return pounds * 100 + piasters;
 }
 
+/**
+ * True when a typed "cash received" amount is above the cap, including input
+ * too long to parse at all (a 13-digit barcode read into the box).
+ */
+export function isTenderedTooLarge(input: string): boolean {
+  const parsed = parseEgpToPiasters(input);
+  if (parsed !== null) return parsed > MAX_TENDERED_PIASTERS;
+  return /^\d{11,}(?:\.\d*)?$/.test(normalizeDigits(input.trim()));
+}
+
 /** Integer piasters → plain input string ("4895" → "48.95", "4800" → "48"). */
 export function piastersToEgpInput(piasters: number): string {
   const sign = piasters < 0 ? "-" : "";

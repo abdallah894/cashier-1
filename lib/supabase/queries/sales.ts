@@ -18,7 +18,7 @@ export async function getSaleWithItems(id: string): Promise<SaleWithReturnHistor
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sales")
-    .select("*, sale_items(*), profiles(full_name), returns(*, return_items(*), profiles(full_name))")
+    .select("*, sale_items(*), profiles(full_name), returns(*, return_items(*), profiles!returns_actor_id_fkey(full_name))")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -38,7 +38,7 @@ export async function getReturnWithItems(id: string): Promise<ReturnForReceipt |
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("returns")
-    .select("*, sales(sale_number), profiles(full_name), return_items(name_ar, name_en, qty, unit_price, line_refund_total)")
+    .select("*, sales(sale_number), profiles!returns_actor_id_fkey(full_name), return_items(name_ar, name_en, qty, unit_price, line_refund_total)")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;

@@ -67,6 +67,18 @@ export async function scan(page: Page, code: string) {
 
 /** Reads a table of the offline database straight from IndexedDB. */
 export async function readOfflineStore(page: Page, store: "meta" | "outbox"): Promise<Array<Record<string, unknown>>> {
+  // the till reloads data when it reconnects; a navigation mid-read just means "read again"
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await readOfflineStoreOnce(page, store);
+    } catch (error) {
+      if (attempt >= 3 || !/context was destroyed|navigation/i.test(String(error))) throw error;
+      await page.waitForLoadState("domcontentloaded");
+    }
+  }
+}
+
+function readOfflineStoreOnce(page: Page, store: "meta" | "outbox"): Promise<Array<Record<string, unknown>>> {
   return page.evaluate(
     (storeName) =>
       new Promise<Array<Record<string, unknown>>>((resolve, reject) => {

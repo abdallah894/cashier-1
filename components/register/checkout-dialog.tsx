@@ -14,7 +14,7 @@ import { catalogFreshness, catalogRefreshedAt, loadDiscountThreshold } from "@/l
 import { enqueueSale } from "@/lib/offline/outbox";
 import type { OutboxEntry } from "@/lib/offline/types";
 import { buildProvisionalReceipt, discountNeedsApproval } from "@/lib/offline/provisional";
-import { formatEgp, MAX_TENDERED_PIASTERS, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
+import { formatEgp, isTenderedTooLarge, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
 import { isValidPaymentReference } from "@/lib/payments/providers";
 import { useCart, toSaleItems, toQueuedSaleItems, type CartTotals } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
@@ -88,7 +88,7 @@ export function CheckoutDialog({
 
   const tendered = parseEgpToPiasters(tenderedInput);
   const change = tendered !== null ? tendered - totals.total : null;
-  const tenderedTooLarge = tendered !== null && tendered > MAX_TENDERED_PIASTERS;
+  const tenderedTooLarge = isTenderedTooLarge(tenderedInput);
   const cashInvalid = method === "cash" && (tendered === null || tendered < totals.total || tenderedTooLarge);
   // a card sale is only recorded with the terminal's approval code
   const cardInvalid = method === "card" && !isValidPaymentReference(cardReference.trim());
