@@ -2,7 +2,7 @@
 
 ## Monitoring
 - `GET /api/health` is public and cheap (liveness; the database answer is cached for 5 seconds). `GET /api/health?deep=1` with `Authorization: Bearer $OPS_API_TOKEN` also checks the database and AI providers.
-- Vercel Cron calls `/api/ops/check` every 15 minutes (`vercel.json`, authenticated by `CRON_SECRET`). It evaluates `ops_alerts()` in SQL and posts new alerts to `ALERT_WEBHOOK_URL`.
+- A GitHub Actions schedule (`.github/workflows/ops-cron.yml`, every 30 minutes; needs the variable `POS_APP_URL` and the secret `CRON_SECRET`) calls `/api/ops/check`, authenticated by `CRON_SECRET`. Vercel's free plan allows only one cron a day, so it is not used. A failed run emails you from GitHub. It evaluates `ops_alerts()` in SQL and posts new alerts to `ALERT_WEBHOOK_URL`.
 - Server errors are logged as structured, redacted JSON and recorded in `ops_events`; `ERROR_WEBHOOK_URL` receives the critical ones.
 - Alerts: stuck offline sync backlog, rejected offline sales, failed payments awaiting resolution, error spikes, missing/failed backup, integrity failures.
 

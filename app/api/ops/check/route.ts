@@ -5,9 +5,9 @@ import { verifyBearer } from "@/lib/ops/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { limitByIp } from "@/lib/ops/rate-limit";
 
-// Cron entry point (vercel.json): evaluates the alert rules and pushes new
-// alerts to ALERT_WEBHOOK_URL. Vercel Cron authenticates with
-// `Authorization: Bearer $CRON_SECRET`.
+// Scheduled entry point (.github/workflows/ops-cron.yml, every 30 minutes):
+// evaluates the alert rules and pushes new alerts to ALERT_WEBHOOK_URL. The
+// caller authenticates with `Authorization: Bearer $CRON_SECRET`.
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {

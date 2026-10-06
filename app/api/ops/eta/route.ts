@@ -7,7 +7,7 @@ import { verifyBearer } from "@/lib/ops/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { limitByIp } from "@/lib/ops/rate-limit";
 
-// Cron entry point (vercel.json): sends queued sales/returns to the tax
+// Scheduled entry point (.github/workflows/ops-cron.yml): sends queued sales/returns to the tax
 // authority through the configured provider. Authenticated like /api/ops/check.
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;

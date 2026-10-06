@@ -44,7 +44,7 @@ Generate secrets with `openssl rand -hex 32`. Server-only values must never star
 
 ## 5. Monitoring and backups
 - [ ] `GET /api/health` returns ok; `GET /api/health?deep=1` with `Authorization: Bearer $OPS_API_TOKEN` shows database ok.
-- [ ] Vercel cron for `/api/ops/check` is listed under Cron Jobs and ran at least once.
+- [ ] GitHub → Actions → **Ops checks** → *Run workflow* once by hand: it goes green (needs the variable `POS_APP_URL` and the secret `CRON_SECRET`; the schedule starts after the code is on `main`).
 - [ ] A test alert reaches your webhook (trigger one by temporarily skipping a backup report, or call `/api/ops/check`).
 - [ ] `scripts/backup-db.sh` scheduled daily on a machine that is not the till, with `BACKUP_AGE_RECIPIENT` (or `BACKUP_GPG_RECIPIENT`) and `BACKUP_UPLOAD_CMD` set; first run reported `ok` and both files (`pos-*.dump.age` and `pos-*-auth.dump.age`) are in the off-site storage. The age **private key** is stored somewhere else (password manager + printed copy).
 - [ ] One restore drill done into a scratch project (auth dump first, then public) with `scripts/restore-verify.ts`, **and** a real staff member signed in on the restored project; date and result written down.
