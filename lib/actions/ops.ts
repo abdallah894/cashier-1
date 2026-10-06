@@ -65,6 +65,7 @@ export async function updateStoreSettings(input: unknown): Promise<ActionResult>
       ...(v.weighedPrefixMax === undefined ? {} : { weighed_prefix_max: v.weighedPrefixMax }),
       ...(v.weighedItemCodeLength === undefined ? {} : { weighed_item_code_length: v.weighedItemCodeLength }),
       ...(v.weighedValueKind === undefined ? {} : { weighed_value_kind: v.weighedValueKind }),
+      ...(v.etaEnabled === undefined ? {} : { eta_enabled: v.etaEnabled }),
     },
   });
   if (error) return { ok: false, error: opsError(error.message) };

@@ -635,6 +635,54 @@ export type Database = {
           },
         ]
       }
+      eta_submissions: {
+        Row: {
+          attempts: number
+          claimed_at: string | null
+          created_at: string
+          document_kind: string
+          eta_uuid: string | null
+          id: string
+          last_error: string | null
+          next_attempt_at: string
+          return_id: string | null
+          sale_id: string | null
+          status: string
+          submission_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          claimed_at?: string | null
+          created_at?: string
+          document_kind: string
+          eta_uuid?: string | null
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          return_id?: string | null
+          sale_id?: string | null
+          status?: string
+          submission_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          claimed_at?: string | null
+          created_at?: string
+          document_kind?: string
+          eta_uuid?: string | null
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          return_id?: string | null
+          sale_id?: string | null
+          status?: string
+          submission_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goods_receipt_lines: {
         Row: {
           id: string
@@ -2192,6 +2240,7 @@ export type Database = {
           address_en: string
           business_day_cutoff_minutes: number
           default_lead_time_days: number
+          eta_enabled: boolean
           id: boolean
           phone: string
           receipt_footer_ar: string
@@ -2213,6 +2262,7 @@ export type Database = {
           address_en?: string
           business_day_cutoff_minutes?: number
           default_lead_time_days?: number
+          eta_enabled?: boolean
           id?: boolean
           phone?: string
           receipt_footer_ar?: string
@@ -2234,6 +2284,7 @@ export type Database = {
           address_en?: string
           business_day_cutoff_minutes?: number
           default_lead_time_days?: number
+          eta_enabled?: boolean
           id?: boolean
           phone?: string
           receipt_footer_ar?: string
@@ -2527,6 +2578,20 @@ export type Database = {
       derive_po_status: {
         Args: { p_po_id: string }
         Returns: Database["public"]["Enums"]["purchase_order_status"]
+      }
+      eta_claim_batch: {
+        Args: { p_limit?: number }
+        Returns: Database["public"]["Tables"]["eta_submissions"]["Row"][]
+      }
+      eta_record_result: {
+        Args: {
+          p_error?: string
+          p_eta_uuid?: string
+          p_id: string
+          p_outcome: string
+          p_submission_id?: string
+        }
+        Returns: Database["public"]["Tables"]["eta_submissions"]["Row"]
       }
       evaluate_promotions: {
         Args: {

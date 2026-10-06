@@ -11,6 +11,7 @@ const product = {
   barcode: "6221031000012",
   name_ar: "حليب",
   name_en: "Milk",
+  plu_code: null,
   category_id: null,
   price: 2500,
   cost: 2000,

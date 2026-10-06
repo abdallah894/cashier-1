@@ -80,7 +80,18 @@ After each migration: `npm run db:types` and commit the regenerated `lib/supabas
 
 ---
 
-## Phase 1 — Egypt essentials (15–20 days)
+## Phase 1 — Egypt essentials (15–20 days) — ⚠️ PARTLY DONE (2026-10-06)
+
+| Item | Status |
+| --- | --- |
+| 1.2 Weighed (scale-label) barcodes | ✅ Done and tested (parser, settings, product PLU code, offline). **Not yet tried with your real scale** — print one label and run the checklist below before enabling. |
+| 1.3 Register keyboard completion | ✅ Done (F4/F5/F6/F7, Ctrl+Del, `3*`, empty-search arrows, 0.1 kg steps). Unit-tested; not yet clicked through in a real browser. |
+| 1.4 Translate device errors | ✅ Done and tested. |
+| 1.1 ETA e-receipt | ⚠️ **Queue only.** Sales/returns are queued, retried, alerted on; the connection to the authority is **not built** because its specification could not be read and must not be guessed. See [eta.md](eta.md) for the exact steps left (accountant, registration, provider, paper receipt). |
+
+**Weighed-barcode setup:** 1) Reports → Store settings → Scale labels: choose the prefix range, item-code digits and whether the label holds weight or price (ask the scale's installer, or print a label and read the 13 digits: `2x` + PLU + value + check digit). 2) Give each scale product a **Scale code (PLU)** in its form and set its unit to kg. 3) Turn on "Read scale labels". 4) Scan a printed label: the right product should appear with the printed weight.
+
+The original plan for this phase follows for reference.
 
 ### 1.1 ETA e-receipt (B2C) — 8–12 days
 

@@ -56,6 +56,7 @@ Generate secrets with `openssl rand -hex 32`. Server-only values must never star
 - [ ] Sell: per-piece, per-kg (e.g. 1.25 kg), a line discount, a sale discount, a promotion, a customer attached.
 - [ ] Large discount asks for manager approval; cashier cannot bypass it.
 - [ ] Cash sale shows correct change; card sale needs the terminal approval code.
+- [ ] If the shop has a deli/produce scale: Store settings → Scale labels set; each scale product has its PLU and unit kg; scan a printed label → right product, right weight. Scan a label whose PLU no product has → a clear message, no wrong item added. Also `3*` then scan adds three; F4/F5/F6/F7 and Ctrl+Del work from the keyboard.
 - [ ] Print the receipt (80 mm), reprint, gift receipt, PDF download with correct Arabic.
 - [ ] Open the cash drawer from the receipt screen; it is audited.
 - [ ] Return a restocked item and a card refund; stock and drawer move as expected.

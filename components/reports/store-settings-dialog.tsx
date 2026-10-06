@@ -42,6 +42,7 @@ export function StoreSettingsDialog({ settings }: { settings: StoreSettings }) {
     receiptFooterAr: settings.receipt_footer_ar,
     receiptFooterEn: settings.receipt_footer_en,
   });
+  const [etaEnabled, setEtaEnabled] = useState(settings.eta_enabled);
   const [weighed, setWeighed] = useState({
     enabled: settings.weighed_barcode_enabled,
     prefixMin: String(settings.weighed_prefix_min),
@@ -67,6 +68,7 @@ export function StoreSettingsDialog({ settings }: { settings: StoreSettings }) {
         weighedPrefixMax: Number(weighed.prefixMax),
         weighedItemCodeLength: Number(weighed.codeLength),
         weighedValueKind: weighed.valueKind as "weight_grams" | "price_piasters",
+        etaEnabled,
       });
       if (!result.ok) {
         toast.error(tErrors(result.error));
@@ -148,6 +150,12 @@ export function StoreSettingsDialog({ settings }: { settings: StoreSettings }) {
               </select>
             </Field>
           </div>
+          <p className="pt-2 text-sm font-medium">{t("etaTitle")}</p>
+          <p className="text-muted-foreground -mt-2 text-xs">{t("etaHint")}</p>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={etaEnabled} onChange={(e) => setEtaEnabled(e.target.checked)} />
+            {t("etaEnabled")}
+          </label>
           <Field id="tz" label={t("timezone")}>
             <Input id="tz" dir="ltr" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
           </Field>

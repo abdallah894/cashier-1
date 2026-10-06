@@ -25,6 +25,8 @@ export const storeSettingsSchema = z.object({
   weighedPrefixMax: z.number().int().min(20).max(29).optional(),
   weighedItemCodeLength: z.number().int().min(4).max(6).optional(),
   weighedValueKind: z.enum(["weight_grams", "price_piasters"]).optional(),
+  // queue every new sale/return for the tax authority (needs a provider, see docs/eta.md)
+  etaEnabled: z.boolean().optional(),
 }).refine((v) => v.weighedPrefixMin === undefined || v.weighedPrefixMax === undefined || v.weighedPrefixMin <= v.weighedPrefixMax, { message: "prefixOrder" });
 
 export const handleAlertSchema = z.object({

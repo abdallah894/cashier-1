@@ -16,7 +16,7 @@ The fixes are scheduled in [PRODUCTION-PLAN.md](PRODUCTION-PLAN.md). If you are 
 
 ---
 
-> **Status (2026-10-06): all six P0 and all eight P1 findings below are fixed** (see "Phase 0" in [PRODUCTION-PLAN.md](PRODUCTION-PLAN.md)), along with the P2 items "stale `app/sw.ts` comment", "no deep health check", "unvalidated id arguments" and the offline catalog-age warning. The findings are kept below as the record of what was wrong. The remaining P2 items are scheduled in Phases 1–4.
+> **Status (2026-10-06): all six P0 and all eight P1 findings below are fixed** (see "Phase 0" in [PRODUCTION-PLAN.md](PRODUCTION-PLAN.md)), along with the P2 items "stale `app/sw.ts` comment", "no deep health check", "unvalidated id arguments" and the offline catalog-age warning. The findings are kept below as the record of what was wrong. **Phase 1 (2026-10-06)** also fixed P2 items 2 (scale-label barcodes, plus 0.1 kg steps), 3 (register keyboard gaps) and 5 (raw English device errors); P2 item 1 (ETA) is **only partly done** — the queue exists, the connection to the authority does not ([eta.md](eta.md)). The remaining P2 items are scheduled in Phases 2–4.
 
 ## Summary
 

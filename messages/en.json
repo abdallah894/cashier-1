@@ -1183,7 +1183,10 @@
       "weighedCodeLength": "Item code digits (4–6)",
       "weighedValueKind": "The label holds",
       "weighedKindWeight": "Weight in grams",
-      "weighedKindPrice": "Price in piasters"
+      "weighedKindPrice": "Price in piasters",
+      "etaTitle": "Tax authority e-receipts",
+      "etaHint": "Queues every new sale and return to be sent to the Egyptian Tax Authority after the sale is complete. Turn on only after your accountant confirms the shop must use it, the shop is registered, and the integration is installed (docs/eta.md). Until then queued receipts only wait and an alert is raised.",
+      "etaEnabled": "Queue sales and returns for the tax authority"
     },
     "dayClosed": "Business day {day} closed.",
     "closeDay": "Close day",
