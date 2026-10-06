@@ -19,6 +19,9 @@ export type SaleReceipt = {
 };
 
 function mapSaleError(message: string): string {
+  // database-level input checks (the app validates the same things first)
+  if (message.includes("whole piasters") || message.includes("at most 3 decimals")) return "invalidInput";
+  if (message.includes("account is not active")) return "notAuthorized";
   if (message.includes("terminal approval reference")) return "paymentReferenceRequired";
   if (message.includes("invalid reference")) return "paymentReferenceInvalid";
   if (message.includes("reference already used")) return "paymentReferenceUsed";

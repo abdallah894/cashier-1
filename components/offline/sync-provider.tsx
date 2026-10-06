@@ -8,7 +8,7 @@ import { getOfflineDb } from "@/lib/offline/db";
 import { recoverStuck } from "@/lib/offline/outbox";
 import { refreshOfflineData } from "@/lib/offline/register-data";
 import { submitQueuedSale } from "@/lib/offline/submit";
-import { drainOutbox } from "@/lib/offline/sync";
+import { drainOutboxExclusive } from "@/lib/offline/sync";
 import { reportSyncBacklog } from "@/lib/actions/ops-health";
 import { countByStatus } from "@/lib/offline/outbox";
 
@@ -16,6 +16,7 @@ const SYNC_INTERVAL_MS = 30_000;
 const CATALOG_INTERVAL_MS = 10 * 60_000;
 /** A `syncing` row older than this has no live submitter (crash/restart). */
 const STUCK_AFTER_MS = 2 * 60_000;
+const SIGN_IN_TOAST = "offline-needs-sign-in";
 
 /** Headless: drains the sale outbox and keeps the offline catalog fresh. Mounted once in the app shell. */
 export function SyncProvider({ userId }: { userId: string }) {
@@ -43,9 +44,17 @@ export function SyncProvider({ userId }: { userId: string }) {
 
     async function sync() {
       if (!navigator.onLine) return;
-      const result = await drainOutbox(db, userId, submitQueuedSale);
+      // null: another tab of this browser is draining right now
+      const result = await drainOutboxExclusive(db, userId, submitQueuedSale);
+      if (!result) return;
       await report();
       if (cancelled) return;
+      if (result.needsSignIn) {
+        // the queue is paused until the cashier signs in again; say so until it drains
+        toast.error(t("needsSignIn", { count: result.remaining }), { id: SIGN_IN_TOAST, duration: Infinity });
+      } else {
+        toast.dismiss(SIGN_IN_TOAST);
+      }
       if (result.synced > 0) {
         toast.success(t("syncedToast", { count: result.synced }));
         router.refresh(); // stock and receipts changed server-side
@@ -64,16 +73,23 @@ export function SyncProvider({ userId }: { userId: string }) {
       }
     }
 
-    void recoverStuck(db, STUCK_AFTER_MS).then(sync);
+    // An IndexedDB or network error here must never become an unhandled rejection: the next tick retries.
+    const safely = (job: () => Promise<void>) => () => void job().catch(() => undefined);
+    const safeSync = safely(sync);
+    const safeReport = safely(report);
+
+    void recoverStuck(db, STUCK_AFTER_MS)
+      .then(sync)
+      .catch(() => undefined);
     void refreshCatalog();
 
     const onOnline = () => {
-      void sync();
+      safeSync();
       void refreshCatalog();
     };
     window.addEventListener("online", onOnline);
-    const syncTimer = setInterval(() => void sync(), SYNC_INTERVAL_MS);
-    const reportTimer = setInterval(() => void report(), 60_000);
+    const syncTimer = setInterval(safeSync, SYNC_INTERVAL_MS);
+    const reportTimer = setInterval(safeReport, 60_000);
     const catalogTimer = setInterval(() => void refreshCatalog(), CATALOG_INTERVAL_MS);
     return () => {
       cancelled = true;

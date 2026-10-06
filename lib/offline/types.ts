@@ -28,6 +28,8 @@ export type OutboxEntry = {
   items: QueuedSaleItem[];
   amountTendered: number;
   provisional: ProvisionalReceipt;
+  /** Customer attached when the sale was rung (absent on entries queued before this field existed). */
+  customerId?: string | null;
   /** ISO time the till rang the sale (offline clocks are advisory). */
   createdAt: string;
   /** per-device counter shown as the provisional receipt number */

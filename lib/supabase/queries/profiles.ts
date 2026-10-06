@@ -31,7 +31,7 @@ export async function requireAdmin(): Promise<Profile> {
 }
 
 /**
- * Active, PIN-enabled staff for the switch dialog. Uses the service-role
+ * Active, PIN-enabled cashiers for the switch dialog. Uses the service-role
  * client because RLS hides other profiles from cashiers — returns only
  * id + name (never hashes, never emails).
  */
@@ -41,6 +41,7 @@ export async function getSwitchableCashiers(): Promise<{ id: string; full_name: 
     .from("profiles")
     .select("id, full_name")
     .eq("active", true)
+    .eq("role", "cashier") // admins sign in with email + password, never by PIN
     .not("pin_hash", "is", null)
     .order("full_name");
   if (error) throw error;

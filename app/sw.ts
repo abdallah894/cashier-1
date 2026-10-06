@@ -2,11 +2,10 @@ import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { Serwist } from "serwist";
 
-// Serwist service worker. PHASE 6 SCOPE: precache the app shell + static
-// assets so the installed app launches instantly and survives a brief
-// network blip. It does NOT yet queue sales offline — that is the Phase 7
-// (offline resilience) work described in docs/offline-plan.md, which will
-// add an IndexedDB outbox and a BackgroundSync/queue plugin here.
+// Serwist service worker: precaches the app shell + static assets so the
+// installed app launches instantly and survives a brief network blip. Offline
+// SALES are not queued here: they live in the IndexedDB outbox (lib/offline/)
+// and are drained by the page (components/offline/sync-provider.tsx).
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {

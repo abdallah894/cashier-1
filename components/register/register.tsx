@@ -7,7 +7,10 @@ import { useRouter } from "@/i18n/navigation";
 import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
 import { useOnline } from "@/hooks/use-online";
 import { usePromotionPreview } from "@/hooks/use-promotion-preview";
-import { lookupBarcode } from "@/lib/offline/register-data";
+import { lookupBarcode, lookupWeighed } from "@/lib/offline/register-data";
+import { qtyStep } from "@/lib/register/multiplier";
+import { parseQty } from "@/lib/money";
+import type { Tables } from "@/lib/supabase/database.types";
 import { useCart, computeTotals } from "@/lib/store/cart";
 import { CartPane } from "./cart-pane";
 import { SearchPane, type SearchPaneHandle } from "./search-pane";
@@ -59,6 +62,23 @@ export function Register({
   const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null);
   const searchRef = useRef<SearchPaneHandle>(null);
 
+  // "3*" typed in the search box: the next item added counts this many
+  const [pendingQty, setPendingQty] = useState<number | null>(null);
+
+  /** Adds a product, applying (and clearing) a pending "3*" multiplier. */
+  function addWithMultiplier(product: Tables<"products">) {
+    if (pendingQty === null) {
+      addProduct(product);
+      return;
+    }
+    setPendingQty(null);
+    if (parseQty(String(pendingQty), product.unit) === null) {
+      toast.error(t("multiplierWholeOnly"));
+      return;
+    }
+    addProduct(product, pendingQty);
+  }
+
   const unknownBarcodeOpen = unknownBarcode !== null;
   const dialogOpen = checkoutOpen || cameraOpen || switchOpen || unknownBarcodeOpen;
 
@@ -69,16 +89,25 @@ export function Register({
       // live lookup online, last synced catalog offline
       const { product } = await lookupBarcode(barcode);
       if (!product) {
-        setUnknownBarcode(barcode);
+        // not a product barcode: maybe a label printed by the deli/produce scale (weight or price inside)
+        const weighed = await lookupWeighed(barcode);
+        if (!weighed) {
+          setUnknownBarcode(barcode);
+        } else if (!weighed.ok) {
+          toast.error(t(weighed.reason === "unknownPlu" ? "unknownPlu" : "notByWeight", { plu: weighed.plu }));
+        } else {
+          addProduct(weighed.product, weighed.qty); // adds the label's weight; a second pack of the same item adds up
+        }
         return;
       }
-      addProduct(product); // increments qty if already in the cart
+      addWithMultiplier(product); // increments qty if already in the cart
     } catch {
       toast.error(t("scanFailed"));
     }
   }
 
-  useBarcodeScanner(handleScan, { enabled: !dialogOpen });
+  // while a window is open (payment, camera...) a scan must not reach its inputs
+  useBarcodeScanner(handleScan, { enabled: !dialogOpen, onBlockedScan: () => toast.error(t("scanBlocked")) });
 
   function handleUnknownBarcodeOpenChange(next: boolean) {
     if (!next) setUnknownBarcode(null);
@@ -97,6 +126,11 @@ export function Register({
       if (dialogOpen) return;
       const inField =
         event.target instanceof HTMLElement && event.target.closest("input, textarea, select");
+      // the empty search box is not "typing": arrows and +/- still drive the cart from it
+      const inEmptySearch =
+        event.target instanceof HTMLInputElement && event.target.hasAttribute("data-register-search") && event.target.value === "";
+      const clickShortcut = (name: string) => document.querySelector<HTMLElement>(`[data-shortcut="${name}"]`)?.click();
+      const focusShortcut = (name: string) => document.querySelector<HTMLElement>(`[data-shortcut="${name}"]`)?.focus();
 
       if (event.key === "/" && !inField) {
         event.preventDefault();
@@ -113,12 +147,37 @@ export function Register({
         setCameraOpen(true);
         return;
       }
+      if (event.key === "F4") {
+        event.preventDefault();
+        clickShortcut("line-discount");
+        return;
+      }
+      if (event.key === "F5") {
+        event.preventDefault(); // also stops the browser reloading the till mid-sale
+        clickShortcut("sale-discount");
+        return;
+      }
+      if (event.key === "F6") {
+        event.preventDefault();
+        clickShortcut("customer");
+        return;
+      }
+      if (event.key === "F7") {
+        event.preventDefault();
+        focusShortcut("promo-code");
+        return;
+      }
+      if (event.key === "Delete" && event.ctrlKey && (!inField || inEmptySearch)) {
+        event.preventDefault();
+        clickShortcut("void-cart");
+        return;
+      }
       if (event.key === "F9") {
         event.preventDefault();
         setSwitchOpen(true);
         return;
       }
-      if (inField) return;
+      if (inField && !inEmptySearch) return;
 
       const state = useCart.getState();
       const { items: cartItems, selectedIndex: sel } = state;
@@ -135,13 +194,19 @@ export function Register({
           state.setSelectedIndex(Math.max(sel - 1, 0));
           break;
         case "+":
-          if (selected) state.setQty(selected.productId, selected.qty + 1);
+          if (selected) {
+            event.preventDefault();
+            state.setQty(selected.productId, selected.qty + qtyStep(selected.unit));
+          }
           break;
         case "-":
-          if (selected) state.setQty(selected.productId, selected.qty - 1);
+          if (selected) {
+            event.preventDefault();
+            state.setQty(selected.productId, selected.qty - qtyStep(selected.unit));
+          }
           break;
         case "Delete":
-          if (selected) state.removeItem(selected.productId);
+          if (selected && !inField) state.removeItem(selected.productId);
           break;
       }
     }
@@ -151,6 +216,14 @@ export function Register({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
+      {pendingQty !== null && (
+        <div role="status" className="bg-primary/10 text-primary flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium">
+          {t("multiplierActive", { qty: pendingQty })}
+          <button type="button" className="ms-auto text-xs underline" onClick={() => setPendingQty(null)}>
+            {t("multiplierCancel")}
+          </button>
+        </div>
+      )}
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <CartPane
           totals={totals}
@@ -161,7 +234,8 @@ export function Register({
         />
         <SearchPane
           ref={searchRef}
-          onAdd={addProduct}
+          onAdd={addWithMultiplier}
+          onMultiplier={setPendingQty}
           onOpenCamera={() => setCameraOpen(true)}
           onOpenCheckout={() => setCheckoutOpen(true)}
           hasItems={items.length > 0}

@@ -14,8 +14,11 @@ export type StoreInfo = {
   addressAr: string;
   addressEn: string;
   phone: string;
-  /** Egyptian tax registration number — printed on every receipt. */
+  /** Egyptian tax registration number — printed on every receipt when set. */
   taxId: string;
+  /** Optional closing line, e.g. a thank-you or return policy. */
+  footerAr: string;
+  footerEn: string;
 };
 
 export type ReceiptLine = {

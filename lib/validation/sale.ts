@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_TENDERED_PIASTERS } from "@/lib/money";
 import { paymentReferenceSchema } from "./payments";
 
 export const saleItemSchema = z.object({
@@ -11,7 +12,7 @@ export const checkoutSchema = z
   .object({
     items: z.array(saleItemSchema).min(1).max(200),
     payment_method: z.enum(["cash", "card"]),
-    amount_tendered: z.number().int().min(0).nullable(),
+    amount_tendered: z.number().int().min(0).max(MAX_TENDERED_PIASTERS).nullable(),
     approvalId: z.uuid().optional(),
     /** Terminal approval code (RRN) for a card sale; never a card number. */
     cardReference: paymentReferenceSchema.optional(),

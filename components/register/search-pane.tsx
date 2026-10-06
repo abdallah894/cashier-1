@@ -10,12 +10,15 @@ import type { Tables } from "@/lib/supabase/database.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
+import { parseMultiplier } from "@/lib/register/multiplier";
 import { cn } from "@/lib/utils";
 
 export type SearchPaneHandle = { focus: () => void; clear: () => void };
 
 type Props = {
   onAdd: (product: Tables<"products">) => void;
+  /** "3*" + Enter in the search box: the next item counts this many */
+  onMultiplier: (qty: number) => void;
   onOpenCamera: () => void;
   onOpenCheckout: () => void;
   hasItems: boolean;
@@ -23,7 +26,7 @@ type Props = {
 };
 
 export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPane(
-  { onAdd, onOpenCamera, onOpenCheckout, hasItems, total },
+  { onAdd, onMultiplier, onOpenCamera, onOpenCheckout, hasItems, total },
   ref
 ) {
   const t = useTranslations("register");
@@ -70,6 +73,16 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
   }
 
   function onKeyDown(event: React.KeyboardEvent) {
+    if (event.key === "Enter") {
+      const multiplier = parseMultiplier(query);
+      if (multiplier !== null) {
+        event.preventDefault();
+        onMultiplier(multiplier);
+        setQuery("");
+        setDebounced("");
+        return;
+      }
+    }
     if (results.length === 0) {
       if (event.key === "Escape") {
         setQuery("");
@@ -104,6 +117,7 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
           <Search className="text-muted-foreground absolute start-6 top-1/2 size-4 -translate-y-1/2" />
           <Input
             ref={inputRef}
+            data-register-search
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}

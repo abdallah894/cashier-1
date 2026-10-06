@@ -123,7 +123,9 @@
       "create": "Create product",
       "cancel": "Cancel",
       "saved": "Product saved.",
-      "created": "Product created."
+      "created": "Product created.",
+      "plu": "Scale code (PLU)",
+      "pluHint": "Only for items weighed on the shop scale: the 1–6 digit code the scale prints inside its labels. Leave empty otherwise."
     }
   },
   "categories": {
@@ -279,7 +281,9 @@
       "offlineDiscountBlocked": "This discount needs a manager approval, which requires a connection. Reduce the discount or reconnect.",
       "queuedDone": "Saved offline as P-{number}. It will sync automatically.",
       "cardReference": "Terminal approval code",
-      "cardReferenceHint": "Charge the card on the bank terminal first, then type the approval code (RRN) it prints. Never type a card number here."
+      "cardReferenceHint": "Charge the card on the bank terminal first, then type the approval code (RRN) it prints. Never type a card number here.",
+      "tenderedTooLarge": "That amount is too large. Scanned a barcode by mistake? Clear it and type the cash received.",
+      "offlineCatalogExpired": "Offline prices are too old (over 3 days) or were never synced. Reconnect to refresh them before selling."
     },
     "shortcuts": {
       "focusSearch": "search",
@@ -289,7 +293,13 @@
       "selectLine": "select line",
       "changeQty": "qty",
       "removeLine": "remove",
-      "close": "close"
+      "close": "close",
+      "lineDiscount": "line discount",
+      "saleDiscount": "sale discount",
+      "customer": "customer",
+      "promoCode": "promo code",
+      "multiplier": "qty ×",
+      "voidCart": "void cart"
     },
     "approxStock": "approx. stock",
     "offlineCatalog": "Offline: showing the last synced catalog. Stock figures are approximate.",
@@ -313,7 +323,13 @@
       "consentHint": "Leave off unless the customer clearly says yes. It can be withdrawn at any time.",
       "create": "Register and attach",
       "close": "Close"
-    }
+    },
+    "scanBlocked": "The scan was ignored: finish or close the open window first.",
+    "unknownPlu": "This scale label is for PLU {plu}, but no product has that PLU. Add the PLU code to the product first.",
+    "notByWeight": "PLU {plu} is on a weight label, but that product is not sold by the kilo.",
+    "multiplierActive": "Next item × {qty}",
+    "multiplierCancel": "Cancel",
+    "multiplierWholeOnly": "This item is sold per piece: use a whole number."
   },
   "shifts": {
     "title": "Shifts",
@@ -652,7 +668,8 @@
     "reorderNoteRequired": "A note is required to dismiss an alert.",
     "reorderChooseOrder": "Choose a purchase order that contains this product.",
     "reorderResolved": "That alert is already resolved.",
-    "opsFailed": "The action failed. Please try again."
+    "opsFailed": "The action failed. Please try again.",
+    "duplicatePlu": "Another product already uses this scale code (PLU)."
   },
   "fieldErrors": {
     "required": "Required.",
@@ -666,7 +683,9 @@
     "unknownCategory": "Category not found — create it first or leave empty.",
     "invalidUnit": "Unit must be piece or kg.",
     "invalidBoolean": "Use yes/no.",
-    "qtyChangeZero": "Change cannot be zero."
+    "qtyChangeZero": "Change cannot be zero.",
+    "invalidPlu": "1–6 digits, no leading zero.",
+    "duplicatePlu": "Another product already uses this scale code."
   },
   "offline": {
     "title": "Pending sales",
@@ -715,7 +734,12 @@
     },
     "print": "Print",
     "backToRegister": "Back to register",
-    "notFound": "This offline sale is not on this device."
+    "notFound": "This offline sale is not on this device.",
+    "needsSignIn": "Your session expired. Sign in again to send {count} queued sale(s).",
+    "pricesFrom": "Prices from {time}",
+    "pricesNever": "Prices never synced",
+    "pricesStale": "older than 24 h",
+    "pricesExpired": "too old to sell"
   },
   "stocktakes": {
     "title": "Stocktakes",
@@ -1140,7 +1164,29 @@
       "leadDays": "Default lead time (days)",
       "save": "Save",
       "saved": "Settings saved.",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "identityTitle": "Store identity on receipts",
+      "identityHint": "Printed on every receipt, return receipt and Z-report. Leave a field empty to leave it off the receipt.",
+      "nameAr": "Store name (Arabic)",
+      "nameEn": "Store name (English)",
+      "addressAr": "Address (Arabic)",
+      "addressEn": "Address (English)",
+      "phone": "Phone",
+      "taxNumber": "Tax registration number",
+      "footerAr": "Receipt footer (Arabic)",
+      "footerEn": "Receipt footer (English)",
+      "weighedTitle": "Scale labels (weighed barcodes)",
+      "weighedHint": "For deli/produce scales that print a barcode holding the item code and the weight or price. Give each such product its scale code (PLU) in the product form. Print one test label to confirm the layout before enabling.",
+      "weighedEnabled": "Read scale labels at the register",
+      "weighedPrefixMin": "First prefix (20–29)",
+      "weighedPrefixMax": "Last prefix (20–29)",
+      "weighedCodeLength": "Item code digits (4–6)",
+      "weighedValueKind": "The label holds",
+      "weighedKindWeight": "Weight in grams",
+      "weighedKindPrice": "Price in piasters",
+      "etaTitle": "Tax authority e-receipts",
+      "etaHint": "Queues every new sale and return to be sent to the Egyptian Tax Authority after the sale is complete. Turn on only after your accountant confirms the shop must use it, the shop is registered, and the integration is installed (docs/eta.md). Until then queued receipts only wait and an alert is raised.",
+      "etaEnabled": "Queue sales and returns for the tax authority"
     },
     "dayClosed": "Business day {day} closed.",
     "closeDay": "Close day",
@@ -1289,5 +1335,18 @@
       "unavailable": "The assistant is unavailable right now. The register and everything else keep working normally.",
       "network": "Could not reach the assistant. Check the connection. The register is not affected."
     }
+  },
+  "deviceErrors": {
+    "noPrinter": "No receipt printer is connected. Use the browser print instead.",
+    "noInterface": "The printer did not offer a usable USB connection.",
+    "noEndpoint": "The printer has no data channel the browser can write to.",
+    "usbTransfer": "The printer stopped answering. Check the cable, paper and power, then try again.",
+    "webUsbUnavailable": "This browser cannot talk to the printer. Use Chrome or Edge over HTTPS, or the desktop app.",
+    "noDeviceSelected": "No printer was chosen.",
+    "disconnected": "The device was disconnected. Plug it back in and try again.",
+    "accessDenied": "The browser was not allowed to use the device. Allow access when asked.",
+    "printFailed": "The receipt could not be printed.",
+    "drawerNotOpened": "The cash drawer did not open.",
+    "generic": "Device problem: {detail}"
   }
 }

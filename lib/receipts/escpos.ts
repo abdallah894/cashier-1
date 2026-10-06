@@ -142,8 +142,9 @@ export function buildReceiptEscPos(receipt: ReceiptData, labels: EscPosLabels, o
   b.raw(ESC_POS.init).raw(ESC_POS.alignCenter).raw(ESC_POS.boldOn);
   for (const part of wrap(receipt.store.nameEn, columns)) b.line(part);
   b.raw(ESC_POS.boldOff);
-  for (const part of wrap(receipt.store.addressEn, columns)) b.line(part);
-  b.line(receipt.store.phone).line(labels.taxId);
+  if (receipt.store.addressEn) for (const part of wrap(receipt.store.addressEn, columns)) b.line(part);
+  if (receipt.store.phone) b.line(receipt.store.phone);
+  if (receipt.store.taxId) b.line(labels.taxId);
   if (options.gift) b.raw(ESC_POS.boldOn).line().line(labels.gift).raw(ESC_POS.boldOff);
   if (receipt.provisionalLabel) b.raw(ESC_POS.boldOn).line(labels.provisional).raw(ESC_POS.boldOff);
   if ((options.copyNumber ?? 1) > 1) b.raw(ESC_POS.boldOn).line(labels.copy(options.copyNumber ?? 1)).raw(ESC_POS.boldOff);
@@ -178,6 +179,7 @@ export function buildReceiptEscPos(receipt: ReceiptData, labels: EscPosLabels, o
       b.line(twoColumns(labels.change, formatPiasters(receipt.changeDue ?? 0), columns));
     }
     b.raw(ESC_POS.alignCenter).line().line(labels.thankYou);
+    for (const part of receipt.store.footerEn ? wrap(receipt.store.footerEn, columns) : []) b.line(part);
   }
 
   b.raw(feed(4)).raw(ESC_POS.cut);

@@ -30,7 +30,7 @@ export function maskPhone(phone: string): string {
 
 /** Plain-text receipt for email/SMS bodies; prices in EGP, English item names, no staff or internal data. */
 export function buildTextReceipt(receipt: ReceiptData, options: { gift?: boolean } = {}): string {
-  const lines: string[] = [receipt.store.nameEn, receipt.store.addressEn, ""];
+  const lines: string[] = [receipt.store.nameEn, ...(receipt.store.addressEn ? [receipt.store.addressEn] : []), ""];
   lines.push(options.gift ? "GIFT RECEIPT" : `Receipt ${receipt.provisionalLabel ?? `#${receipt.saleNumber}`}`);
   lines.push(receipt.createdAt.slice(0, 16).replace("T", " "), "");
   for (const line of receipt.lines) {

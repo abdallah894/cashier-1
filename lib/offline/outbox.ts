@@ -9,6 +9,7 @@ export type EnqueueInput = {
   items: QueuedSaleItem[];
   amountTendered: number;
   provisional: ProvisionalReceipt;
+  customerId?: string | null;
 };
 
 /** Writes the sale to IndexedDB first; the receipt can print before any network call. */
@@ -24,6 +25,7 @@ export async function enqueueSale(db: OfflineDb, input: EnqueueInput): Promise<O
       items: input.items,
       amountTendered: input.amountTendered,
       provisional: input.provisional,
+      customerId: input.customerId ?? null,
       createdAt: new Date().toISOString(),
       localNumber,
       status: "queued",

@@ -142,6 +142,7 @@ export function validateCsvRow(
       barcode,
       name_ar: nameAr,
       name_en: nameEn,
+      plu_code: null, // scale codes are set per product in the product form
       category_id: categoryId,
       price: price!,
       cost: cost!,

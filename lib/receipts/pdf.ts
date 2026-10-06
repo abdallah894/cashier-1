@@ -96,9 +96,10 @@ export async function downloadReceiptPdf(
   };
 
   center(isAr ? receipt.store.nameAr : receipt.store.nameEn, 13);
-  center(isAr ? receipt.store.addressAr : receipt.store.addressEn);
-  center(receipt.store.phone);
-  center(labels.taxId);
+  const address = isAr ? receipt.store.addressAr : receipt.store.addressEn;
+  if (address) center(address);
+  if (receipt.store.phone) center(receipt.store.phone);
+  if (receipt.store.taxId) center(labels.taxId);
   dashes();
 
   row(labels.saleNo, `#${receipt.saleNumber}`);
@@ -140,6 +141,8 @@ export async function downloadReceiptPdf(
   y += 24;
   center(`#${receipt.saleNumber}`);
   center(labels.thankYou);
+  const footer = isAr ? receipt.store.footerAr : receipt.store.footerEn;
+  if (footer) center(footer);
 
   doc.save(`receipt-${receipt.saleNumber}.pdf`);
 }

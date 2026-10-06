@@ -4,18 +4,19 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Printer } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { STORE_INFO } from "@/lib/receipts/store-info";
-import type { ReceiptData } from "@/lib/receipts/types";
+import { DEFAULT_STORE_INFO } from "@/lib/receipts/store-info";
+import type { ReceiptData, StoreInfo } from "@/lib/receipts/types";
+import { loadStoreInfo } from "@/lib/offline/catalog";
 import { getOfflineDb } from "@/lib/offline/db";
 import { getOutboxEntry } from "@/lib/offline/outbox";
 import type { OutboxEntry } from "@/lib/offline/types";
 import { Receipt80mm } from "@/components/receipts/receipt-80mm";
 import { Button } from "@/components/ui/button";
 
-function toReceipt(entry: OutboxEntry): ReceiptData {
+function toReceipt(entry: OutboxEntry, store: StoreInfo): ReceiptData {
   const p = entry.provisional;
   return {
-    store: STORE_INFO,
+    store,
     saleId: entry.id,
     saleNumber: entry.saleNumber ?? 0,
     createdAt: entry.createdAt,
@@ -38,10 +39,12 @@ function toReceipt(entry: OutboxEntry): ReceiptData {
 export function ProvisionalReceiptView({ id }: { id: string }) {
   const t = useTranslations("offline");
   const [entry, setEntry] = useState<OutboxEntry | null | undefined>(undefined);
+  const [store, setStore] = useState<StoreInfo>(DEFAULT_STORE_INFO);
 
   useEffect(() => {
     let active = true;
     void getOutboxEntry(getOfflineDb(), id).then((row) => active && setEntry(row ?? null));
+    void loadStoreInfo(getOfflineDb()).then((info) => active && info && setStore(info));
     return () => {
       active = false;
     };
@@ -71,7 +74,7 @@ export function ProvisionalReceiptView({ id }: { id: string }) {
         </Button>
       </div>
       <div className="receipt-print-area self-center overflow-hidden rounded-md border shadow-sm">
-        <Receipt80mm receipt={toReceipt(entry)} />
+        <Receipt80mm receipt={toReceipt(entry, store)} />
       </div>
     </div>
   );

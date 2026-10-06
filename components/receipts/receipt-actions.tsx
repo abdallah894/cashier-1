@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { FileDown, Gift, Loader2, Printer, RotateCcw } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useDeviceErrorText } from "@/hooks/use-device-error";
 import { toast } from "sonner";
 import { Link, useRouter } from "@/i18n/navigation";
 import { authorizeDrawerOpen, completeDrawerOpening, completePrintJob, requestPrintJob } from "@/lib/actions/devices";
@@ -74,6 +75,7 @@ export function ReceiptActions({
 }) {
   const t = useTranslations("receipt");
   const tErrors = useTranslations("errors");
+  const deviceError = useDeviceErrorText();
   const locale = useLocale() as "ar" | "en";
   const format = useFormatter();
   const router = useRouter();
@@ -152,7 +154,7 @@ export function ReceiptActions({
           toast.success(t(outcome.via === "printer" ? "printedOnPrinter" : "printedInBrowser"));
         } else {
           // server refusals arrive as i18n keys; device errors as plain text
-          const message = tErrors.has(outcome.error) ? tErrors(outcome.error) : outcome.error;
+          const message = deviceError(outcome.error);
           setFailed({ kind, reason: why, error: message });
           toast.error(t("printFailed", { error: message }), { duration: 12_000 });
         }
@@ -189,10 +191,10 @@ export function ReceiptActions({
         await completeDrawerOpening({ openingId, ok, error: error ?? undefined, deviceId: drawerDeviceId });
       },
     }).then((outcome) => {
-      if (outcome.status === "failed") toast.error(t("drawerFailed", { error: outcome.error }));
-      else if (outcome.status === "denied") toast.error(tErrors.has(outcome.error) ? tErrors(outcome.error) : outcome.error);
+      if (outcome.status === "failed") toast.error(t("drawerFailed", { error: deviceError(outcome.error) }));
+      else if (outcome.status === "denied") toast.error(deviceError(outcome.error));
     });
-  }, [justCompleted, paidWithCash, drawerDeviceId, printer, transport, receipt.saleId, t, tErrors]);
+  }, [justCompleted, paidWithCash, drawerDeviceId, printer, transport, receipt.saleId, t, deviceError]);
 
   async function downloadPdf() {
     if (downloading) return;

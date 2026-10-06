@@ -16,6 +16,8 @@ export const productInputSchema = z.object({
     .regex(/^[0-9A-Za-z-]+$/, "invalidBarcode"),
   name_ar: z.string().trim().min(1, "required").max(200, "tooLong"),
   name_en: z.string().trim().min(1, "required").max(200, "tooLong"),
+  /** Scale code (PLU) printed in weighed-barcode labels: 1–6 digits, no leading zeros. */
+  plu_code: z.string().regex(/^[1-9][0-9]{0,5}$/, "invalidPlu").nullable(),
   category_id: z.uuid().nullable(),
   price: z.number().int("invalidAmount").min(0, "invalidAmount"),
   cost: z.number().int("invalidAmount").min(0, "invalidAmount"),
@@ -29,12 +31,24 @@ export const productInputSchema = z.object({
 
 export type ProductInput = z.infer<typeof productInputSchema>;
 
+/**
+ * Editing a product never touches stock: stock changes only through the
+ * ledgered paths (sales, returns, receiving, stocktakes, adjust_stock).
+ * Writing the quantity the form loaded earlier would silently undo any sale
+ * made while the form was open. z.object strips unknown keys, so a client
+ * that still sends stock_qty is simply ignored.
+ */
+export const productUpdateSchema = productInputSchema.omit({ stock_qty: true });
+
+export const idSchema = z.uuid();
+
 // ---------- form values (react-hook-form works in strings) ----------
 
 export const productFormSchema = z.object({
   barcode: productInputSchema.shape.barcode,
   name_ar: productInputSchema.shape.name_ar,
   name_en: productInputSchema.shape.name_en,
+  plu_code: z.string().refine((v) => v.trim() === "" || /^[1-9][0-9]{0,5}$/.test(v.trim()), "invalidPlu"), // "" = not sold from a scale
   category_id: z.string(), // "" = no category
   price: z.string().refine((v) => parseEgpToPiasters(v) !== null, "invalidAmount"),
   cost: z.string().refine((v) => parseEgpToPiasters(v) !== null, "invalidAmount"),
@@ -65,6 +79,7 @@ export function toProductInput(
     barcode: values.barcode.trim(),
     name_ar: values.name_ar.trim(),
     name_en: values.name_en.trim(),
+    plu_code: values.plu_code.trim() === "" ? null : values.plu_code.trim(),
     category_id: values.category_id === "" ? null : values.category_id,
     price: parseEgpToPiasters(values.price)!,
     cost: parseEgpToPiasters(values.cost)!,
@@ -84,6 +99,7 @@ export function toFormValues(product: Tables<"products">): ProductFormValues {
     barcode: product.barcode,
     name_ar: product.name_ar,
     name_en: product.name_en,
+    plu_code: product.plu_code ?? "",
     category_id: product.category_id ?? "",
     price: piastersToEgpInput(product.price),
     cost: piastersToEgpInput(product.cost),

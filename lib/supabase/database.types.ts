@@ -635,6 +635,54 @@ export type Database = {
           },
         ]
       }
+      eta_submissions: {
+        Row: {
+          attempts: number
+          claimed_at: string | null
+          created_at: string
+          document_kind: string
+          eta_uuid: string | null
+          id: string
+          last_error: string | null
+          next_attempt_at: string
+          return_id: string | null
+          sale_id: string | null
+          status: string
+          submission_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          claimed_at?: string | null
+          created_at?: string
+          document_kind: string
+          eta_uuid?: string | null
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          return_id?: string | null
+          sale_id?: string | null
+          status?: string
+          submission_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          claimed_at?: string | null
+          created_at?: string
+          document_kind?: string
+          eta_uuid?: string | null
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          return_id?: string | null
+          sale_id?: string | null
+          status?: string
+          submission_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       goods_receipt_lines: {
         Row: {
           id: string
@@ -1102,6 +1150,7 @@ export type Database = {
           low_stock_threshold: number
           name_ar: string
           name_en: string
+          plu_code: string | null
           price: number
           stock_qty: number
           tax_rate: number
@@ -1119,6 +1168,7 @@ export type Database = {
           low_stock_threshold?: number
           name_ar: string
           name_en: string
+          plu_code?: string | null
           price: number
           stock_qty?: number
           tax_rate?: number
@@ -1136,6 +1186,7 @@ export type Database = {
           low_stock_threshold?: number
           name_ar?: string
           name_en?: string
+          plu_code?: string | null
           price?: number
           stock_qty?: number
           tax_rate?: number
@@ -2185,28 +2236,70 @@ export type Database = {
       }
       store_settings: {
         Row: {
+          address_ar: string
+          address_en: string
           business_day_cutoff_minutes: number
           default_lead_time_days: number
+          eta_enabled: boolean
           id: boolean
+          phone: string
+          receipt_footer_ar: string
+          receipt_footer_en: string
           reorder_cover_days: number
           reorder_lookback_days: number
+          store_name_ar: string
+          store_name_en: string
+          tax_registration_number: string
           timezone: string
+          weighed_barcode_enabled: boolean
+          weighed_item_code_length: number
+          weighed_prefix_max: number
+          weighed_prefix_min: number
+          weighed_value_kind: string
         }
         Insert: {
+          address_ar?: string
+          address_en?: string
           business_day_cutoff_minutes?: number
           default_lead_time_days?: number
+          eta_enabled?: boolean
           id?: boolean
+          phone?: string
+          receipt_footer_ar?: string
+          receipt_footer_en?: string
           reorder_cover_days?: number
           reorder_lookback_days?: number
+          store_name_ar?: string
+          store_name_en?: string
+          tax_registration_number?: string
           timezone?: string
+          weighed_barcode_enabled?: boolean
+          weighed_item_code_length?: number
+          weighed_prefix_max?: number
+          weighed_prefix_min?: number
+          weighed_value_kind?: string
         }
         Update: {
+          address_ar?: string
+          address_en?: string
           business_day_cutoff_minutes?: number
           default_lead_time_days?: number
+          eta_enabled?: boolean
           id?: boolean
+          phone?: string
+          receipt_footer_ar?: string
+          receipt_footer_en?: string
           reorder_cover_days?: number
           reorder_lookback_days?: number
+          store_name_ar?: string
+          store_name_en?: string
+          tax_registration_number?: string
           timezone?: string
+          weighed_barcode_enabled?: boolean
+          weighed_item_code_length?: number
+          weighed_prefix_max?: number
+          weighed_prefix_min?: number
+          weighed_value_kind?: string
         }
         Relationships: []
       }
@@ -2485,6 +2578,20 @@ export type Database = {
       derive_po_status: {
         Args: { p_po_id: string }
         Returns: Database["public"]["Enums"]["purchase_order_status"]
+      }
+      eta_claim_batch: {
+        Args: { p_limit?: number }
+        Returns: Database["public"]["Tables"]["eta_submissions"]["Row"][]
+      }
+      eta_record_result: {
+        Args: {
+          p_error?: string
+          p_eta_uuid?: string
+          p_id: string
+          p_outcome: string
+          p_submission_id?: string
+        }
+        Returns: Database["public"]["Tables"]["eta_submissions"]["Row"]
       }
       evaluate_promotions: {
         Args: {

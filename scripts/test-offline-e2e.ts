@@ -40,15 +40,19 @@ async function main() {
     rpcCalls++;
     try {
       const { rows } = await pg.query<{ sale_id: string; sale_number: string }>(
-        `select * from public.create_sale($1::jsonb, 'cash', $2::uuid, $3, null, null, $4::uuid, $5::timestamptz)`,
-        [JSON.stringify(entry.items), entry.shiftId, entry.amountTendered, entry.id, entry.createdAt]
+        // mirrors lib/offline/submit.ts: no promotions, and the total the customer was shown
+        `select * from public.create_sale($1::jsonb, 'cash', $2::uuid, $3, null, null, $4::uuid, $5::timestamptz, $6::uuid, null, false, $7)`,
+        [JSON.stringify(entry.items), entry.shiftId, entry.amountTendered, entry.id, entry.createdAt, entry.customerId ?? null, entry.provisional.total]
       );
       if (dropResponses) throw new TypeError("response lost");
       return { kind: "synced", saleId: rows[0].sale_id, saleNumber: Number(rows[0].sale_number) };
     } catch (error) {
       if (error instanceof TypeError) throw error;
       const message = (error as Error).message;
-      return { kind: "rejected", error: message.includes("insufficient stock") ? "insufficientStock" : "checkoutFailed" };
+      return {
+        kind: "rejected",
+        error: message.includes("insufficient stock") ? "insufficientStock" : message.includes("total changed") ? "totalChanged" : "checkoutFailed",
+      };
     }
   };
 
@@ -109,6 +113,27 @@ async function main() {
   await resolveRejected(db, stale.id, "Customer paid for 1 item; the rest was returned to the shelf");
   const final = (await listOutbox(db)).find((row) => row.id === stale.id)!;
   check("staff can resolve it and the record is kept", final.status === "resolved" && final.resolution !== null);
+
+  // Phase 0 (P1-5): a price that moved while the till was offline must not be
+  // recorded at a different amount than the receipt the customer holds.
+  const cheapMilk = cart([[product(MILK, "Milk", 2000, 0.14), 1]]); // the till still shows 20.00
+  const repriced = await enqueueSale(db, {
+    userId: CASHIER,
+    shiftId,
+    items: toSaleItems(cheapMilk),
+    amountTendered: 2000,
+    provisional: buildProvisionalReceipt(cheapMilk, 2000, "Cashier"),
+  });
+  await asAdminService(pg);
+  await pg.query(`update public.products set price = 2500 where id = '${MILK}'`); // the server price rose to 25.00 meanwhile
+  await asUser(pg, CASHIER);
+  const repricedResult = await drainOutbox(db, CASHIER, submit);
+  const repricedRow = (await listOutbox(db)).find((row) => row.id === repriced.id)!;
+  check("a price change while offline is rejected, not silently re-priced", repricedResult.rejected === 1 && repricedRow.status === "rejected" && repricedRow.error === "totalChanged", repricedRow.error ?? "");
+  await asAdminService(pg);
+  const { rows: noSale } = await pg.query<{ c: string }>(`select count(*) as c from public.sales where idempotency_key = '${repriced.id}'`);
+  check("no sale was recorded at the new price", Number(noSale[0].c) === 0);
+  await asUser(pg, CASHIER);
 
   // discounts: the offline guard mirrors the server threshold
   const discounted = computeTotals([{ ...toCartItem(product(MILK, "Milk", 2000, 0.14)), qty: 1, discount: { kind: "percent", bp: 2000 } }], null);

@@ -61,6 +61,7 @@ export function ProductForm({ categories, product, defaultBarcode }: Props) {
           barcode: defaultBarcode ?? "",
           name_ar: "",
           name_en: "",
+          plu_code: "",
           category_id: "",
           price: "",
           cost: "0",
@@ -99,13 +100,14 @@ export function ProductForm({ categories, product, defaultBarcode }: Props) {
         return;
       }
       // Stock is only set at creation; afterwards it changes exclusively
-      // through audited stock adjustments.
-      if (isEdit) input.stock_qty = Number(product.stock_qty);
-
+      // through audited stock adjustments (updateProduct ignores stock_qty).
       const result = isEdit ? await updateProduct(product.id, input) : await createProduct(input);
       if (!result.ok) {
         if (result.error === "duplicateBarcode") {
           form.setError("barcode", { message: "duplicateBarcode" });
+        }
+        if (result.error === "duplicatePlu") {
+          form.setError("plu_code", { message: "duplicatePlu" });
         }
         toast.error(tErrors(result.error));
         return;
@@ -145,6 +147,12 @@ export function ProductForm({ categories, product, defaultBarcode }: Props) {
             <FieldLabel htmlFor="barcode">{t("barcode")}</FieldLabel>
             <Input id="barcode" dir="ltr" className="font-mono" {...form.register("barcode")} />
             {err("barcode")}
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="plu_code">{t("plu")}</FieldLabel>
+            <Input id="plu_code" dir="ltr" inputMode="numeric" className="font-mono" {...form.register("plu_code")} />
+            <FieldDescription>{t("pluHint")}</FieldDescription>
+            {err("plu_code")}
           </Field>
           <Field>
             <FieldLabel>{t("category")}</FieldLabel>

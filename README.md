@@ -3,6 +3,12 @@
 Bilingual (AR/EN) point-of-sale web app for a supermarket in Egypt.
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind + shadcn/ui · Supabase · next-intl.
 
+## Start here
+
+- New to the project? [docs/PROJECT-EXPLAINED.en.md](docs/PROJECT-EXPLAINED.en.md) · بالعربي: [docs/PROJECT-EXPLAINED.ar.md](docs/PROJECT-EXPLAINED.ar.md)
+- What is wrong or missing today: [docs/PROJECT-REVIEW.md](docs/PROJECT-REVIEW.md)
+- Plan to production (web, desktop, Android): [docs/PRODUCTION-PLAN.md](docs/PRODUCTION-PLAN.md)
+
 Money convention: **all amounts are integer piasters** (EGP 48.95 → `4895`) — in app code and in the database. Prices are VAT-inclusive; `tax_rate` is a fraction per product (`0.14`, or `0` for exempt basic foods).
 
 ## Setup

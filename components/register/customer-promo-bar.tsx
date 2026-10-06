@@ -59,7 +59,7 @@ export function CustomerPromoBar() {
             </button>
           </Badge>
         ) : (
-          <Button variant="outline" size="sm" onClick={() => setOpen(true)} disabled={!online}>
+          <Button variant="outline" size="sm" onClick={() => setOpen(true)} disabled={!online} data-shortcut="customer">
             <UserRound className="size-4" />
             {t("attach")}
           </Button>
@@ -74,6 +74,7 @@ export function CustomerPromoBar() {
             placeholder={t("codePlaceholder")}
             aria-label={t("codePlaceholder")}
             disabled={!online || !hasItems}
+            data-shortcut="promo-code"
             className="h-8 w-32 uppercase"
           />
           <Button variant="outline" size="sm" onClick={submitCode} disabled={!online || !hasItems || !code.trim()}>

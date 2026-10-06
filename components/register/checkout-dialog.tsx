@@ -10,10 +10,10 @@ import { createSale } from "@/lib/actions/sales";
 import { approvalRequestHash } from "@/lib/approvals/hash";
 import { useOnline } from "@/hooks/use-online";
 import { getOfflineDb } from "@/lib/offline/db";
-import { loadDiscountThreshold } from "@/lib/offline/catalog";
+import { catalogFreshness, catalogRefreshedAt, loadDiscountThreshold } from "@/lib/offline/catalog";
 import { enqueueSale } from "@/lib/offline/outbox";
 import { buildProvisionalReceipt, discountNeedsApproval } from "@/lib/offline/provisional";
-import { formatEgp, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
+import { formatEgp, MAX_TENDERED_PIASTERS, parseEgpToPiasters, piastersToEgpInput } from "@/lib/money";
 import { isValidPaymentReference } from "@/lib/payments/providers";
 import { useCart, toSaleItems, toQueuedSaleItems, type CartTotals } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,8 @@ export function CheckoutDialog({
 
   const tendered = parseEgpToPiasters(tenderedInput);
   const change = tendered !== null ? tendered - totals.total : null;
-  const cashInvalid = method === "cash" && (tendered === null || tendered < totals.total);
+  const tenderedTooLarge = tendered !== null && tendered > MAX_TENDERED_PIASTERS;
+  const cashInvalid = method === "cash" && (tendered === null || tendered < totals.total || tenderedTooLarge);
   // a card sale is only recorded with the terminal's approval code
   const cardInvalid = method === "card" && !isValidPaymentReference(cardReference.trim());
 
@@ -92,6 +93,11 @@ export function CheckoutDialog({
   async function queueOffline(key: string): Promise<void> {
     if (tendered === null) return;
     const db = getOfflineDb();
+    // Prices cached more than 3 days ago (or never) are too old to sell from.
+    if (catalogFreshness(await catalogRefreshedAt(db)) === "expired") {
+      toast.error(t("offlineCatalogExpired"));
+      return;
+    }
     // Large discounts need a live manager approval, which needs the server.
     if (discountNeedsApproval(totals, await loadDiscountThreshold(db))) {
       toast.error(t("offlineDiscountBlocked"));
@@ -103,6 +109,7 @@ export function CheckoutDialog({
       shiftId,
       items: toQueuedSaleItems(totals),
       amountTendered: tendered,
+      customerId: customer?.id ?? null,
       provisional: buildProvisionalReceipt(totals, tendered, cashierName),
     });
     clearCart();
@@ -242,6 +249,11 @@ export function CheckoutDialog({
               className="h-12 text-center text-xl tabular-nums"
               aria-label={t("tendered")}
             />
+            {tenderedTooLarge && (
+              <p className="text-destructive text-sm" role="alert">
+                {t("tenderedTooLarge")}
+              </p>
+            )}
             <Separator />
             <div className="flex items-baseline justify-between">
               <span className="text-muted-foreground">{t("change")}</span>

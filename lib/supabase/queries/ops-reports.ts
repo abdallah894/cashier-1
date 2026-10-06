@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, Tables } from "@/lib/supabase/database.types";
+import { storeInfoFromSettings } from "@/lib/receipts/store-info";
+import type { StoreInfo } from "@/lib/receipts/types";
 import { businessToday, type DateRange } from "./reports";
 
 type Fn<K extends keyof Database["public"]["Functions"]> = Database["public"]["Functions"][K]["Returns"];
@@ -83,6 +85,11 @@ export async function getReorderSuggestions(): Promise<SuggestionRow[]> {
   const { data, error } = await supabase.rpc("report_reorder_suggestions");
   if (error) throw error;
   return data ?? [];
+}
+
+/** Store identity for receipts and Z-reports, from store_settings (neutral defaults until the owner fills it in). */
+export async function getStoreInfo(): Promise<StoreInfo> {
+  return storeInfoFromSettings(await getStoreSettings());
 }
 
 export async function getStoreSettings(): Promise<StoreSettings> {

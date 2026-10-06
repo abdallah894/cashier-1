@@ -95,6 +95,33 @@ async function main() {
   const settingAudits = await rows(`select count(*) as c from public.audit_events where action = 'store_settings_changed'`);
   check("each settings change emits an audit event", n(settingAudits[0].c) === 2);
 
+  // Phase 0: the store identity printed on receipts lives in store_settings.
+  const blankStore = await rows(`select store_name_en, tax_registration_number from public.store_settings`);
+  check("a fresh database prints no demo store identity", blankStore[0].store_name_en === "" && blankStore[0].tax_registration_number === "");
+  await db.query(`select public.update_store_settings('{"store_name_en":"  Green Market ","tax_registration_number":"555-111-222","phone":"0102 000 0000"}'::jsonb)`);
+  const savedStore = await rows(`select store_name_en, tax_registration_number, phone, store_name_ar from public.store_settings`);
+  check("store identity is saved trimmed and other fields untouched", savedStore[0].store_name_en === "Green Market" && savedStore[0].tax_registration_number === "555-111-222" && savedStore[0].phone === "0102 000 0000" && savedStore[0].store_name_ar === "");
+  await expectError(db.query(`select public.update_store_settings('{"phone":"${"9".repeat(41)}"}'::jsonb)`), "store_settings_phone_check", "an over-long phone number is refused");
+  // Phase 1: scale-label layout + product PLU codes.
+  const defaults = await rows(`select weighed_barcode_enabled, weighed_prefix_min, weighed_prefix_max, weighed_item_code_length, weighed_value_kind from public.store_settings`);
+  check("scale labels are off by default with the common layout", defaults[0].weighed_barcode_enabled === false && n(defaults[0].weighed_prefix_min) === 20 && n(defaults[0].weighed_prefix_max) === 29 && n(defaults[0].weighed_item_code_length) === 5 && defaults[0].weighed_value_kind === "weight_grams");
+  await db.query(`select public.update_store_settings('{"weighed_barcode_enabled":true,"weighed_prefix_min":21,"weighed_prefix_max":23,"weighed_item_code_length":6,"weighed_value_kind":"price_piasters"}'::jsonb)`);
+  const layout = await rows(`select weighed_barcode_enabled, weighed_prefix_min, weighed_item_code_length, weighed_value_kind from public.store_settings`);
+  check("the admin can set the label layout", layout[0].weighed_barcode_enabled === true && n(layout[0].weighed_prefix_min) === 21 && n(layout[0].weighed_item_code_length) === 6 && layout[0].weighed_value_kind === "price_piasters");
+  await expectError(db.query(`select public.update_store_settings('{"weighed_prefix_min":30}'::jsonb)`), "weighed_prefix_min_check", "a prefix outside 20-29 is refused");
+  await expectError(db.query(`select public.update_store_settings('{"weighed_prefix_min":25,"weighed_prefix_max":22}'::jsonb)`), "store_settings_weighed_prefix_order", "a reversed prefix range is refused");
+  await expectError(db.query(`select public.update_store_settings('{"weighed_value_kind":"volume"}'::jsonb)`), "weighed_value_kind_check", "an unknown label value kind is refused");
+  await db.query(`insert into public.products (barcode, name_ar, name_en, price, unit, plu_code) values ('plu-1', 'طماطم', 'Tomatoes', 2500, 'kg', '123')`);
+  await expectError(db.query(`insert into public.products (barcode, name_ar, name_en, price, unit, plu_code) values ('plu-2', 'خيار', 'Cucumber', 2000, 'kg', '123')`), "products_plu_code_key", "two products cannot share a PLU");
+  await expectError(db.query(`insert into public.products (barcode, name_ar, name_en, price, unit, plu_code) values ('plu-3', 'جزر', 'Carrots', 1500, 'kg', '0123')`), "products_plu_code_check", "a PLU with a leading zero is refused");
+  await expectError(db.query(`insert into public.products (barcode, name_ar, name_en, price, unit, plu_code) values ('plu-4', 'بصل', 'Onion', 1500, 'kg', '1234567')`), "products_plu_code_check", "a PLU longer than 6 digits is refused");
+  await db.query(`insert into public.products (barcode, name_ar, name_en, price, unit) values ('plu-5', 'أ', 'A', 1, 'piece'), ('plu-6', 'ب', 'B', 1, 'piece')`);
+  check("many products may have no PLU", n((await rows(`select count(*) as c from public.products where plu_code is null and barcode in ('plu-5','plu-6')`))[0].c) === 2);
+  await asUser(db, CASHIER);
+  const cashierSees = await rows(`select store_name_en from public.store_settings`);
+  check("any signed-in staff can read the store identity for receipts", cashierSees[0].store_name_en === "Green Market");
+  await asUser(db, ADMIN);
+
   // ---- data: sales on both sides of Cairo midnight ----
   await asUser(db, CASHIER);
   const sell = (items: string, method: string, tendered: string, ref: string) =>

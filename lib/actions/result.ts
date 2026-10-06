@@ -4,7 +4,7 @@ export type ActionResult<T = void> = { ok: true; data: T } | { ok: false; error:
 
 /** Map raw Postgres/PostgREST errors to i18n error keys. */
 export function mapDbError(error: { code?: string; message?: string }): string {
-  if (error.code === "23505") return "duplicateBarcode";
+  if (error.code === "23505") return (error.message ?? "").includes("products_plu_code_key") ? "duplicatePlu" : "duplicateBarcode";
   if (error.code === "23503") return "productInUse";
   if (error.code === "42501") return "notAuthorized";
   const msg = error.message ?? "";
