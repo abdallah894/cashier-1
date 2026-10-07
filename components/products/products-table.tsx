@@ -3,10 +3,11 @@
 import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useReactTable, getCoreRowModel, flexRender, type ColumnDef } from "@tanstack/react-table";
-import { ImageOff, TriangleAlert } from "lucide-react";
+import { ImageOff, Package, TriangleAlert } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { formatEgp } from "@/lib/money";
 import type { ProductWithCategory } from "@/lib/supabase/queries/products";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -119,7 +120,7 @@ export function ProductsTable({ rows }: { rows: ProductWithCategory[] }) {
   });
 
   return (
-    <div className="rounded-lg border">
+    <div className="bg-card overflow-hidden rounded-xl border shadow-xs">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -135,11 +136,8 @@ export function ProductsTable({ rows }: { rows: ProductWithCategory[] }) {
         <TableBody>
           {table.getRowModel().rows.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="text-muted-foreground h-24 text-center"
-              >
-                {t("empty")}
+              <TableCell colSpan={columns.length} className="whitespace-normal">
+                <EmptyState icon={Package} title={t("empty")} description={t("emptyHint")} />
               </TableCell>
             </TableRow>
           ) : (

@@ -3,6 +3,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Plus, Upload } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/page-header";
 import { getProducts } from "@/lib/supabase/queries/products";
 import { getCategories } from "@/lib/supabase/queries/categories";
 import { ProductsToolbar } from "@/components/products/products-toolbar";
@@ -32,26 +33,27 @@ export default async function ProductsPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground text-sm">{t("count", { count: list.total })}</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/products/import">
-              <Upload className="size-4" />
-              {t("importCsv")}
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/products/new">
-              <Plus className="size-4" />
-              {t("newProduct")}
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        className="mb-0"
+        title={t("title")}
+        description={t("count", { count: list.total })}
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href="/products/import">
+                <Upload className="size-4" />
+                {t("importCsv")}
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/products/new">
+                <Plus className="size-4" />
+                {t("newProduct")}
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       <ProductsToolbar categories={categories} />
       <ProductsTable rows={list.rows} />
