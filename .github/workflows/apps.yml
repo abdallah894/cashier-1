@@ -96,6 +96,24 @@ jobs:
           APP_URL: ${{ vars.POS_APP_URL }}
       - run: npm ci
         working-directory: desktop
+      # GitHub can refuse to create the tag while publishing a release ("Published releases must
+      # have a valid tag"), so the tag is created in the releases repository first.
+      - name: Create the version tag in the releases repository
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "add the secret RELEASES_REPO_TOKEN (see docs/desktop-printing.md)"; exit 1; fi
+          version="$(node -p "require('./desktop/package.json').version")"
+          target="$(node -p "const p=[].concat(require('./desktop/package.json').build.publish).find((x) => x.provider === 'github'); p.owner + '/' + p.repo")"
+          if gh api "repos/$target/git/ref/tags/v$version" > /dev/null 2>&1; then
+            echo "tag v$version already exists in $target"
+          else
+            sha="$(gh api "repos/$target/commits/HEAD" --jq .sha)" || { echo "cannot read $target: the token needs access to that repository"; exit 1; }
+            gh api -X POST "repos/$target/git/refs" -f "ref=refs/tags/v$version" -f "sha=$sha" > /dev/null \
+              || { echo "cannot create tag v$version in $target: the token needs Contents: Read and write"; exit 1; }
+            echo "created tag v$version in $target"
+          fi
       - name: Build and publish
         run: npm run release:win
         working-directory: desktop
