@@ -48,7 +48,7 @@ export async function generateMetadata({
 // Browser UI / theme color for the installed PWA (Next 16 wants this in
 // viewport, not metadata).
 export const viewport: Viewport = {
-  themeColor: "#18181b",
+  themeColor: "#0f8a5f",
   // draw under notches / rounded corners; pages add safe-area padding
   viewportFit: "cover",
 };

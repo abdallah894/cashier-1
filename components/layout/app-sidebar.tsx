@@ -54,7 +54,7 @@ const navItems = [
   { key: "audit", href: "/audit", icon: ShieldCheck, adminOnly: true },
 ] as const;
 
-export function AppSidebar({ role }: { role: "admin" | "cashier" }) {
+export function AppSidebar({ role, storeName }: { role: "admin" | "cashier"; storeName?: string | null }) {
   // useTranslations is a hook — the Vue next-intl equivalent would be
   // useI18n().t, but here it's scoped to a namespace at call time.
   const t = useTranslations("nav");
@@ -71,10 +71,13 @@ export function AppSidebar({ role }: { role: "admin" | "cashier" }) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
-                <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg">
-                  <Store className="size-4" />
+                <div className="bg-primary text-primary-foreground flex size-9 shrink-0 items-center justify-center rounded-xl shadow-xs">
+                  <Store className="size-5" />
                 </div>
-                <span className="text-base font-semibold">{tCommon("appName")}</span>
+                <div className="flex min-w-0 flex-col leading-tight">
+                  <span className="text-base font-semibold">{tCommon("appName")}</span>
+                  {storeName ? <span className="text-muted-foreground truncate text-xs">{storeName}</span> : null}
+                </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

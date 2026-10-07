@@ -83,6 +83,7 @@
     "lowStock": "Low stock",
     "inactive": "Inactive",
     "empty": "No products found.",
+    "emptyHint": "Try a different search or filter, or add a new product.",
     "pageOf": "Page {page} of {pageCount}",
     "previousPage": "Previous page",
     "nextPage": "Next page",

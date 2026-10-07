@@ -4,6 +4,9 @@ import { getSaleTenders, getSaleWithItems } from "@/lib/supabase/queries/sales";
 import { deviceSettings, getCurrentTillId, getDevices, getPrintedCount } from "@/lib/supabase/queries/devices";
 import { buildReceipt } from "@/lib/receipts/build";
 import { getStoreInfo } from "@/lib/supabase/queries/ops-reports";
+import { describeError, optionalQuery } from "@/lib/supabase/queries/optional";
+import { DEFAULT_STORE_INFO } from "@/lib/receipts/store-info";
+import { log } from "@/lib/observability/log";
 import { Receipt80mm } from "@/components/receipts/receipt-80mm";
 import { ReceiptActions } from "@/components/receipts/receipt-actions";
 import { ReturnDialog } from "@/components/receipts/return-dialog";
@@ -19,16 +22,24 @@ export default async function ReceiptPage({
   const { locale, id } = await params;
   setRequestLocale(locale);
 
-  const [t, sale, sp, tenders] = await Promise.all([
+  // Only the sale itself is required; every other lookup degrades instead of hiding the receipt.
+  const [t, sale, sp, tenders, store, tillId] = await Promise.all([
     getTranslations("receipt"),
-    getSaleWithItems(id),
+    getSaleWithItems(id).catch((error: unknown) => {
+      log.error("receipt_sale_query_failed", { saleId: id, ...describeError(error) });
+      throw error;
+    }),
     searchParams,
-    getSaleTenders(id),
+    optionalQuery("sale_tenders", () => getSaleTenders(id), [] as ("cash" | "card")[]),
+    optionalQuery("store_info", () => getStoreInfo(), DEFAULT_STORE_INFO),
+    optionalQuery("current_till", () => getCurrentTillId(), null),
   ]);
   if (!sale) notFound();
-  const receipt = buildReceipt(sale, await getStoreInfo());
-  const tillId = await getCurrentTillId();
-  const [devices, printedCount] = await Promise.all([getDevices(tillId ?? undefined), getPrintedCount("sale_receipt", id)]);
+  const receipt = buildReceipt(sale, store);
+  const [devices, printedCount] = await Promise.all([
+    optionalQuery("devices", () => getDevices(tillId ?? undefined), [] as Awaited<ReturnType<typeof getDevices>>),
+    optionalQuery("printed_count", () => getPrintedCount("sale_receipt", id), 0),
+  ]);
   // a thermal printer is either a paired USB device (WebUSB) or a Windows print queue (desktop app)
   const printerDevice = devices.find(
     (d) => d.kind === "printer" && d.active && (d.profile === "escpos_usb_80mm" || (d.profile === "escpos_spooler_80mm" && !!deviceSettings(d).printerName))

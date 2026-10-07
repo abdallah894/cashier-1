@@ -10,6 +10,8 @@ import { ChatWidget } from "@/components/chat-widget";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
 import { getCurrentProfile } from "@/lib/supabase/queries/profiles";
+import { getStoreInfo } from "@/lib/supabase/queries/ops-reports";
+import { DEFAULT_STORE_INFO } from "@/lib/receipts/store-info";
 
 // Route-group layout: everything inside (app) gets the sidebar shell and
 // requires a session (RLS gives anon nothing anyway). Fine-grained role
@@ -26,13 +28,16 @@ export default async function AppLayout({
   if (!profile) {
     redirect(`/${locale}/login`);
   }
+  // the shop's own name under the app name; a missing/unreadable setting never breaks the shell
+  const store = await getStoreInfo().catch(() => null);
+  const storeName = store && store.nameEn !== DEFAULT_STORE_INFO.nameEn ? (locale === "ar" ? store.nameAr : store.nameEn) : null;
 
   return (
     <SidebarProvider>
       <SyncProvider userId={profile.id} />
-      <AppSidebar role={profile.role} />
+      <AppSidebar role={profile.role} storeName={storeName} />
       <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+        <header className="bg-card/80 sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-4 backdrop-blur">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-6" />
           <div className="ms-auto flex items-center gap-1">
@@ -43,7 +48,7 @@ export default async function AppLayout({
           </div>
         </header>
         <ShellUpdateBanner />
-        <main className="flex flex-1 flex-col p-3 sm:p-6">{children}</main>
+        <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col p-3 sm:p-6">{children}</main>
       </SidebarInset>
       <ChatWidget />
     </SidebarProvider>
