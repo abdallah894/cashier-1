@@ -18,6 +18,12 @@ Do these in order. (Step 4 is already done in the code.)
    git push origin desktop-v1.0.0
    ```
    The _Build apps_ workflow builds the installer and publishes it to the releases repository (`Cachier-POS-Setup-1.0.0.exe`). If it fails, open the run in the Actions tab; the first lines say which setting is missing.
+   A tag runs the workflow **as it was at that commit**. After a fix to the workflow is merged, move the tag to the new commit instead of making a new version:
+   ```
+   git checkout main && git pull
+   git tag -d desktop-v1.0.0 && git push origin :refs/tags/desktop-v1.0.0
+   git tag desktop-v1.0.0 && git push origin desktop-v1.0.0
+   ```
 
 To release a new version later: raise `version` in `desktop/package.json`, commit, tag `desktop-v<that version>`, push the tag. Every till updates itself.
 
