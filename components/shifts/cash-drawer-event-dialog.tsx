@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDownToLine, ArrowUpFromLine, Loader2, PiggyBank } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Loader2, Coins } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { recordCashDrawerEvent } from "@/lib/actions/cash-drawer";
@@ -23,7 +23,7 @@ type EventType = "paid_in" | "paid_out" | "safe_drop";
 const icons = {
   paid_in: ArrowDownToLine,
   paid_out: ArrowUpFromLine,
-  safe_drop: PiggyBank,
+  safe_drop: Coins,
 };
 
 /** Records a non-sale cash movement through the immutable drawer ledger. */
@@ -57,7 +57,7 @@ export function CashDrawerEventDialog({ shiftId }: { shiftId: string }) {
   return (
     <Dialog open={open} onOpenChange={(next) => !submitting && setOpen(next)}>
       <DialogTrigger asChild>
-        <Button variant="outline"><PiggyBank className="size-4" />{t("cashDrawer")}</Button>
+        <Button variant="outline"><Coins className="size-4" />{t("cashDrawer")}</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader><DialogTitle>{t("cashDrawer")}</DialogTitle></DialogHeader>
