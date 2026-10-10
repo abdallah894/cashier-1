@@ -1,7 +1,10 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { PackageCheck, Truck } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { PageHeader } from "@/components/layout/page-header";
 import { ExportButton } from "@/components/reports/export-button";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { formatEgp } from "@/lib/money";
 import { requireAdmin } from "@/lib/supabase/queries/profiles";
@@ -39,15 +42,12 @@ export default async function PurchasingReportsPage({
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("reportsTitle")}</h1>
-          <p className="text-muted-foreground max-w-prose text-sm">{t("reportsDescription")}</p>
-        </div>
-        <Button asChild variant="outline">
-          <Link href="/purchase-orders">{t("back")}</Link>
-        </Button>
-      </div>
+      <PageHeader
+        className="mb-0"
+        title={t("reportsTitle")}
+        description={t("reportsDescription")}
+        back={{ href: "/purchase-orders", label: t("back") }}
+      />
 
       <section className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -95,8 +95,8 @@ export default async function PurchasingReportsPage({
               ))}
               {outstanding.length === 0 && (
                 <tr>
-                  <td className="text-muted-foreground p-6 text-center" colSpan={5}>
-                    {t("nothingOutstanding")}
+                  <td colSpan={5}>
+                    <EmptyState icon={Truck} title={t("nothingOutstanding")} className="py-8" />
                   </td>
                 </tr>
               )}
@@ -146,8 +146,8 @@ export default async function PurchasingReportsPage({
               ))}
               {received.length === 0 && (
                 <tr>
-                  <td className="text-muted-foreground p-6 text-center" colSpan={5}>
-                    {t("nothingReceived")}
+                  <td colSpan={5}>
+                    <EmptyState icon={PackageCheck} title={t("nothingReceived")} className="py-8" />
                   </td>
                 </tr>
               )}

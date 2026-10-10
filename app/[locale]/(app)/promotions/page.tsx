@@ -1,6 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Tag } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 import { PromotionForm } from "@/components/promotions/promotion-form";
 import { PromotionToggle } from "@/components/promotions/promotion-toggle";
+import { EmptyState } from "@/components/ui/empty-state";
 import { formatEgp } from "@/lib/money";
 import { getCategories } from "@/lib/supabase/queries/categories";
 import { requireAdmin } from "@/lib/supabase/queries/profiles";
@@ -20,13 +23,12 @@ export default async function PromotionsPage({ params }: { params: Promise<{ loc
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground max-w-prose text-sm">{t("description")}</p>
-        </div>
-        <PromotionForm categories={categories} />
-      </div>
+      <PageHeader
+        className="mb-0"
+        title={t("title")}
+        description={t("description")}
+        actions={<PromotionForm categories={categories} />}
+      />
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
@@ -71,8 +73,8 @@ export default async function PromotionsPage({ params }: { params: Promise<{ loc
             })}
             {promotions.length === 0 && (
               <tr>
-                <td className="text-muted-foreground p-6 text-center" colSpan={6}>
-                  {t("empty")}
+                <td colSpan={6}>
+                  <EmptyState icon={Tag} title={t("empty")} className="py-8" />
                 </td>
               </tr>
             )}

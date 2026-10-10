@@ -1,10 +1,12 @@
 import { setRequestLocale, getTranslations, getFormatter } from "next-intl/server";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, ReceiptText, Search } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getSales, getCashiers } from "@/lib/supabase/queries/sales";
 import { formatEgp } from "@/lib/money";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -57,13 +59,11 @@ export default async function SalesHistoryPage({
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground max-w-prose text-sm">{t("pageDescription")}</p>
-        </div>
-        <span className="text-muted-foreground text-sm">{t("count", { count: result.total })}</span>
-      </div>
+      <PageHeader
+        className="mb-0"
+        title={t("title")}
+        description={`${t("pageDescription")} · ${t("count", { count: result.total })}`}
+      />
 
       <form method="get" className="flex flex-wrap items-center gap-2">
         <Input
@@ -119,8 +119,8 @@ export default async function SalesHistoryPage({
           <TableBody>
             {result.rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground h-24 text-center">
-                  {t("empty")}
+                <TableCell colSpan={6}>
+                  <EmptyState icon={ReceiptText} title={t("empty")} className="py-8" />
                 </TableCell>
               </TableRow>
             )}

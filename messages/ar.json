@@ -134,7 +134,12 @@
       "created": "تم إنشاء المنتج.",
       "plu": "كود الميزان (PLU)",
       "pluHint": "للأصناف التي تُوزن على ميزان المحل فقط: الكود من 1 إلى 6 أرقام الذي يطبعه الميزان داخل الملصق. اتركه فارغًا لغير ذلك."
-    }
+    },
+    "sectionBasics": "بيانات المنتج",
+    "sectionPrice": "السعر وضريبة القيمة المضافة",
+    "sectionStock": "المخزون",
+    "costHint": "ما تدفعه للمورد. يُستخدم في تقارير الربح ولا يظهر للعملاء.",
+    "lowStockHint": "يصلك تنبيه نقص المخزون عندما يصل المخزون إلى هذا العدد."
   },
   "categories": {
     "title": "الأقسام",
@@ -472,9 +477,77 @@
     "when": "التوقيت",
     "action": "الإجراء",
     "target": "الهدف",
-    "details": "تفاصيل آمنة",
+    "details": "التفاصيل",
     "empty": "لا توجد أحداث تدقيق بعد.",
-    "pageDescription": "من غيّر ماذا ومتى: تعديلات الأسعار، تصحيحات المخزون، المرتجعات، وتغييرات المستخدمين."
+    "pageDescription": "من غيّر ماذا ومتى: تعديلات الأسعار، تصحيحات المخزون، المرتجعات، وتغييرات المستخدمين.",
+    "actions": {
+      "approval_created": "موافقة المدير",
+      "business_day_closed": "إغلاق يوم العمل",
+      "capabilities_changed": "تغيير صلاحيات موظف",
+      "cart_void": "إلغاء سلة",
+      "cash_drawer_event": "إضافة أو سحب نقدية من الدرج",
+      "customer_anonymized": "حذف بيانات عميل",
+      "customer_consent_changed": "تغيير موافقة عميل",
+      "device_changed": "تغيير جهاز",
+      "drawer_open_authorized": "فتح الدرج بدون بيع",
+      "goods_received": "استلام بضاعة",
+      "payment_resolved": "حل مشكلة دفع",
+      "payment_status_changed": "تغيير حالة دفع",
+      "product_supplier_changed": "تغيير مورد منتج",
+      "promotion_applied": "تطبيق عرض على بيع",
+      "promotion_created": "إنشاء عرض",
+      "promotion_toggled": "تشغيل/إيقاف عرض",
+      "purchase_order_placed": "إصدار أمر شراء",
+      "receipt_reprinted": "إعادة طباعة إيصال",
+      "reorder_alert_handled": "معالجة تنبيه إعادة طلب",
+      "return_created": "مرتجع / استرداد",
+      "sale_discount_override": "الموافقة على خصم كبير",
+      "shift_close": "إغلاق وردية",
+      "stock_correction": "تصحيح مخزون",
+      "stocktake_approved": "اعتماد جرد",
+      "store_settings_changed": "تغيير إعدادات المتجر"
+    },
+    "targets": {
+      "approval": "موافقة",
+      "business_day": "يوم عمل",
+      "customer": "عميل",
+      "device": "جهاز",
+      "payment": "دفعة",
+      "print_job": "طباعة",
+      "product": "منتج",
+      "promotion": "عرض",
+      "purchase_order": "أمر شراء",
+      "reorder_alert": "تنبيه إعادة طلب",
+      "return": "مرتجع",
+      "sale": "بيع",
+      "settings": "الإعدادات",
+      "shift": "وردية",
+      "staff": "موظف",
+      "stocktake": "جرد"
+    },
+    "keys": {
+      "amount": "المبلغ",
+      "capability": "الصلاحية",
+      "discount_total": "الخصم",
+      "event_type": "النوع",
+      "expected_cash": "النقدية المتوقعة",
+      "item_count": "الأصناف",
+      "payment_method": "طريقة الدفع",
+      "refund_total": "المسترد",
+      "restock": "إرجاع للمخزون",
+      "signed_qty_change": "تغيير الكمية",
+      "variance": "الفرق"
+    },
+    "who": "بواسطة",
+    "system": "النظام",
+    "filter": "تصفية حسب الإجراء",
+    "allActions": "كل الإجراءات",
+    "yes": "نعم",
+    "no": "لا",
+    "tenders": {
+      "cash": "نقدي",
+      "card": "بطاقة"
+    }
   },
   "pinSwitch": {
     "title": "تبديل الكاشير",
@@ -544,7 +617,15 @@
     "colSales": "المبيعات",
     "uncategorized": "بدون صنف",
     "empty": "لا توجد مبيعات في هذه الفترة.",
-    "rangeInvalid": "يجب أن يكون تاريخ البداية قبل تاريخ النهاية أو مساويًا له."
+    "rangeInvalid": "يجب أن يكون تاريخ البداية قبل تاريخ النهاية أو مساويًا له.",
+    "today": {
+      "title": "نظرة سريعة على اليوم",
+      "sales": "مبيعات اليوم",
+      "receipts": "إيصالات اليوم",
+      "openShifts": "ورديات مفتوحة",
+      "lowStock": "تنبيهات نقص المخزون",
+      "avgBasket": "متوسط السلة {amount}"
+    }
   },
   "receipt": {
     "title": "فاتورة رقم {number}",

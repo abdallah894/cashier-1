@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { DevicesPanel } from "@/components/devices/devices-panel";
+import { PageHeader } from "@/components/layout/page-header";
 import { getDeviceProfiles, getDevices, getRecentPrintJobs, getTills } from "@/lib/supabase/queries/devices";
 import { requireAdmin } from "@/lib/supabase/queries/profiles";
 
@@ -16,10 +17,7 @@ export default async function DevicesPage({ params }: { params: Promise<{ locale
   ]);
   return (
     <div className="flex w-full flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground max-w-prose text-sm">{t("description")}</p>
-      </div>
+      <PageHeader className="mb-0" title={t("title")} description={t("description")} />
       <DevicesPanel tills={tills} devices={devices} profiles={profiles} jobs={jobs} />
     </div>
   );

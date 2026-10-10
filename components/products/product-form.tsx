@@ -128,133 +128,152 @@ export function ProductForm({ categories, product, defaultBarcode }: Props) {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-3">
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>{t("details")}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="name_ar">{t("nameAr")}</FieldLabel>
-            <Input id="name_ar" dir="rtl" {...form.register("name_ar")} />
-            {err("name_ar")}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="name_en">{t("nameEn")}</FieldLabel>
-            <Input id="name_en" dir="ltr" {...form.register("name_en")} />
-            {err("name_en")}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="barcode">{t("barcode")}</FieldLabel>
-            <Input id="barcode" dir="ltr" className="font-mono" {...form.register("barcode")} />
-            {err("barcode")}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="plu_code">{t("plu")}</FieldLabel>
-            <Input id="plu_code" dir="ltr" inputMode="numeric" className="font-mono" {...form.register("plu_code")} />
-            <FieldDescription>{t("pluHint")}</FieldDescription>
-            {err("plu_code")}
-          </Field>
-          <Field>
-            <FieldLabel>{t("category")}</FieldLabel>
-            <Controller
-              control={form.control}
-              name="category_id"
-              render={({ field }) => (
-                <Select
-                  value={field.value === "" ? NO_CATEGORY : field.value}
-                  onValueChange={(v) => field.onChange(v === NO_CATEGORY ? "" : v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NO_CATEGORY}>{t("noCategory")}</SelectItem>
-                    {categories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {locale === "ar" ? c.name_ar : c.name_en}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="price">{t("price")}</FieldLabel>
-            <Input id="price" dir="ltr" inputMode="decimal" {...form.register("price")} />
-            <FieldDescription>{t("priceHint")}</FieldDescription>
-            {err("price")}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="cost">{t("cost")}</FieldLabel>
-            <Input id="cost" dir="ltr" inputMode="decimal" {...form.register("cost")} />
-            {err("cost")}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="taxRatePercent">{t("taxRate")}</FieldLabel>
-            <Input
-              id="taxRatePercent"
-              dir="ltr"
-              inputMode="decimal"
-              {...form.register("taxRatePercent")}
-            />
-            <FieldDescription>{t("taxRateHint")}</FieldDescription>
-            {err("taxRatePercent")}
-          </Field>
-          <Field>
-            <FieldLabel>{t("unit")}</FieldLabel>
-            <Controller
-              control={form.control}
-              name="unit"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="piece">{t("unitPiece")}</SelectItem>
-                    <SelectItem value="kg">{t("unitKg")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="stock_qty">{t("stockQty")}</FieldLabel>
-            <Input
-              id="stock_qty"
-              dir="ltr"
-              inputMode="decimal"
-              disabled={isEdit}
-              {...form.register("stock_qty")}
-            />
-            {isEdit && <FieldDescription>{t("stockQtyLocked")}</FieldDescription>}
-            {err("stock_qty")}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="low_stock_threshold">{t("lowStockThreshold")}</FieldLabel>
-            <Input
-              id="low_stock_threshold"
-              dir="ltr"
-              inputMode="decimal"
-              {...form.register("low_stock_threshold")}
-            />
-            {err("low_stock_threshold")}
-          </Field>
-          <Field orientation="horizontal" className="sm:col-span-2">
-            <Controller
-              control={form.control}
-              name="active"
-              render={({ field }) => (
-                <Switch id="active" checked={field.value} onCheckedChange={field.onChange} />
-              )}
-            />
-            <FieldLabel htmlFor="active">{t("active")}</FieldLabel>
-          </Field>
-        </CardContent>
-      </Card>
+      {/* three short sections instead of one long card: what it is, what it costs, how many */}
+      <div className="flex flex-col gap-6 lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("sectionBasics")}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="name_ar">{t("nameAr")}</FieldLabel>
+              <Input id="name_ar" dir="rtl" {...form.register("name_ar")} />
+              {err("name_ar")}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="name_en">{t("nameEn")}</FieldLabel>
+              <Input id="name_en" dir="ltr" {...form.register("name_en")} />
+              {err("name_en")}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="barcode">{t("barcode")}</FieldLabel>
+              <Input id="barcode" dir="ltr" className="font-mono" {...form.register("barcode")} />
+              {err("barcode")}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="plu_code">{t("plu")}</FieldLabel>
+              <Input id="plu_code" dir="ltr" inputMode="numeric" className="font-mono" {...form.register("plu_code")} />
+              <FieldDescription>{t("pluHint")}</FieldDescription>
+              {err("plu_code")}
+            </Field>
+            <Field>
+              <FieldLabel>{t("category")}</FieldLabel>
+              <Controller
+                control={form.control}
+                name="category_id"
+                render={({ field }) => (
+                  <Select
+                    value={field.value === "" ? NO_CATEGORY : field.value}
+                    onValueChange={(v) => field.onChange(v === NO_CATEGORY ? "" : v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NO_CATEGORY}>{t("noCategory")}</SelectItem>
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {locale === "ar" ? c.name_ar : c.name_en}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </Field>
+            <Field>
+              <FieldLabel>{t("unit")}</FieldLabel>
+              <Controller
+                control={form.control}
+                name="unit"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="piece">{t("unitPiece")}</SelectItem>
+                      <SelectItem value="kg">{t("unitKg")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </Field>
+            <Field orientation="horizontal" className="sm:col-span-2">
+              <Controller
+                control={form.control}
+                name="active"
+                render={({ field }) => (
+                  <Switch id="active" checked={field.value} onCheckedChange={field.onChange} />
+                )}
+              />
+              <FieldLabel htmlFor="active">{t("active")}</FieldLabel>
+            </Field>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("sectionPrice")}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="price">{t("price")}</FieldLabel>
+              <Input id="price" dir="ltr" inputMode="decimal" {...form.register("price")} />
+              <FieldDescription>{t("priceHint")}</FieldDescription>
+              {err("price")}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="cost">{t("cost")}</FieldLabel>
+              <Input id="cost" dir="ltr" inputMode="decimal" {...form.register("cost")} />
+              <FieldDescription>{t("costHint")}</FieldDescription>
+              {err("cost")}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="taxRatePercent">{t("taxRate")}</FieldLabel>
+              <Input
+                id="taxRatePercent"
+                dir="ltr"
+                inputMode="decimal"
+                {...form.register("taxRatePercent")}
+              />
+              <FieldDescription>{t("taxRateHint")}</FieldDescription>
+              {err("taxRatePercent")}
+            </Field>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("sectionStock")}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="stock_qty">{t("stockQty")}</FieldLabel>
+              <Input
+                id="stock_qty"
+                dir="ltr"
+                inputMode="decimal"
+                disabled={isEdit}
+                {...form.register("stock_qty")}
+              />
+              {isEdit && <FieldDescription>{t("stockQtyLocked")}</FieldDescription>}
+              {err("stock_qty")}
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="low_stock_threshold">{t("lowStockThreshold")}</FieldLabel>
+              <Input
+                id="low_stock_threshold"
+                dir="ltr"
+                inputMode="decimal"
+                {...form.register("low_stock_threshold")}
+              />
+              <FieldDescription>{t("lowStockHint")}</FieldDescription>
+              {err("low_stock_threshold")}
+            </Field>
+          </CardContent>
+        </Card>
+      </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 lg:sticky lg:top-20 lg:self-start">
         <Card>
           <CardHeader>
             <CardTitle>{t("image")}</CardTitle>
@@ -306,12 +325,12 @@ export function ProductForm({ categories, product, defaultBarcode }: Props) {
           </CardContent>
         </Card>
 
-        <div className="flex gap-2">
-          <Button type="submit" disabled={submitting}>
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" size="lg" className="flex-1" disabled={submitting}>
             {submitting && <Loader2 className="size-4 animate-spin" />}
             {isEdit ? t("save") : t("create")}
           </Button>
-          <Button type="button" variant="outline" onClick={() => router.push("/products")}>
+          <Button type="button" size="lg" variant="outline" onClick={() => router.push("/products")}>
             {t("cancel")}
           </Button>
         </div>
