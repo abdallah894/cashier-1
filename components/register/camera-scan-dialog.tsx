@@ -14,16 +14,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { decodeBarcodeFromVideo } from "@/lib/barcode/decode-frame";
+import { createReadConfirmer, decodeBarcodeFromCanvas, decodeBarcodeFromVideo } from "@/lib/barcode/decode-frame";
 
 // Pause between decode attempts. Each attempt itself takes 30–200ms, so the
 // effective rate is ~3–6 fps — plenty for hand-held scanning without pegging
 // the CPU on a low-end counter device.
 const SCAN_INTERVAL_MS = 150;
 
-// html5-qrcode's own scan loop decodes at the video element's CSS size
-// (~400px wide in this dialog), which is too coarse for EAN-13. We manage the
-// camera ourselves and decode full native frames via decodeBarcodeFromVideo.
+// We manage the camera ourselves and decode full native frames via
+// decodeBarcodeFromVideo (a browser scanner widget decodes the small preview,
+// too coarse for EAN-13).
 const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
   audio: false,
   video: {
@@ -98,6 +98,9 @@ export function CameraScanDialog({
   // First successful decode wins — the loop and the manual button can race.
   const handledRef = useRef(false);
   const decodingRef = useRef(false);
+  // each frame tries a different crop/size; a read counts once two frames agree
+  const attemptRef = useRef(0);
+  const confirmRef = useRef(createReadConfirmer());
 
   useEffect(() => {
     onScanRef.current = onScan;
@@ -121,10 +124,21 @@ export function CameraScanDialog({
 
     decodingRef.current = true;
     try {
-      return await decodeBarcodeFromVideo(video);
+      return confirmRef.current(await decodeBarcodeFromVideo(video, attemptRef.current++));
     } finally {
       decodingRef.current = false;
     }
+  }, []);
+
+  /** "Scan now" button: every strategy on the current frame. */
+  const decodeSnapshot = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video || video.videoWidth <= 0 || video.videoHeight <= 0) return null;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0);
+    return decodeBarcodeFromCanvas(canvas);
   }, []);
 
   const stopCamera = useCallback(() => {
@@ -155,6 +169,8 @@ export function CameraScanDialog({
     }
 
     handledRef.current = false;
+    attemptRef.current = 0;
+    confirmRef.current = createReadConfirmer();
     setError(null);
     setStarting(true);
 
@@ -217,7 +233,7 @@ export function CameraScanDialog({
 
     setCapturing(true);
     try {
-      const barcode = await decodeCurrentFrame();
+      const barcode = await decodeSnapshot();
       if (barcode) {
         finishScan(barcode);
         return;
