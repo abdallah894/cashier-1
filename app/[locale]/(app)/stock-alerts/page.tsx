@@ -1,6 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BellOff } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 import { AlertActions } from "@/components/reports/alert-actions";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Link, redirect } from "@/i18n/navigation";
 import { hasCapability } from "@/lib/supabase/queries/capabilities";
 import { getOpenPurchaseOrdersForProduct, getReorderAlerts } from "@/lib/supabase/queries/ops-reports";
@@ -16,10 +19,7 @@ export default async function StockAlertsPage({ params }: { params: Promise<{ lo
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground max-w-prose text-sm">{t("description")}</p>
-      </div>
+      <PageHeader className="mb-0" title={t("title")} description={t("description")} />
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
@@ -55,7 +55,11 @@ export default async function StockAlertsPage({ params }: { params: Promise<{ lo
               </tr>
             ))}
             {alerts.length === 0 && (
-              <tr><td className="text-muted-foreground p-6 text-center" colSpan={5}>{t("empty")}</td></tr>
+              <tr>
+                <td colSpan={5}>
+                  <EmptyState icon={BellOff} title={t("empty")} className="py-8" />
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

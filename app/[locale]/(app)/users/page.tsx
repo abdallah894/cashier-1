@@ -2,6 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { requireAdmin } from "@/lib/supabase/queries/profiles";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { UsersTable } from "@/components/users/users-table";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default async function UsersPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -33,10 +34,7 @@ export default async function UsersPage({ params }: { params: Promise<{ locale: 
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground max-w-prose text-sm">{t("pageDescription")}</p>
-      </div>
+      <PageHeader className="mb-0" title={t("title")} description={t("pageDescription")} />
       <UsersTable rows={rows} selfId={me.id} />
     </div>
   );

@@ -134,7 +134,12 @@
       "created": "Product created.",
       "plu": "Scale code (PLU)",
       "pluHint": "Only for items weighed on the shop scale: the 1–6 digit code the scale prints inside its labels. Leave empty otherwise."
-    }
+    },
+    "sectionBasics": "What it is",
+    "sectionPrice": "Price & VAT",
+    "sectionStock": "Stock",
+    "costHint": "What you pay the supplier. Used for profit reports; never shown to customers.",
+    "lowStockHint": "You get a low-stock alert when stock falls to this number."
   },
   "categories": {
     "title": "Categories",
@@ -472,9 +477,77 @@
     "when": "When",
     "action": "Action",
     "target": "Target",
-    "details": "Safe details",
+    "details": "Details",
     "empty": "No audit events yet.",
-    "pageDescription": "Who changed what and when: price edits, stock corrections, refunds, user changes."
+    "pageDescription": "Who changed what and when: price edits, stock corrections, refunds, user changes.",
+    "actions": {
+      "approval_created": "Manager approval given",
+      "business_day_closed": "Business day closed",
+      "capabilities_changed": "Staff permissions changed",
+      "cart_void": "Cart voided",
+      "cash_drawer_event": "Cash added or removed from drawer",
+      "customer_anonymized": "Customer data erased",
+      "customer_consent_changed": "Customer consent changed",
+      "device_changed": "Device changed",
+      "drawer_open_authorized": "Drawer opened without a sale",
+      "goods_received": "Goods received",
+      "payment_resolved": "Payment issue resolved",
+      "payment_status_changed": "Payment status changed",
+      "product_supplier_changed": "Product supplier changed",
+      "promotion_applied": "Promotion applied to a sale",
+      "promotion_created": "Promotion created",
+      "promotion_toggled": "Promotion switched on/off",
+      "purchase_order_placed": "Purchase order placed",
+      "receipt_reprinted": "Receipt reprinted",
+      "reorder_alert_handled": "Reorder alert handled",
+      "return_created": "Return / refund",
+      "sale_discount_override": "Large discount approved",
+      "shift_close": "Shift closed",
+      "stock_correction": "Stock corrected",
+      "stocktake_approved": "Stocktake approved",
+      "store_settings_changed": "Store settings changed"
+    },
+    "targets": {
+      "approval": "Approval",
+      "business_day": "Business day",
+      "customer": "Customer",
+      "device": "Device",
+      "payment": "Payment",
+      "print_job": "Print job",
+      "product": "Product",
+      "promotion": "Promotion",
+      "purchase_order": "Purchase order",
+      "reorder_alert": "Reorder alert",
+      "return": "Return",
+      "sale": "Sale",
+      "settings": "Settings",
+      "shift": "Shift",
+      "staff": "Staff member",
+      "stocktake": "Stocktake"
+    },
+    "keys": {
+      "amount": "Amount",
+      "capability": "Permission",
+      "discount_total": "Discount",
+      "event_type": "Type",
+      "expected_cash": "Expected cash",
+      "item_count": "Items",
+      "payment_method": "Paid by",
+      "refund_total": "Refund",
+      "restock": "Back to stock",
+      "signed_qty_change": "Qty change",
+      "variance": "Difference"
+    },
+    "who": "By",
+    "system": "System",
+    "filter": "Filter by action",
+    "allActions": "All actions",
+    "yes": "Yes",
+    "no": "No",
+    "tenders": {
+      "cash": "Cash",
+      "card": "Card"
+    }
   },
   "pinSwitch": {
     "title": "Switch cashier",
@@ -544,7 +617,15 @@
     "colSales": "Sales",
     "uncategorized": "Uncategorized",
     "empty": "No sales in this period.",
-    "rangeInvalid": "The start date must be on or before the end date."
+    "rangeInvalid": "The start date must be on or before the end date.",
+    "today": {
+      "title": "Today at a glance",
+      "sales": "Today's sales",
+      "receipts": "Receipts today",
+      "openShifts": "Open shifts",
+      "lowStock": "Low-stock alerts",
+      "avgBasket": "Average basket {amount}"
+    }
   },
   "receipt": {
     "title": "Sale #{number}",

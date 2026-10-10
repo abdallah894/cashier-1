@@ -1,7 +1,10 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Users } from "lucide-react";
 import { Link, redirect } from "@/i18n/navigation";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { hasCapability } from "@/lib/supabase/queries/capabilities";
 import { getCustomers } from "@/lib/supabase/queries/customers";
@@ -22,10 +25,7 @@ export default async function CustomersPage({
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground max-w-prose text-sm">{t("description")}</p>
-      </div>
+      <PageHeader className="mb-0" title={t("title")} description={t("description")} />
       <form className="flex max-w-md gap-2" method="get">
         <Input name="q" defaultValue={q} placeholder={t("searchPlaceholder")} aria-label={t("searchPlaceholder")} />
         <Button type="submit" variant="outline">
@@ -58,8 +58,8 @@ export default async function CustomersPage({
             ))}
             {customers.length === 0 && (
               <tr>
-                <td className="text-muted-foreground p-6 text-center" colSpan={4}>
-                  {t("empty")}
+                <td colSpan={4}>
+                  <EmptyState icon={Users} title={t("empty")} className="py-8" />
                 </td>
               </tr>
             )}

@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/supabase/queries/profiles";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { getCategories, getCategoryProductCounts } from "@/lib/supabase/queries/categories";
 import { CategoriesManager } from "@/components/categories/categories-manager";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default async function CategoriesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -18,10 +19,7 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground max-w-prose text-sm">{t("subtitle")}</p>
-      </div>
+      <PageHeader className="mb-0" title={t("title")} description={t("subtitle")} />
       <CategoriesManager categories={rows} />
     </div>
   );

@@ -1,8 +1,10 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Plus } from "lucide-react";
+import { Plus, Truck } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/layout/page-header";
 import { requireAdmin } from "@/lib/supabase/queries/profiles";
 import { getPurchaseOrders } from "@/lib/supabase/queries/purchasing";
 
@@ -15,23 +17,24 @@ export default async function PurchaseOrdersPage({ params }: { params: Promise<{
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground max-w-prose text-sm">{t("pageDescription")}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline">
-            <Link href="/purchase-orders/reports">{t("reports")}</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/purchase-orders/new">
-              <Plus className="size-4" />
-              {t("new")}
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        className="mb-0"
+        title={t("title")}
+        description={t("pageDescription")}
+        actions={
+          <>
+            <Button asChild variant="outline">
+              <Link href="/purchase-orders/reports">{t("reports")}</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/purchase-orders/new">
+                <Plus className="size-4" />
+                {t("new")}
+              </Link>
+            </Button>
+          </>
+        }
+      />
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
@@ -61,8 +64,8 @@ export default async function PurchaseOrdersPage({ params }: { params: Promise<{
             ))}
             {orders.length === 0 && (
               <tr>
-                <td className="text-muted-foreground p-6 text-center" colSpan={5}>
-                  {t("empty")}
+                <td colSpan={5}>
+                  <EmptyState icon={Truck} title={t("empty")} className="py-8" />
                 </td>
               </tr>
             )}

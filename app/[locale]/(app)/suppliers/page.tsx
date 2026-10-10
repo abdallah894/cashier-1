@@ -1,5 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Factory } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SupplierDialog } from "@/components/purchasing/supplier-dialog";
 import { requireAdmin } from "@/lib/supabase/queries/profiles";
 import { getSuppliers } from "@/lib/supabase/queries/purchasing";
@@ -12,13 +15,7 @@ export default async function SuppliersPage({ params }: { params: Promise<{ loca
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground max-w-prose text-sm">{t("pageDescription")}</p>
-        </div>
-        <SupplierDialog />
-      </div>
+      <PageHeader className="mb-0" title={t("title")} description={t("pageDescription")} actions={<SupplierDialog />} />
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
@@ -48,8 +45,8 @@ export default async function SuppliersPage({ params }: { params: Promise<{ loca
             ))}
             {suppliers.length === 0 && (
               <tr>
-                <td className="text-muted-foreground p-6 text-center" colSpan={5}>
-                  {t("empty")}
+                <td colSpan={5}>
+                  <EmptyState icon={Factory} title={t("empty")} className="py-8" />
                 </td>
               </tr>
             )}

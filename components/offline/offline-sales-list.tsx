@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Loader2, RefreshCw } from "lucide-react";
+import { CloudOff, Loader2, RefreshCw } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useOnline } from "@/hooks/use-online";
 import { useOutbox } from "@/hooks/use-outbox";
@@ -13,8 +13,10 @@ import { resolveRejected, retryRejected } from "@/lib/offline/outbox";
 import { submitQueuedSale } from "@/lib/offline/submit";
 import { drainOutbox } from "@/lib/offline/sync";
 import type { OutboxEntry, OutboxStatus } from "@/lib/offline/types";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -83,16 +85,17 @@ export function OfflineSalesList({ userId }: { userId: string }) {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground max-w-prose text-sm">{t("description")}</p>
-        </div>
-        <Button onClick={syncNow} disabled={!online || syncing}>
-          {syncing ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
-          {t("syncNow")}
-        </Button>
-      </div>
+      <PageHeader
+        className="mb-0"
+        title={t("title")}
+        description={t("description")}
+        actions={
+          <Button onClick={syncNow} disabled={!online || syncing}>
+            {syncing ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+            {t("syncNow")}
+          </Button>
+        }
+      />
 
       {!online && (
         <p className="rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
@@ -168,8 +171,8 @@ export function OfflineSalesList({ userId }: { userId: string }) {
             ))}
             {rows !== null && rows.length === 0 && (
               <tr>
-                <td className="text-muted-foreground p-6 text-center" colSpan={6}>
-                  {t("empty")}
+                <td colSpan={6}>
+                  <EmptyState icon={CloudOff} title={t("empty")} className="py-8" />
                 </td>
               </tr>
             )}

@@ -1,9 +1,12 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { CheckCircle2, CreditCard, Wallet } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { PageHeader } from "@/components/layout/page-header";
 import { PaymentActions } from "@/components/payments/payment-actions";
 import { ExportButton } from "@/components/reports/export-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { formatEgp } from "@/lib/money";
 import { getCurrentProfile } from "@/lib/supabase/queries/profiles";
@@ -52,15 +55,12 @@ export default async function PaymentsPage({
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground max-w-prose text-sm">{t("description")}</p>
-      </div>
+      <PageHeader className="mb-0" title={t("title")} description={t("description")} />
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{t("attentionTitle")}</h2>
         {attention.length === 0 ? (
-          <p className="text-muted-foreground rounded-md border p-4 text-sm">{t("attentionEmpty")}</p>
+          <EmptyState icon={CheckCircle2} title={t("attentionEmpty")} className="rounded-md border py-8" />
         ) : (
           <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-sm">
@@ -152,7 +152,9 @@ export default async function PaymentsPage({
                   ))}
                   {summary.length === 0 && (
                     <tr>
-                      <td className="text-muted-foreground p-6 text-center" colSpan={5}>{t("summaryEmpty")}</td>
+                      <td colSpan={5}>
+                        <EmptyState icon={Wallet} title={t("summaryEmpty")} className="py-8" />
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -218,7 +220,9 @@ export default async function PaymentsPage({
               ))}
               {payments.length === 0 && (
                 <tr>
-                  <td className="text-muted-foreground p-6 text-center" colSpan={5}>{t("recentEmpty")}</td>
+                  <td colSpan={5}>
+                    <EmptyState icon={CreditCard} title={t("recentEmpty")} className="py-8" />
+                  </td>
                 </tr>
               )}
             </tbody>

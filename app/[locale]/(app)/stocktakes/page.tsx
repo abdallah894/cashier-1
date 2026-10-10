@@ -1,6 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ClipboardList } from "lucide-react";
 import { Link, redirect } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/layout/page-header";
 import { CreateStocktakeDialog } from "@/components/stocktakes/create-stocktake-dialog";
 import { getCategories } from "@/lib/supabase/queries/categories";
 import { canCountStock, getStocktakes } from "@/lib/supabase/queries/stocktakes";
@@ -19,13 +22,12 @@ export default async function StocktakesPage({ params }: { params: Promise<{ loc
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground max-w-prose text-sm">{t("description")}</p>
-        </div>
-        <CreateStocktakeDialog categories={categories} />
-      </div>
+      <PageHeader
+        className="mb-0"
+        title={t("title")}
+        description={t("description")}
+        actions={<CreateStocktakeDialog categories={categories} />}
+      />
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
@@ -59,8 +61,8 @@ export default async function StocktakesPage({ params }: { params: Promise<{ loc
             ))}
             {stocktakes.length === 0 && (
               <tr>
-                <td className="text-muted-foreground p-6 text-center" colSpan={4}>
-                  {t("empty")}
+                <td colSpan={4}>
+                  <EmptyState icon={ClipboardList} title={t("empty")} className="py-8" />
                 </td>
               </tr>
             )}
