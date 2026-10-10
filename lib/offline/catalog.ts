@@ -40,6 +40,40 @@ export async function searchCatalog(db: OfflineDb, query: string, limit = 8): Pr
     .slice(0, limit);
 }
 
+/** A category as the register's tile tabs show it (cached so the tiles work offline). */
+export type CatalogCategory = { id: string; nameAr: string; nameEn: string; sortOrder: number };
+
+export async function saveCategories(db: OfflineDb, categories: CatalogCategory[]): Promise<void> {
+  await db.meta.put({ key: "categories", value: categories });
+}
+
+export async function loadCategories(db: OfflineDb): Promise<CatalogCategory[]> {
+  const row = await db.meta.get("categories");
+  return Array.isArray(row?.value) ? (row.value as CatalogCategory[]) : [];
+}
+
+/**
+ * Products for the register's tile grid: one category (or all when null),
+ * by name in the till's language, capped so a big catalog stays fast —
+ * search finds the rest.
+ */
+export async function browseCatalog(
+  db: OfflineDb,
+  categoryId: string | null,
+  locale: "ar" | "en",
+  limit = 60
+): Promise<Product[]> {
+  return pickTiles(await db.catalog.toArray(), categoryId, locale, limit);
+}
+
+/** The in-memory half of browseCatalog, for callers that already read the catalog. */
+export function pickTiles(all: Product[], categoryId: string | null, locale: "ar" | "en", limit = 60): Product[] {
+  return all
+    .filter((product) => product.active && (categoryId === null || product.category_id === categoryId))
+    .sort((a, b) => (locale === "ar" ? a.name_ar.localeCompare(b.name_ar, "ar") : a.name_en.localeCompare(b.name_en)))
+    .slice(0, limit);
+}
+
 export async function findByBarcode(db: OfflineDb, barcode: string): Promise<Product | null> {
   const product = await db.catalog.where("barcode").equals(barcode).first();
   return product && product.active ? product : null;

@@ -61,6 +61,7 @@ export function Register({
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null);
   const searchRef = useRef<SearchPaneHandle>(null);
 
@@ -85,7 +86,7 @@ export function Register({
   }
 
   const unknownBarcodeOpen = unknownBarcode !== null;
-  const dialogOpen = checkoutOpen || cameraOpen || switchOpen || unknownBarcodeOpen || provisional !== null;
+  const dialogOpen = checkoutOpen || cameraOpen || switchOpen || shortcutsOpen || unknownBarcodeOpen || provisional !== null;
 
   async function handleScan(barcode: string) {
     // the burst may have landed in the search box — wipe it
@@ -137,6 +138,11 @@ export function Register({
       const clickShortcut = (name: string) => document.querySelector<HTMLElement>(`[data-shortcut="${name}"]`)?.click();
       const focusShortcut = (name: string) => document.querySelector<HTMLElement>(`[data-shortcut="${name}"]`)?.focus();
 
+      if (event.key === "?" && !inField) {
+        event.preventDefault();
+        setShortcutsOpen(true);
+        return;
+      }
       if (event.key === "/" && !inField) {
         event.preventDefault();
         searchRef.current?.focus();
@@ -229,25 +235,29 @@ export function Register({
           </button>
         </div>
       )}
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
+      {/* products on the start side, the cart and Pay on the end side (flips in Arabic);
+          on a counter screen both fill the height so Pay never scrolls away */}
+      <div className="grid min-h-0 flex-1 gap-4 lg:h-[calc(100svh-9.5rem)] lg:grid-cols-[minmax(0,1fr)_380px] lg:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_420px] 2xl:grid-cols-[minmax(0,1fr)_480px]">
+        <SearchPane
+          ref={searchRef}
+          onAdd={addWithMultiplier}
+          onMultiplier={setPendingQty}
+          onOpenCamera={() => setCameraOpen(true)}
+        />
         <CartPane
           totals={totals}
           selectedIndex={selectedIndex}
           onSelect={setSelectedIndex}
           onQtyChange={setQty}
           onRemove={removeItem}
-        />
-        <SearchPane
-          ref={searchRef}
-          onAdd={addWithMultiplier}
-          onMultiplier={setPendingQty}
-          onOpenCamera={() => setCameraOpen(true)}
           onOpenCheckout={() => setCheckoutOpen(true)}
-          hasItems={items.length > 0}
-          total={totals.total}
         />
       </div>
-      <ShortcutsBar onSwitchCashier={() => setSwitchOpen(true)} />
+      <ShortcutsBar
+        open={shortcutsOpen}
+        onOpenChange={setShortcutsOpen}
+        onSwitchCashier={() => setSwitchOpen(true)}
+      />
 
       <PinSwitchDialog cashiers={cashiers} open={switchOpen} onOpenChange={setSwitchOpen} />
       <CheckoutDialog

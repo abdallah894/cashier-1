@@ -306,7 +306,10 @@
       "customer": "customer",
       "promoCode": "promo code",
       "multiplier": "qty ×",
-      "voidCart": "void cart"
+      "voidCart": "void cart",
+      "showAll": "all shortcuts",
+      "title": "Keyboard shortcuts",
+      "description": "Everything at the till works from the keyboard and a barcode scanner."
     },
     "approxStock": "approx. stock",
     "offlineCatalog": "Offline: showing the last synced catalog. Stock figures are approximate.",
@@ -336,7 +339,19 @@
     "notByWeight": "PLU {plu} is on a weight label, but that product is not sold by the kilo.",
     "multiplierActive": "Next item × {qty}",
     "multiplierCancel": "Cancel",
-    "multiplierWholeOnly": "This item is sold per piece: use a whole number."
+    "multiplierWholeOnly": "This item is sold per piece: use a whole number.",
+    "clearSearch": "Clear search",
+    "qtyDecrease": "Decrease quantity",
+    "qtyIncrease": "Increase quantity",
+    "qtyEdit": "Quantity",
+    "qtySet": "Set quantity",
+    "tiles": {
+      "categories": "Categories",
+      "all": "All",
+      "empty": "No products here yet. Products appear after the till syncs; use search or scan meanwhile.",
+      "perKg": "per kg",
+      "outOfStock": "Out of stock"
+    }
   },
   "shifts": {
     "title": "Shifts",

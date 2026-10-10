@@ -1,6 +1,7 @@
 import type { Tables } from "@/lib/supabase/database.types";
 import {
   fetchCatalogClient,
+  fetchCategoriesClient,
   fetchDiscountThresholdClient,
   fetchStoreInfoClient,
   fetchWeighedConfigClient,
@@ -9,7 +10,7 @@ import {
   searchProductsClient,
 } from "@/lib/supabase/queries/products-client";
 import { parseWeighedBarcode, quantityForLabelPrice, DEFAULT_WEIGHED_CONFIG, type WeighedConfig } from "@/lib/barcode/weighed";
-import { findByBarcode, findByPlu, loadWeighedConfig, refreshCatalog, saveDiscountThreshold, saveStoreInfo, saveWeighedConfig, searchCatalog } from "./catalog";
+import { findByBarcode, findByPlu, loadWeighedConfig, refreshCatalog, saveCategories, saveDiscountThreshold, saveStoreInfo, saveWeighedConfig, searchCatalog } from "./catalog";
 import { getOfflineDb } from "./db";
 
 type Product = Tables<"products">;
@@ -113,5 +114,10 @@ export async function refreshOfflineData(): Promise<void> {
     await saveStoreInfo(db, await fetchStoreInfoClient());
   } catch {
     // keep any previously cached store identity
+  }
+  try {
+    await saveCategories(db, await fetchCategoriesClient());
+  } catch {
+    // keep any previously cached tile tabs
   }
 }

@@ -5,6 +5,7 @@ import type { Tables } from "@/lib/supabase/database.types";
 import { weighedConfigFromSettings, type WeighedConfig } from "@/lib/barcode/weighed";
 import { storeInfoFromSettings } from "@/lib/receipts/store-info";
 import type { StoreInfo } from "@/lib/receipts/types";
+import type { CatalogCategory } from "@/lib/offline/catalog";
 
 function escapeFilterValue(q: string): string {
   return q.replace(/[,()"\\]/g, " ").trim();
@@ -56,6 +57,14 @@ export async function fetchCatalogClient(): Promise<Tables<"products">[]> {
     if (!data || data.length < pageSize) break;
   }
   return all;
+}
+
+/** Categories for the register's tile tabs, in the admin's order. */
+export async function fetchCategoriesClient(): Promise<CatalogCategory[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("categories").select("id, name_ar, name_en, sort_order").order("sort_order").order("name_en");
+  if (error) throw error;
+  return (data ?? []).map((c) => ({ id: c.id, nameAr: c.name_ar, nameEn: c.name_en, sortOrder: c.sort_order }));
 }
 
 /** Discount share (basis points) above which a manager must approve; cached for offline checks. */
