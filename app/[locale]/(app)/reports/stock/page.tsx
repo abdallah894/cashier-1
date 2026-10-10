@@ -87,7 +87,7 @@ export default async function StockReportsPage({
       </section>
 
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">{t("stock.valuationTitle")}</h2>
           <ExportButton
             label={t("exportCsv")}
@@ -131,7 +131,7 @@ export default async function StockReportsPage({
       </section>
 
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">{t("stock.agingTitle")}</h2>
           <ExportButton
             label={t("exportCsv")}
@@ -141,7 +141,7 @@ export default async function StockReportsPage({
           />
         </div>
         <p className="text-muted-foreground text-xs">{t("stock.agingNote")}</p>
-        <div className="grid gap-3 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
           {buckets.map((b) => (
             <Stat key={b} label={t(`stock.bucket.${b}`)} value={money(byBucket.get(b) ?? 0)} />
           ))}

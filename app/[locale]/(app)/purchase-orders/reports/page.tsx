@@ -39,7 +39,7 @@ export default async function PurchasingReportsPage({
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold tracking-tight">{t("reportsTitle")}</h1>
         <Button asChild variant="outline">
           <Link href="/purchase-orders">{t("back")}</Link>
@@ -47,7 +47,7 @@ export default async function PurchasingReportsPage({
       </div>
 
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">{t("outstandingTitle")}</h2>
           <ExportButton
             label={t("exportCsv")}
@@ -65,7 +65,7 @@ export default async function PurchasingReportsPage({
             ])}
           />
         </div>
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
@@ -120,7 +120,7 @@ export default async function PurchasingReportsPage({
           </form>
         </div>
         <p className="text-muted-foreground text-xs">{t("receivedCostNote")}</p>
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">

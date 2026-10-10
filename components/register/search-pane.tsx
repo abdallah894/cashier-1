@@ -111,7 +111,8 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
   }
 
   return (
-    <div className="flex min-h-0 flex-col gap-3">
+    // phones and tablets: the scan box comes first, above the cart
+    <div className="order-first flex min-h-0 flex-col gap-3 lg:order-none">
       <div className="bg-card flex min-h-0 flex-1 flex-col rounded-xl border">
         <div className="relative border-b p-3">
           <Search className="text-muted-foreground absolute start-6 top-1/2 size-4 -translate-y-1/2" />

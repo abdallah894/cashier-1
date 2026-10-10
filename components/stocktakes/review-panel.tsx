@@ -98,7 +98,7 @@ export function ReviewPanel({
           ])}
         />
         {reviewable && (
-          <div className="ms-auto flex gap-2">
+          <div className="ms-auto flex flex-wrap gap-2">
             <Button variant="outline" disabled={busy} onClick={() => run(() => reopenStocktake({ stocktakeId }), "reopened")}>
               {t("sendBack")}
             </Button>
@@ -118,7 +118,7 @@ export function ReviewPanel({
         <p className="text-muted-foreground text-sm">{t("resolveFirst", { count: unresolved.length })}</p>
       )}
 
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">

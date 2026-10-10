@@ -16,7 +16,7 @@ export default async function SuppliersPage({ params }: { params: Promise<{ loca
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <SupplierDialog />
       </div>
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">

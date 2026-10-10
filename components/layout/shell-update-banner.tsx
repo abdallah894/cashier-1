@@ -41,7 +41,7 @@ export function ShellUpdateBanner() {
 
   if (shellIsTooOld(shell.version)) {
     return (
-      <div role="alert" className="bg-destructive/10 text-destructive flex items-center gap-2 border-b px-4 py-2 text-sm">
+      <div role="alert" className="bg-destructive/10 text-destructive flex flex-wrap items-center gap-2 border-b px-4 py-2 text-sm">
         <TriangleAlert className="size-4 shrink-0" />
         {t("tooOld", { version: shell.version })}
       </div>

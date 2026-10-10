@@ -37,7 +37,7 @@ export default async function PurchaseOrderPage({ params }: { params: Promise<{ 
           <h1 className="text-2xl font-semibold tracking-tight">PO-{order.po_number}</h1>
           <Badge variant={order.status === "received" ? "outline" : "secondary"}>{t(`status.${order.status}`)}</Badge>
         </div>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-sm break-words">
           {order.supplier_name}
           {order.note ? ` · ${order.note}` : ""}
         </p>
@@ -48,7 +48,7 @@ export default async function PurchaseOrderPage({ params }: { params: Promise<{ 
         {open && <ReceiveDialog poId={order.id} lines={lines} tolerancePct={overReceiptTolerancePct} />}
       </div>
 
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">
@@ -87,7 +87,7 @@ export default async function PurchaseOrderPage({ params }: { params: Promise<{ 
       </p>
 
       <h2 className="mt-2 text-lg font-semibold">{t("receipts")}</h2>
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">

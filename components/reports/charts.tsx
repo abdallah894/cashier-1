@@ -118,6 +118,8 @@ export function CategoricalBarChart({
           orientation={rtl ? "right" : "left"}
           tick={AXIS_TICK}
           width={120}
+          // long product names: the tooltip shows them in full
+          tickFormatter={(v: string) => (v.length > 16 ? `${v.slice(0, 15)}…` : v)}
         />
         <Tooltip
           cursor={{ fill: "var(--accent)" }}

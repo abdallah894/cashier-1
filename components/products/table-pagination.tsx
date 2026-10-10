@@ -30,7 +30,7 @@ export function TablePagination({
   if (total === 0) return null;
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-wrap items-center justify-between gap-2">
       <span className="text-muted-foreground text-sm">{t("pageOf", { page, pageCount })}</span>
       <div className="flex gap-1">
         {/* Chevrons flip visually via rtl: variants — "previous" points

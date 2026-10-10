@@ -22,7 +22,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ local
         <Link className="text-muted-foreground text-sm hover:underline" href="/customers">
           {t("back")}
         </Link>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{customer.name}</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight break-words">{customer.name}</h1>
         <p className="text-muted-foreground text-sm tabular-nums" dir="ltr">
           {customer.phone ?? "—"}
           {customer.email ? ` · ${customer.email}` : ""}
@@ -43,7 +43,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ local
       </div>
 
       <h2 className="text-lg font-semibold">{t("history")}</h2>
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">
@@ -80,8 +80,8 @@ export default async function CustomerPage({ params }: { params: Promise<{ local
       <h2 className="text-lg font-semibold">{t("consentLog")}</h2>
       <ul className="text-sm">
         {consentEvents.map((event) => (
-          <li key={event.id} className="flex gap-3 border-b py-2 last:border-0">
-            <span className="w-44">{when.format(new Date(event.recorded_at))}</span>
+          <li key={event.id} className="flex flex-wrap gap-x-3 gap-y-1 border-b py-2 last:border-0">
+            <span className="sm:w-44">{when.format(new Date(event.recorded_at))}</span>
             <span>{event.consent ? t("consentGranted") : t("consentWithdrawn")}</span>
             <span className="text-muted-foreground">({event.source})</span>
           </li>

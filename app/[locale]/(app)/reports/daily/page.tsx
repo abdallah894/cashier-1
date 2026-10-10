@@ -51,7 +51,7 @@ export default async function DailyReportPage({
       <RangeForm from={range.from} to={range.to} />
 
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">{t("daily.byDay")}</h2>
           <ExportButton
             label={t("exportCsv")}
@@ -116,7 +116,7 @@ export default async function DailyReportPage({
       </section>
 
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">{t("daily.refundsTitle")}</h2>
           <ExportButton
             label={t("exportCsv")}
@@ -149,7 +149,7 @@ export default async function DailyReportPage({
       </section>
 
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">{t("daily.voidsTitle")}</h2>
           <ExportButton
             label={t("exportCsv")}

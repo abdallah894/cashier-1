@@ -111,45 +111,47 @@ export function ReceiveDialog({
               <Input id="receive-note" value={note} onChange={(e) => setNote(e.target.value)} />
             </div>
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b">
-                <th className="p-2 text-start">{t("colProduct")}</th>
-                <th className="p-2 text-start">{t("colRemaining")}</th>
-                <th className="p-2 text-start">{t("colReceiveNow")}</th>
-                <th className="p-2 text-start">{t("colInvoicedCost")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(({ line, qty, cost }) => (
-                <tr key={line.id} className="border-b last:border-0">
-                  <td className="p-2">{locale === "ar" ? line.name_ar : line.name_en}</td>
-                  <td className="p-2 tabular-nums" dir="ltr">{remaining(line)}</td>
-                  <td className="p-2">
-                    <Input
-                      dir="ltr"
-                      inputMode="decimal"
-                      className="w-24 tabular-nums"
-                      value={entries[line.id]?.qty ?? ""}
-                      aria-invalid={qty === null}
-                      disabled={remaining(line) <= 0 && tolerancePct === 0}
-                      onChange={(e) => setEntries((current) => ({ ...current, [line.id]: { ...current[line.id], qty: e.target.value } }))}
-                    />
-                  </td>
-                  <td className="p-2">
-                    <Input
-                      dir="ltr"
-                      inputMode="decimal"
-                      className="w-28 tabular-nums"
-                      value={entries[line.id]?.cost ?? ""}
-                      aria-invalid={cost === null}
-                      onChange={(e) => setEntries((current) => ({ ...current, [line.id]: { ...current[line.id], cost: e.target.value } }))}
-                    />
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="p-2 text-start">{t("colProduct")}</th>
+                  <th className="p-2 text-start">{t("colRemaining")}</th>
+                  <th className="p-2 text-start">{t("colReceiveNow")}</th>
+                  <th className="p-2 text-start">{t("colInvoicedCost")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map(({ line, qty, cost }) => (
+                  <tr key={line.id} className="border-b last:border-0">
+                    <td className="p-2">{locale === "ar" ? line.name_ar : line.name_en}</td>
+                    <td className="p-2 tabular-nums" dir="ltr">{remaining(line)}</td>
+                    <td className="p-2">
+                      <Input
+                        dir="ltr"
+                        inputMode="decimal"
+                        className="w-24 tabular-nums"
+                        value={entries[line.id]?.qty ?? ""}
+                        aria-invalid={qty === null}
+                        disabled={remaining(line) <= 0 && tolerancePct === 0}
+                        onChange={(e) => setEntries((current) => ({ ...current, [line.id]: { ...current[line.id], qty: e.target.value } }))}
+                      />
+                    </td>
+                    <td className="p-2">
+                      <Input
+                        dir="ltr"
+                        inputMode="decimal"
+                        className="w-28 tabular-nums"
+                        value={entries[line.id]?.cost ?? ""}
+                        aria-invalid={cost === null}
+                        onChange={(e) => setEntries((current) => ({ ...current, [line.id]: { ...current[line.id], cost: e.target.value } }))}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>

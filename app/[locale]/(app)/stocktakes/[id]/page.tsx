@@ -37,7 +37,7 @@ export default async function StocktakePage({ params }: { params: Promise<{ loca
           {t("back")}
         </Link>
         <div className="mt-1 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight break-words">
             {t("countTitle", { number: stocktake.stocktake_number })}
           </h1>
           <Badge variant={stocktake.status === "approved" ? "outline" : "secondary"}>

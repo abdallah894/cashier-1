@@ -9,7 +9,7 @@ export default async function NewPurchaseOrderPage({ params }: { params: Promise
   await requireAdmin();
   const [t, suppliers] = await Promise.all([getTranslations("purchaseOrders"), getSuppliers()]);
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
       <h1 className="text-2xl font-semibold tracking-tight">{t("newTitle")}</h1>
       <p className="text-muted-foreground max-w-prose text-sm">{t("newDescription")}</p>
       <PurchaseOrderForm suppliers={suppliers.filter((supplier) => supplier.active).map(({ id, name }) => ({ id, name }))} />

@@ -88,12 +88,12 @@ export function CustomerPromoBar() {
       {(promoCodes.length > 0 || (promo?.applied.length ?? 0) > 0) && (
         <ul className="flex flex-col gap-1">
           {promo?.applied.map((entry) => (
-            <li key={entry.promotionId} className="flex items-center justify-between text-green-700 dark:text-green-500">
-              <span>
+            <li key={entry.promotionId} className="flex items-center justify-between gap-2 text-green-700 dark:text-green-500">
+              <span className="min-w-0 truncate">
                 {locale === "ar" ? entry.nameAr : entry.nameEn}
                 {entry.code ? ` (${entry.code})` : ""}
               </span>
-              <span className="tabular-nums" dir="ltr">
+              <span className="shrink-0 tabular-nums" dir="ltr">
                 − {formatEgp(entry.discount, locale)}
               </span>
             </li>

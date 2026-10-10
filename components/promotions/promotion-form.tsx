@@ -119,7 +119,7 @@ export function PromotionForm({ categories }: { categories: CategoryOption[] }) 
           <DialogDescription>{t("newDescription")}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Field id="p-name-en" label={t("nameEn")}>
               <Input id="p-name-en" value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
             </Field>
@@ -141,7 +141,7 @@ export function PromotionForm({ categories }: { categories: CategoryOption[] }) 
             </Tabs>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-1.5">
               <Label>{t("kind")}</Label>
               <Tabs value={kind} onValueChange={(v) => setKind(v as "percent" | "fixed")}>
@@ -209,7 +209,7 @@ export function PromotionForm({ categories }: { categories: CategoryOption[] }) 
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <Field id="p-min" label={t("minSpend")}>
               <Input id="p-min" dir="ltr" inputMode="decimal" value={minSpend} onChange={(e) => setMinSpend(e.target.value)} />
             </Field>

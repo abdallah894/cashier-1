@@ -17,7 +17,7 @@ export default async function PurchaseOrdersPage({ params }: { params: Promise<{
     <div className="flex w-full flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline">
             <Link href="/purchase-orders/reports">{t("reports")}</Link>
           </Button>
@@ -29,7 +29,7 @@ export default async function PurchaseOrdersPage({ params }: { params: Promise<{
           </Button>
         </div>
       </div>
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">

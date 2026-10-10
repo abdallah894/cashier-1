@@ -62,7 +62,7 @@ export default async function PaymentsPage({
         {attention.length === 0 ? (
           <p className="text-muted-foreground rounded-md border p-4 text-sm">{t("attentionEmpty")}</p>
         ) : (
-          <div className="rounded-md border">
+          <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
@@ -120,7 +120,7 @@ export default async function PaymentsPage({
           </form>
 
           <section className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-semibold">{t("summaryTitle")}</h2>
               <ExportButton
                 label={t("exportCsv")}
@@ -129,7 +129,7 @@ export default async function PaymentsPage({
                 rows={summary.map((row) => [row.tender, row.provider, Number(row.charges), Number(row.refunds), Number(row.net), Number(row.payment_count)])}
               />
             </div>
-            <div className="rounded-md border">
+            <div className="overflow-x-auto rounded-md border">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
@@ -166,7 +166,7 @@ export default async function PaymentsPage({
             {issues.length === 0 ? (
               <p className="rounded-md border p-4 text-sm text-green-700 dark:text-green-500">{t("reconciliationClean")}</p>
             ) : (
-              <div className="rounded-md border">
+              <div className="overflow-x-auto rounded-md border">
                 <table className="w-full text-sm">
                   <tbody>
                     {issues.map((issue, index) => (
@@ -195,7 +195,7 @@ export default async function PaymentsPage({
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{t("recentTitle")}</h2>
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">

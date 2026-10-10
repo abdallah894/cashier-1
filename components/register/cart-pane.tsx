@@ -150,11 +150,12 @@ function CartLine({
       data-line={index}
       onClick={() => onSelect(index)}
       className={cn(
-        "flex cursor-pointer items-center gap-3 border-b px-4 py-2.5",
+        "flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-2 border-b px-3 py-2.5 sm:flex-nowrap sm:px-4",
         selected && "bg-accent"
       )}
     >
-      <div className="min-w-0 flex-1">
+      {/* phones: name on its own line, controls under it */}
+      <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate font-medium">{name}</span>
           {overStock && (
@@ -199,7 +200,7 @@ function CartLine({
         </Button>
       </DiscountPopover>
 
-      <span className="w-20 text-end font-semibold tabular-nums" dir="ltr">
+      <span className="ms-auto min-w-20 shrink-0 text-end font-semibold whitespace-nowrap tabular-nums sm:ms-0" dir="ltr">
         {formatEgp(line.gross, locale)}
       </span>
 
