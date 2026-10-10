@@ -19,7 +19,7 @@ profiles marked *supported*).
 | Profile | Interface | Status | Verified on site |
 | --- | --- | --- | --- |
 | `usb_hid_keyboard` | USB, **keyboard-wedge (HID)** mode, suffix = Enter | Supported | _model: ____ date: ____ |
-| `camera_browser` | device camera (EAN-13, EAN-8, Code 128, QR via html5-qrcode) | Supported | _model: ____ date: ____ |
+| `camera_browser` | device camera (EAN-13, EAN-8, UPC, Code 128, Code 39, QR via the built-in BarcodeDetector or ZXing C++ (zxing-wasm), JS ZXing as fallback) | Supported | _model: ____ date: ____ |
 | `bluetooth_hid` | Bluetooth scanner in HID mode | Not supported (expected to behave as a wedge; unverified) | n/a |
 
 Requirements for a wedge scanner: programmed to send **Enter** after the code

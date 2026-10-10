@@ -15,7 +15,12 @@ import {
   MultiFormatReader,
   RGBLuminanceSource,
 } from "@zxing/library";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { deflateSync } from "node:zlib";
+import { prepareZXingModule, readBarcodes } from "zxing-wasm/reader";
 import { createReadConfirmer } from "../lib/barcode/decode-frame";
+import { READER_OPTIONS } from "../lib/barcode/wasm-decoder";
 
 let failures = 0;
 function check(name: string, cond: boolean, detail = "") {
@@ -68,6 +73,51 @@ check("it reads it at 2 pixels per bar", decode("6223007653602", 2) === "6223007
 check("it reads another product code", decode("6221000000010", 3) === "6221000000010");
 check("an invalid check digit is refused, not misread", decode("6221000000017", 3) === null);
 
+/** Minimal greyscale PNG, so the C++ engine can be fed a real image file in Node. */
+function png(pixels: Uint8ClampedArray, width: number, height: number): Uint8Array {
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc = (bytes: Buffer) => {
+    let c = 0xffffffff;
+    for (const b of bytes) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunk = (type: string, data: Buffer) => {
+    const body = Buffer.concat([Buffer.from(type), data]);
+    const out = Buffer.alloc(12 + data.length);
+    out.writeUInt32BE(data.length, 0);
+    body.copy(out, 4);
+    out.writeUInt32BE(crc(body), 8 + data.length);
+    return out;
+  };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8; // bit depth
+  header[9] = 0; // greyscale
+  const raw = Buffer.alloc((width + 1) * height);
+  for (let y = 0; y < height; y++) Buffer.from(pixels.subarray(y * width, (y + 1) * width)).copy(raw, y * (width + 1) + 1);
+  return new Uint8Array(Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", header), chunk("IDAT", deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]));
+}
+
+async function decodeWasm(code: string, module: number): Promise<string | null> {
+  const { pixels, width, height } = barcodeImage(code, module);
+  const results = await readBarcodes(png(pixels, width, height), READER_OPTIONS);
+  return results.find((r) => r.isValid)?.text ?? null;
+}
+
+async function wasmChecks() {
+  // the same engine and options the camera uses (the browser loads /zxing/zxing_reader.wasm)
+  const require = createRequire(import.meta.url);
+  await prepareZXingModule({ overrides: { wasmBinary: readFileSync(require.resolve("zxing-wasm/reader/zxing_reader.wasm")).buffer as ArrayBuffer }, fireImmediately: true });
+  check("the C++ engine reads an Egyptian EAN-13", (await decodeWasm("6223007653602", 3)) === "6223007653602");
+  check("the C++ engine reads it at 2 pixels per bar", (await decodeWasm("6223007653602", 2)) === "6223007653602");
+  check("the C++ engine refuses a bad check digit", (await decodeWasm("6221000000017", 3)) === null);
+}
+
 // two agreeing frames before a read counts
 {
   const confirm = createReadConfirmer();
@@ -91,8 +141,12 @@ check("an invalid check digit is refused, not misread", decode("6221000000017", 
   check("an old read does not combine with a new one", confirm("6223007653602", 5000) === null);
 }
 
-if (failures > 0) {
-  console.error(`\n${failures} check(s) failing`);
-  process.exit(1);
-}
-console.log("\nCamera decode tests passed.");
+wasmChecks()
+  .catch((error) => check("the C++ engine loads", false, String(error)))
+  .then(() => {
+    if (failures > 0) {
+      console.error(`\n${failures} check(s) failing`);
+      process.exit(1);
+    }
+    console.log("\nCamera decode tests passed.");
+  });

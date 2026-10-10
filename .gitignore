@@ -19,6 +19,8 @@ node_modules/
 
 # serwist service worker (generated at build from app/sw.ts)
 /public/sw.js
+# copied from node_modules/zxing-wasm by scripts/copy-zxing-wasm.mjs
+/public/zxing/
 /public/sw.js.map
 
 # production
