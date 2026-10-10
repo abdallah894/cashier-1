@@ -82,6 +82,7 @@ function CategoryChip({ active, onClick, children }: { active: boolean; onClick:
   return (
     <button
       type="button"
+      data-category-chip
       aria-pressed={active}
       onPointerDown={(event) => event.preventDefault()}
       onClick={onClick}

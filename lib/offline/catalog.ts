@@ -63,7 +63,11 @@ export async function browseCatalog(
   locale: "ar" | "en",
   limit = 60
 ): Promise<Product[]> {
-  const all = await db.catalog.toArray();
+  return pickTiles(await db.catalog.toArray(), categoryId, locale, limit);
+}
+
+/** The in-memory half of browseCatalog, for callers that already read the catalog. */
+export function pickTiles(all: Product[], categoryId: string | null, locale: "ar" | "en", limit = 60): Product[] {
   return all
     .filter((product) => product.active && (categoryId === null || product.category_id === categoryId))
     .sort((a, b) => (locale === "ar" ? a.name_ar.localeCompare(b.name_ar, "ar") : a.name_en.localeCompare(b.name_en)))

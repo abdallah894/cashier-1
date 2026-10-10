@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { liveQuery } from "dexie";
 import type { Tables } from "@/lib/supabase/database.types";
 import { getOfflineDb } from "@/lib/offline/db";
-import { browseCatalog, loadCategories, type CatalogCategory } from "@/lib/offline/catalog";
+import { loadCategories, pickTiles, type CatalogCategory } from "@/lib/offline/catalog";
 
 export type CatalogTiles = { categories: CatalogCategory[]; products: Tables<"products">[] };
 
@@ -19,13 +19,13 @@ export function useCatalogTiles(categoryId: string | null, locale: "ar" | "en"):
   useEffect(() => {
     const subscription = liveQuery(async () => {
       const db = getOfflineDb();
-      const [categories, products, all] = await Promise.all([
-        loadCategories(db),
-        browseCatalog(db, categoryId, locale),
-        db.catalog.toArray(),
-      ]);
+      // one read of the catalog serves both the tiles and the category chips
+      const [categories, all] = await Promise.all([loadCategories(db), db.catalog.toArray()]);
       const used = new Set(all.map((product) => product.category_id));
-      return { categories: categories.filter((category) => used.has(category.id)), products };
+      return {
+        categories: categories.filter((category) => used.has(category.id)),
+        products: pickTiles(all, categoryId, locale),
+      };
     }).subscribe({ next: setTiles, error: () => setTiles({ categories: [], products: [] }) });
     return () => subscription.unsubscribe();
   }, [categoryId, locale]);

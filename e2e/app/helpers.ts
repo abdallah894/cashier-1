@@ -57,6 +57,10 @@ export async function openRegister(page: Page, locale: Locale = "en") {
     await page.getByRole("button", { name: messages[locale].shifts.open, exact: true }).click();
   }
   await expect(total).toBeVisible();
+  // wait for the first catalog sync to finish drawing the tiles: a scan typed
+  // while the page is busy rendering arrives as slow keys, like human typing
+  await expect(page.locator("[data-product-tile]").first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("[data-category-chip]").first()).toBeVisible();
 }
 
 /** A USB scanner is a keyboard that types the code in one quick burst and presses Enter. */
