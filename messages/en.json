@@ -238,17 +238,16 @@
     },
     "camera": {
       "title": "Scan with camera",
-      "hint": "Hold the barcode steady in view, then tap Scan.",
+      "hint": "Hold the barcode inside the box. It is added automatically.",
       "allowCamera": "Allow camera",
       "starting": "Opening camera...",
-      "scanNow": "Scan",
-      "scanning": "Scanning…",
-      "noBarcodeFound": "No barcode detected. Adjust distance and lighting, then try again.",
       "cameraUnavailable": "Camera unavailable. Check permissions and try again.",
       "cameraPermissionRequired": "Camera access needs HTTPS or localhost. Open the app from a secure address, then allow camera access.",
       "manualEntryHint": "Damaged or crumpled label? Type the number instead.",
       "manualEntryPlaceholder": "Barcode number",
-      "manualEntrySubmit": "Use this code"
+      "manualEntrySubmit": "Use this code",
+      "looking": "Looking for a barcode…",
+      "retry": "Try again"
     },
     "voidCart": {
       "trigger": "Clear",

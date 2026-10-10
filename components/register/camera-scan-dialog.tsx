@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { ScanLine } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { createReadConfirmer, decodeBarcodeFromCanvas, decodeBarcodeFromVideo } from "@/lib/barcode/decode-frame";
+import { createReadConfirmer, decodeBarcodeFromVideo } from "@/lib/barcode/decode-frame";
 
 // Pause between decode attempts. Each attempt itself takes 30–200ms, so the
 // effective rate is ~3–6 fps — plenty for hand-held scanning without pegging
@@ -83,7 +82,6 @@ export function CameraScanDialog({
   const t = useTranslations("register.camera");
   const [error, setError] = useState<CameraError | null>(null);
   const [ready, setReady] = useState(false);
-  const [capturing, setCapturing] = useState(false);
   const [starting, setStarting] = useState(false);
   // Crumpled foil, torn labels, or curved packaging can distort a linear
   // barcode's bar widths enough that no decoder — ours or a dedicated
@@ -130,17 +128,6 @@ export function CameraScanDialog({
     }
   }, []);
 
-  /** "Scan now" button: every strategy on the current frame. */
-  const decodeSnapshot = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video || video.videoWidth <= 0 || video.videoHeight <= 0) return null;
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d")?.drawImage(video, 0, 0);
-    return decodeBarcodeFromCanvas(canvas);
-  }, []);
-
   const stopCamera = useCallback(() => {
     handledRef.current = true;
     window.clearTimeout(timeoutRef.current);
@@ -156,7 +143,6 @@ export function CameraScanDialog({
 
     setReady(false);
     setStarting(false);
-    setCapturing(false);
   }, []);
 
   const startCamera = useCallback(async () => {
@@ -223,33 +209,19 @@ export function CameraScanDialog({
     finishScan(manualValue);
   }
 
-  async function handleManualScan() {
-    if (!ready) {
-      await startCamera();
-      return;
-    }
-
-    if (capturing) return;
-
-    setCapturing(true);
-    try {
-      const barcode = await decodeSnapshot();
-      if (barcode) {
-        finishScan(barcode);
-        return;
-      }
-      toast.error(t("noBarcodeFound"));
-    } catch {
-      toast.error(t("noBarcodeFound"));
-    } finally {
-      setCapturing(false);
-    }
-  }
-
+  // open the camera as soon as the window opens; a confirmed read adds the item and closes it
+  const startCameraRef = useRef(startCamera);
+  useEffect(() => {
+    startCameraRef.current = startCamera;
+  });
   useEffect(() => {
     if (!open) return;
-
-    return stopCamera;
+    // the video element mounts with the dialog content: start on the next tick
+    const id = window.setTimeout(() => void startCameraRef.current(), 0);
+    return () => {
+      window.clearTimeout(id);
+      stopCamera();
+    };
   }, [open, stopCamera]);
 
   return (
@@ -290,23 +262,16 @@ export function CameraScanDialog({
         <p className="text-muted-foreground -mt-2 text-center text-xs">{t("manualEntryHint")}</p>
 
         <DialogFooter className="sm:justify-stretch">
-          {error && (
-            <Button type="button" variant="outline" size="lg" className="h-12 w-full text-base" onClick={startCamera}>
+          {error ? (
+            <Button type="button" variant="outline" size="lg" className="w-full" onClick={startCamera} disabled={starting}>
               <ScanLine className="size-5" />
-              {t("allowCamera")}
+              {t("retry")}
             </Button>
-          )}
-          {!error && (
-            <Button
-              type="button"
-              size="lg"
-              className="h-12 w-full text-base"
-              disabled={starting || capturing}
-              onClick={handleManualScan}
-            >
-              <ScanLine className="size-5" />
-              {starting ? t("starting") : capturing ? t("scanning") : ready ? t("scanNow") : t("allowCamera")}
-            </Button>
+          ) : (
+            <p role="status" aria-live="polite" className="text-muted-foreground flex w-full items-center justify-center gap-2 text-sm">
+              <ScanLine className={ready ? "text-primary size-5 animate-pulse" : "size-5"} />
+              {ready ? t("looking") : t("starting")}
+            </p>
           )}
         </DialogFooter>
       </DialogContent>
