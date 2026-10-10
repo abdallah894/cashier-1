@@ -9,6 +9,7 @@ import { SyncProvider } from "@/components/offline/sync-provider";
 import { ChatWidget } from "@/components/chat-widget";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
+import { PageTitle } from "@/components/layout/page-title";
 import { getCurrentProfile } from "@/lib/supabase/queries/profiles";
 import { getStoreInfo } from "@/lib/supabase/queries/ops-reports";
 import { DEFAULT_STORE_INFO } from "@/lib/receipts/store-info";
@@ -35,12 +36,13 @@ export default async function AppLayout({
   return (
     <SidebarProvider>
       <SyncProvider userId={profile.id} />
-      <AppSidebar role={profile.role} storeName={storeName} />
+      <AppSidebar role={profile.role} storeName={storeName} userId={profile.id} />
       <SidebarInset>
-        <header className="bg-card/80 sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-4 backdrop-blur">
+        <header className="bg-card/80 sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-3 sm:px-4 backdrop-blur">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-6" />
-          <div className="ms-auto flex items-center gap-1">
+          <PageTitle />
+          <div className="ms-auto flex shrink-0 items-center gap-1">
             <NetworkIndicator userId={profile.id} />
             <LocaleSwitcher />
             <ThemeToggle />

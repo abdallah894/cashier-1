@@ -16,7 +16,10 @@ export default async function PurchaseOrdersPage({ params }: { params: Promise<{
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground max-w-prose text-sm">{t("pageDescription")}</p>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild variant="outline">
             <Link href="/purchase-orders/reports">{t("reports")}</Link>

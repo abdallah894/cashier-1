@@ -2,14 +2,17 @@
   "common": {
     "appName": "Cachier POS",
     "loading": "Loading…",
-    "error": "Something went wrong. Please try again.",
+    "error": "This page could not load. Your data is safe — try again, or go back to the register.",
     "kg": "kg",
     "errorTitle": "Something went wrong",
-    "retry": "Try again"
+    "retry": "Try again",
+    "errorToRegister": "Back to register",
+    "errorToSales": "Go to sales history",
+    "errorCode": "Error code: {code}"
   },
   "nav": {
     "register": "Register",
-    "sales": "Sales",
+    "sales": "Sales history",
     "products": "Products",
     "categories": "Categories",
     "reports": "Reports",
@@ -24,7 +27,17 @@
     "promotions": "Promotions",
     "payments": "Payments",
     "devices": "Devices",
-    "stockAlerts": "Low stock"
+    "stockAlerts": "Low-stock alerts",
+    "importProducts": "Import products",
+    "purchasingReports": "Purchasing reports",
+    "groups": {
+      "sell": "Sell",
+      "stock": "Products & stock",
+      "purchasing": "Purchasing",
+      "customers": "Customers & offers",
+      "insights": "Reports",
+      "admin": "Admin"
+    }
   },
   "shell": {
     "toggleTheme": "Toggle theme",
@@ -373,7 +386,8 @@
     "totalSales": "Total sales",
     "expectedCash": "Expected cash",
     "overShort": "Over / short",
-    "shiftStillOpen": "This shift is still open — the Z-report is available after closing."
+    "shiftStillOpen": "This shift is still open — the Z-report is available after closing.",
+    "pageDescription": "Open and close cash shifts and check the drawer count."
   },
   "users": {
     "title": "Users",
@@ -435,7 +449,8 @@
         "shift_close_override": "Closes a shift even with a large cash variance.",
         "customer_manage": "Customer list, purchase history, consent and erasure."
       }
-    }
+    },
+    "pageDescription": "Staff accounts, their roles and PINs for switching cashier."
   },
   "audit": {
     "title": "Audit log",
@@ -443,7 +458,8 @@
     "action": "Action",
     "target": "Target",
     "details": "Safe details",
-    "empty": "No audit events yet."
+    "empty": "No audit events yet.",
+    "pageDescription": "Who changed what and when: price edits, stock corrections, refunds, user changes."
   },
   "pinSwitch": {
     "title": "Switch cashier",
@@ -472,7 +488,8 @@
     "empty": "No sales match these filters.",
     "pageOf": "Page {page} of {pageCount}",
     "previousPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "pageDescription": "Every completed sale. Open one to reprint the receipt or make a return."
   },
   "reports": {
     "title": "Reports",
@@ -822,7 +839,8 @@
     "save": "Save",
     "saved": "Supplier saved.",
     "cancel": "Cancel",
-    "empty": "No suppliers yet."
+    "empty": "No suppliers yet.",
+    "pageDescription": "The companies you buy stock from."
   },
   "purchaseOrders": {
     "title": "Purchase orders",
@@ -894,7 +912,9 @@
     "from": "From",
     "to": "To",
     "apply": "Apply",
-    "exportCsv": "Export CSV"
+    "exportCsv": "Export CSV",
+    "pageDescription": "Order stock from suppliers and record what arrives.",
+    "reportsDescription": "Spending per supplier and orders still waiting for delivery."
   },
   "customers": {
     "title": "Customers",

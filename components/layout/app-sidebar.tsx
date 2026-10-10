@@ -1,26 +1,7 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-import {
-  ShoppingCart,
-  Package,
-  Tags,
-  BarChart3,
-  Clock,
-  Store,
-  ReceiptText,
-  UsersRound,
-  ShieldCheck,
-  CloudUpload,
-  ClipboardList,
-  Truck,
-  PackageCheck,
-  Contact,
-  Percent,
-  Wallet,
-  Printer,
-  PackageMinus,
-} from "lucide-react";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { Store } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { getDirection, type Locale } from "@/i18n/routing";
 import {
@@ -28,33 +9,29 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useOutboxCounts } from "@/hooks/use-outbox-counts";
+import { matchNav, navGroupsFor } from "./nav-items";
 
-const navItems = [
-  { key: "register", href: "/register", icon: ShoppingCart, adminOnly: false },
-  { key: "sales", href: "/receipts", icon: ReceiptText, adminOnly: false },
-  { key: "shifts", href: "/shifts", icon: Clock, adminOnly: false },
-  { key: "payments", href: "/payments", icon: Wallet, adminOnly: false },
-  { key: "offlineSales", href: "/offline-sales", icon: CloudUpload, adminOnly: false },
-  { key: "products", href: "/products", icon: Package, adminOnly: true },
-  { key: "categories", href: "/categories", icon: Tags, adminOnly: true },
-  { key: "stocktakes", href: "/stocktakes", icon: ClipboardList, adminOnly: true },
-  { key: "stockAlerts", href: "/stock-alerts", icon: PackageMinus, adminOnly: true },
-  { key: "purchaseOrders", href: "/purchase-orders", icon: PackageCheck, adminOnly: true },
-  { key: "suppliers", href: "/suppliers", icon: Truck, adminOnly: true },
-  { key: "customers", href: "/customers", icon: Contact, adminOnly: true },
-  { key: "promotions", href: "/promotions", icon: Percent, adminOnly: true },
-  { key: "reports", href: "/reports", icon: BarChart3, adminOnly: true },
-  { key: "devices", href: "/devices", icon: Printer, adminOnly: true },
-  { key: "users", href: "/users", icon: UsersRound, adminOnly: true },
-  { key: "audit", href: "/audit", icon: ShieldCheck, adminOnly: true },
-] as const;
+// accent bar on the active entry; taller rows for touch
+const ITEM_CLASS =
+  "relative h-10 text-[0.9375rem] data-active:font-semibold data-active:before:absolute data-active:before:inset-y-2 data-active:before:start-0 data-active:before:w-1 data-active:before:rounded-full data-active:before:bg-sidebar-primary";
 
-export function AppSidebar({ role, storeName }: { role: "admin" | "cashier"; storeName?: string | null }) {
+export function AppSidebar({
+  role,
+  storeName,
+  userId,
+}: {
+  role: "admin" | "cashier";
+  storeName?: string | null;
+  userId: string;
+}) {
   // useTranslations is a hook — the Vue next-intl equivalent would be
   // useI18n().t, but here it's scoped to a namespace at call time.
   const t = useTranslations("nav");
@@ -63,6 +40,11 @@ export function AppSidebar({ role, storeName }: { role: "admin" | "cashier"; sto
   // usePathname from i18n/navigation strips the locale prefix,
   // so "/ar/products" comes back as "/products".
   const pathname = usePathname();
+  const active = matchNav(pathname)?.item.key;
+  // sales waiting to reach the server (same live count as the header badge)
+  const format = useFormatter();
+  const counts = useOutboxCounts(userId);
+  const pending = (counts?.queued ?? 0) + (counts?.syncing ?? 0) + (counts?.rejected ?? 0);
 
   return (
     <Sidebar side={getDirection(locale) === "rtl" ? "right" : "left"} collapsible="icon">
@@ -84,28 +66,29 @@ export function AppSidebar({ role, storeName }: { role: "admin" | "cashier"; sto
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems
-                .filter((item) => role === "admin" || !item.adminOnly)
-                .map((item) => (
-                <SidebarMenuItem key={item.key}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href || pathname.startsWith(item.href + "/")}
-                    tooltip={t(item.key)}
-                  >
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{t(item.key)}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* grouped so things are easy to find; cashiers only see "Sell" */}
+        {navGroupsFor(role).map((group) => (
+          <SidebarGroup key={group.key}>
+            <SidebarGroupLabel>{t(`groups.${group.key}`)}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.key}>
+                    <SidebarMenuButton asChild isActive={active === item.key} tooltip={t(item.key)} className={ITEM_CLASS}>
+                      <Link href={item.href}>
+                        <item.icon />
+                        <span>{t(item.key)}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    {item.key === "offlineSales" && pending > 0 ? (
+                      <SidebarMenuBadge className="bg-amber-500/15 top-2.5! text-amber-700 dark:text-amber-400">{format.number(pending)}</SidebarMenuBadge>
+                    ) : null}
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
     </Sidebar>
   );
