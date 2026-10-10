@@ -58,7 +58,9 @@ export function useBarcodeScanner(
         ctrlKey: event.ctrlKey,
         metaKey: event.metaKey,
         altKey: event.altKey,
-        now: performance.now(),
+        // when the key was pressed, not when we got to it: a busy page (a
+        // render, a sync) can delay handling, and that delay must not split a burst
+        now: event.timeStamp || performance.now(),
       });
       if (result.scan !== undefined) {
         // don't submit whatever form the burst landed in

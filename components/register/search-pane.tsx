@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
 import { Camera, Search, X } from "lucide-react";
@@ -41,6 +41,13 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
       setDebounced("");
     },
   }));
+
+  // a stable callback for the memoised tile grid; it always calls the latest onAdd
+  const onAddRef = useRef(onAdd);
+  useEffect(() => {
+    onAddRef.current = onAdd;
+  });
+  const addTile = useCallback((product: Tables<"products">) => onAddRef.current(product), []);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(query.trim()), 200);
@@ -152,7 +159,7 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
       )}
       {debounced.length === 0 ? (
         // nothing typed: browse by category and tap to add
-        <ProductTiles onAdd={onAdd} />
+        <ProductTiles onAdd={addTile} />
       ) : (
         <div className="max-h-[45svh] min-h-0 flex-1 overflow-y-auto p-1 lg:max-h-none">
           {results.length === 0 && !isFetching ? (

@@ -62,11 +62,17 @@ export function piastersToEgpInput(piasters: number): string {
 }
 
 /** Localized currency display. Division is display-only (Intl rounds to 2dp). */
+// building an Intl.NumberFormat is slow; the register formats hundreds of prices per render
+const egpFormats = new Map<string, Intl.NumberFormat>();
+
 export function formatEgp(piasters: number, locale: string): string {
-  return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", {
-    style: "currency",
-    currency: "EGP",
-  }).format(piasters / 100);
+  const tag = locale === "ar" ? "ar-EG" : "en-EG";
+  let format = egpFormats.get(tag);
+  if (!format) {
+    format = new Intl.NumberFormat(tag, { style: "currency", currency: "EGP" });
+    egpFormats.set(tag, format);
+  }
+  return format.format(piasters / 100);
 }
 
 /**

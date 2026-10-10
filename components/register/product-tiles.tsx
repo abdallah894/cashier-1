@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { PackageSearch } from "lucide-react";
 import { useCatalogTiles } from "@/hooks/use-catalog-tiles";
@@ -12,7 +12,8 @@ import { cn } from "@/lib/utils";
  * Touch browsing: category chips and a grid of product tiles; a tap adds
  * the product. Read from the offline catalog, so it works without a network.
  */
-export function ProductTiles({ onAdd }: { onAdd: (product: Tables<"products">) => void }) {
+// memo: typing in the search box must not re-render every tile (React.memo ≈ a Vue component that only updates when its props change)
+export const ProductTiles = memo(function ProductTiles({ onAdd }: { onAdd: (product: Tables<"products">) => void }) {
   const t = useTranslations("register.tiles");
   const locale = useLocale() === "ar" ? "ar" : "en";
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -75,7 +76,7 @@ export function ProductTiles({ onAdd }: { onAdd: (product: Tables<"products">) =
       </div>
     </div>
   );
-}
+});
 
 function CategoryChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
