@@ -62,7 +62,10 @@ export function SyncProvider({ userId }: { userId: string }) {
         router.refresh(); // stock and receipts changed server-side
       }
       if (result.rejected > 0) {
-        toast.error(t("rejectedToast", { count: result.rejected }), { duration: 10_000 });
+        toast.error(t("rejectedToast", { count: result.rejected }), {
+          duration: 10_000,
+          action: { label: t("openPending"), onClick: () => router.push("/offline-sales") },
+        });
       }
     }
 

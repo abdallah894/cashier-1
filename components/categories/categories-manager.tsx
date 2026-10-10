@@ -41,6 +41,7 @@ type Row = Category & { productCount: number };
 export function CategoriesManager({ categories }: { categories: Row[] }) {
   const t = useTranslations("categories");
   const tErrors = useTranslations("errors");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
 
@@ -225,7 +226,7 @@ export function CategoriesManager({ categories }: { categories: Row[] }) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{tCommon("keepIt")}</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={confirmDelete} disabled={busy}>
               {t("delete")}
             </AlertDialogAction>

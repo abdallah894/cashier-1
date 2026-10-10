@@ -22,6 +22,7 @@ import {
 export function DeleteProductButton({ productId, name }: { productId: string; name: string }) {
   const t = useTranslations("products");
   const tErrors = useTranslations("errors");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [busy, setBusy] = useState(false);
 
@@ -57,7 +58,7 @@ export function DeleteProductButton({ productId, name }: { productId: string; na
           <AlertDialogDescription>{t("deleteConfirmBody", { name })}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{t("form.cancel")}</AlertDialogCancel>
+          <AlertDialogCancel>{tCommon("keepIt")}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={confirmDelete}>
             {t("delete")}
           </AlertDialogAction>

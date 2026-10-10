@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ExportButton } from "@/components/reports/export-button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 type ReportRow = Database["public"]["Functions"]["stocktake_variance_report"]["Returns"][number];
 type Resolution = "use_count" | "keep_current";
@@ -102,9 +103,15 @@ export function ReviewPanel({
             <Button variant="outline" disabled={busy} onClick={() => run(() => reopenStocktake({ stocktakeId }), "reopened")}>
               {t("sendBack")}
             </Button>
-            <Button variant="outline" disabled={busy} onClick={() => run(() => cancelStocktake({ stocktakeId }), "cancelled")}>
+            <ConfirmButton
+              disabled={busy}
+              title={t("cancelCountTitle")}
+              description={t("cancelCountBody")}
+              confirmLabel={t("cancelCount")}
+              onConfirm={() => run(() => cancelStocktake({ stocktakeId }), "cancelled")}
+            >
               {t("cancelCount")}
-            </Button>
+            </ConfirmButton>
             <Button
               disabled={busy || unresolved.length > 0}
               onClick={() => run(() => approveStocktake({ stocktakeId, resolutions }), "approved")}

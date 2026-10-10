@@ -7,6 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { cancelPurchaseOrder, closePurchaseOrder, placePurchaseOrder } from "@/lib/actions/purchasing";
 import type { Database } from "@/lib/supabase/database.types";
 import { Button } from "@/components/ui/button";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 /** Admin lifecycle buttons; the buttons shown follow the allowed status transitions. */
 export function PurchaseOrderActions({
@@ -44,14 +45,26 @@ export function PurchaseOrderActions({
         </Button>
       )}
       {(status === "draft" || status === "ordered") && (
-        <Button variant="outline" disabled={busy} onClick={() => run(cancelPurchaseOrder, "cancelledDone")}>
+        <ConfirmButton
+          disabled={busy}
+          title={t("cancelOrderTitle")}
+          description={t("cancelOrderBody")}
+          confirmLabel={t("cancelOrder")}
+          onConfirm={() => run(cancelPurchaseOrder, "cancelledDone")}
+        >
           {t("cancelOrder")}
-        </Button>
+        </ConfirmButton>
       )}
       {status === "partially_received" && (
-        <Button variant="outline" disabled={busy} onClick={() => run(closePurchaseOrder, "closedDone")}>
+        <ConfirmButton
+          disabled={busy}
+          title={t("closeShortTitle")}
+          description={t("closeShortBody")}
+          confirmLabel={t("closeShort")}
+          onConfirm={() => run(closePurchaseOrder, "closedDone")}
+        >
           {t("closeShort")}
-        </Button>
+        </ConfirmButton>
       )}
     </div>
   );

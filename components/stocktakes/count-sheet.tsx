@@ -11,6 +11,7 @@ import type { StocktakeItem } from "@/lib/supabase/queries/stocktakes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 type Row = { counted: string; reason: string };
 
@@ -200,9 +201,15 @@ export function CountSheet({
             <Save className="size-4" />
             {t("pause")}
           </Button>
-          <Button variant="outline" onClick={() => void cancel()} disabled={busy}>
+          <ConfirmButton
+            disabled={busy}
+            title={t("cancelCountTitle")}
+            description={t("cancelCountBody")}
+            confirmLabel={t("cancelCount")}
+            onConfirm={() => void cancel()}
+          >
             {t("cancelCount")}
-          </Button>
+          </ConfirmButton>
           <Button onClick={() => void submit()} disabled={busy || countedTotal === 0}>
             {t("submit")}
           </Button>

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Papa from "papaparse";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { CircleCheck, CircleX, Download, FileUp, Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -47,6 +48,7 @@ function buildTemplateCsv(): string {
 
 export function CsvImport({ categories }: { categories: Category[] }) {
   const t = useTranslations("import");
+  const router = useRouter();
   const tErrors = useTranslations("errors");
   const tFieldErrors = useTranslations("fieldErrors");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -116,7 +118,9 @@ export function CsvImport({ categories }: { categories: Category[] }) {
         return;
       }
       setSummary(result.data);
-      toast.success(t("importedToast", { count: result.data.inserted }));
+      toast.success(t("importedToast", { count: result.data.inserted }), {
+        action: { label: t("viewProducts"), onClick: () => router.push("/products") },
+      });
     } finally {
       setImporting(false);
     }
