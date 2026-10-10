@@ -230,7 +230,7 @@ The shell exists in `mobile/` (Capacitor 7, Android project generated). The app 
 ### 4.2 Native barcode scanner (3 days)
 
 - Add `@capacitor-mlkit/barcode-scanning` to `mobile/`. Much faster and more reliable than the web camera.
-- Web side: a `scanBarcode()` adapter in `lib/barcode/` — uses the native plugin when present, else the existing `html5-qrcode` dialog (`components/register/camera-scan-dialog.tsx`).
+- Web side: a `scanBarcode()` adapter in `lib/barcode/` — uses the native plugin when present, else the existing camera dialog (`components/register/camera-scan-dialog.tsx`, ZXing C++ via zxing-wasm).
 - Use it in: price check, stocktake count sheet (`components/stocktakes/count-sheet.tsx`), receiving (`components/purchasing/receive-dialog.tsx`).
 
 ### 4.3 Push notifications (4–5 days)

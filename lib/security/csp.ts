@@ -34,7 +34,8 @@ export function buildCsp({ nonce, supabaseUrl, dev = false, enforce = true }: { 
   const directives: [string, string][] = [
     ["default-src", "'self'"],
     // 'unsafe-eval' only in development (React refresh); never in production
-    ["script-src", list("'self'", `'nonce-${nonce}'`, "'strict-dynamic'", dev && "'unsafe-eval'")],
+    // 'wasm-unsafe-eval' lets the barcode decoder compile WebAssembly; it does NOT allow eval()
+    ["script-src", list("'self'", `'nonce-${nonce}'`, "'strict-dynamic'", "'wasm-unsafe-eval'", dev && "'unsafe-eval'")],
     // component libraries set inline style attributes at runtime
     ["style-src", "'self' 'unsafe-inline'"],
     ["img-src", list("'self'", "data:", "blob:", supabaseOrigin)],

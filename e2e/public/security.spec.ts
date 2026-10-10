@@ -19,7 +19,9 @@ test.describe("security headers", () => {
     expect(headers["content-security-policy"]).toBeUndefined();
     expect(headers[CSP_REPORT_ONLY]).toContain("frame-ancestors 'none'");
     expect(headers[CSP_REPORT_ONLY]).toContain("object-src 'none'");
-    expect(headers[CSP_REPORT_ONLY]).not.toContain("unsafe-eval");
+    // no JavaScript eval; 'wasm-unsafe-eval' (WebAssembly only) is allowed for the barcode decoder
+    expect(headers[CSP_REPORT_ONLY]).not.toContain("'unsafe-eval'");
+    expect(headers[CSP_REPORT_ONLY]).toContain("'wasm-unsafe-eval'");
   });
 
   test("the nonce changes on every request and matches the page's scripts", async ({ request }) => {

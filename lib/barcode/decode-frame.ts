@@ -9,6 +9,7 @@ import {
   InvertedLuminanceSource,
   MultiFormatReader,
 } from "@zxing/library";
+import { decodeImageData, loadWasmDecoder } from "./wasm-decoder";
 
 const NATIVE_FORMATS = [
   "ean_13",
@@ -161,20 +162,66 @@ async function tryNativeDetector(source: ImageBitmapSource): Promise<string | nu
 }
 
 /**
- * One frame: the platform detector when there is one (Android, macOS,
- * ChromeOS — fast, whole frame), otherwise one ZXing strategy picked by
- * `attempt`, so successive frames try different crops, sizes and binarizers.
+ * What the C++ engine (zxing-wasm) looks at, alternating per frame: the whole
+ * frame (it finds and straightens the barcode itself), then the centre band
+ * enlarged 2x so a barcode that is small in the picture gets wider bars.
  */
-export async function decodeBarcodeFromVideo(video: HTMLVideoElement, attempt = 0): Promise<string | null> {
-  const native = await tryNativeDetector(video);
-  if (native) return native;
-  return decodeWithStrategy(video, video.videoWidth, video.videoHeight, STRATEGIES[attempt % STRATEGIES.length]);
+const WASM_VIEWS: readonly Strategy[] = [
+  { widthRatio: 1, heightRatio: 1, scale: 1, binarizer: "hybrid" },
+  { widthRatio: 0.85, heightRatio: 0.35, scale: 2, binarizer: "hybrid" },
+];
+
+function imageDataFor(source: CanvasImageSource, width: number, height: number, view: Strategy): ImageData | null {
+  const cropWidth = Math.round(width * view.widthRatio);
+  const cropHeight = Math.round(height * view.heightRatio);
+  // the engine is fast, but cap the work on 1080p cameras
+  const scale = Math.min(view.scale, 1600 / cropWidth);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(cropWidth * scale));
+  canvas.height = Math.max(1, Math.round(cropHeight * scale));
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return null;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(source, Math.round((width - cropWidth) / 2), Math.round((height - cropHeight) / 2), cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
+  return ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-/** A still image (no next frame to wait for): try every strategy. */
+async function decodeWithWasm(source: CanvasImageSource, width: number, height: number, view: Strategy): Promise<string | null> {
+  const image = imageDataFor(source, width, height, view);
+  if (!image) return null;
+  try {
+    return await decodeImageData(image);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * One frame: the platform detector when there is one (Android, macOS,
+ * ChromeOS — fast, whole frame), then the C++ engine on one view picked by
+ * `attempt`. Browsers that cannot run WebAssembly use the JavaScript decoder
+ * with one strategy per frame instead.
+ */
+export async function decodeBarcodeFromVideo(video: HTMLVideoElement, attempt = 0): Promise<string | null> {
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+  if (width <= 0 || height <= 0) return null;
+  const native = await tryNativeDetector(video);
+  if (native) return native;
+  if (await loadWasmDecoder()) return decodeWithWasm(video, width, height, WASM_VIEWS[attempt % WASM_VIEWS.length]);
+  return decodeWithStrategy(video, width, height, STRATEGIES[attempt % STRATEGIES.length]);
+}
+
+/** A still image (no next frame to wait for): try everything. */
 export async function decodeBarcodeFromCanvas(canvas: HTMLCanvasElement): Promise<string | null> {
   const native = await tryNativeDetector(canvas);
   if (native) return native;
+  if (await loadWasmDecoder()) {
+    for (const view of WASM_VIEWS) {
+      const text = await decodeWithWasm(canvas, canvas.width, canvas.height, view);
+      if (text) return text;
+    }
+  }
   for (const strategy of STRATEGIES) {
     const text = decodeWithStrategy(canvas, canvas.width, canvas.height, strategy);
     if (text) return text;

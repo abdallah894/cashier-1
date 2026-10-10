@@ -14,7 +14,8 @@ const has = (csp: string, directive: string, value: string) => csp.split("; ").s
 // ---- CSP ----
 const prod = buildCsp({ nonce: "abc123", supabaseUrl: "https://proj.supabase.co" });
 check("scripts need the request nonce", has(prod, "script-src", "'nonce-abc123'") && has(prod, "script-src", "'strict-dynamic'"));
-check("production never allows eval or inline scripts", !prod.includes("unsafe-eval") && !/script-src[^;]*'unsafe-inline'/.test(prod));
+check("production never allows eval or inline scripts", !prod.includes("'unsafe-eval'") && !/script-src[^;]*'unsafe-inline'/.test(prod));
+check("WebAssembly (the barcode decoder) may compile", has(prod, "script-src", "'wasm-unsafe-eval'"));
 check("the Supabase origin may be called and its images shown", has(prod, "connect-src", "https://proj.supabase.co") && has(prod, "connect-src", "wss://proj.supabase.co") && has(prod, "img-src", "https://proj.supabase.co"));
 check("the page cannot be framed, embedded as an object, or re-based", has(prod, "frame-ancestors", "'none'") && has(prod, "object-src", "'none'") && has(prod, "base-uri", "'self'"));
 check("forms can only post to this site", has(prod, "form-action", "'self'"));
