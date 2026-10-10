@@ -22,8 +22,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-/** Optional customer link and coupon codes; both need the server, so they are online-only. */
-export function CustomerPromoBar() {
+/**
+ * The sale's action row: customer, sale discount (passed in as children) and
+ * coupon codes. Customer and codes need the server, so they are online-only.
+ */
+export function CustomerPromoBar({ children }: { children?: React.ReactNode }) {
   const t = useTranslations("register.customer");
   const locale = useLocale();
   const online = useOnline();
@@ -45,25 +48,26 @@ export function CustomerPromoBar() {
   }
 
   return (
-    <div className="flex flex-col gap-2 border-t px-4 py-2 text-sm">
+    <div className="flex flex-col gap-2 border-t px-3 py-2.5 text-sm sm:px-4">
       <div className="flex flex-wrap items-center gap-2">
         {customer ? (
-          <Badge variant="secondary" className="gap-1.5 py-1">
+          <Badge variant="secondary" className="h-10 gap-2 px-3 text-sm">
             <UserRound className="size-3.5" />
             {customer.name}
             <span className="text-muted-foreground tabular-nums" dir="ltr">
               ···{customer.phoneLast4}
             </span>
-            <button type="button" aria-label={t("detach")} onClick={() => setCustomer(null)}>
-              <X className="size-3.5" />
+            <button type="button" aria-label={t("detach")} onClick={() => setCustomer(null)} className="hover:bg-background flex size-7 items-center justify-center rounded-full">
+              <X className="size-4" />
             </button>
           </Badge>
         ) : (
-          <Button variant="outline" size="sm" onClick={() => setOpen(true)} disabled={!online} data-shortcut="customer">
+          <Button variant="outline" onClick={() => setOpen(true)} disabled={!online} data-shortcut="customer">
             <UserRound className="size-4" />
             {t("attach")}
           </Button>
         )}
+        {children}
         <div className="ms-auto flex items-center gap-1.5">
           <Tag className="text-muted-foreground size-4" />
           <Input
@@ -75,9 +79,9 @@ export function CustomerPromoBar() {
             aria-label={t("codePlaceholder")}
             disabled={!online || !hasItems}
             data-shortcut="promo-code"
-            className="h-8 w-32 uppercase"
+            className="w-28 uppercase sm:w-32"
           />
-          <Button variant="outline" size="sm" onClick={submitCode} disabled={!online || !hasItems || !code.trim()}>
+          <Button variant="outline" onClick={submitCode} disabled={!online || !hasItems || !code.trim()}>
             {t("applyCode")}
           </Button>
         </div>

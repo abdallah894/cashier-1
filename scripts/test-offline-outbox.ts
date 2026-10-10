@@ -9,7 +9,7 @@ import {
   retryRejected,
 } from "../lib/offline/outbox";
 import { drainOutbox, type SubmitResult } from "../lib/offline/sync";
-import { findByBarcode, refreshCatalog, searchCatalog } from "../lib/offline/catalog";
+import { browseCatalog, findByBarcode, loadCategories, refreshCatalog, saveCategories, searchCatalog } from "../lib/offline/catalog";
 import type { Tables } from "../lib/supabase/database.types";
 
 let failures = 0;
@@ -213,6 +213,26 @@ async function main() {
       throw new Error("network");
     }).catch(() => undefined);
     check("a failed refresh keeps the previous cache", (await searchCatalog(db, "rice")).length === 1);
+  }
+
+  // ---- register tiles: browse by category from the cache ----
+  {
+    const db = freshDb();
+    const product = (id: string, en: string, ar: string, categoryId: string | null) =>
+      ({ id, barcode: `b${id}`, name_en: en, name_ar: ar, price: 1000, tax_rate: 0, stock_qty: 5, unit: "piece", active: true, category_id: categoryId }) as Tables<"products">;
+    await refreshCatalog(db, async () => [
+      product("1", "Sugar", "سكر", "dry"),
+      product("2", "Apples", "تفاح", "fruit"),
+      product("3", "Bananas", "موز", "fruit"),
+      product("4", "Loose item", "صنف", null),
+    ]);
+    check("all products when no category", (await browseCatalog(db, null, "en")).length === 4);
+    check("one category, sorted by English name", (await browseCatalog(db, "fruit", "en")).map((p) => p.id).join() === "2,3");
+    check("sorted by Arabic name in Arabic", (await browseCatalog(db, "fruit", "ar")).map((p) => p.id).join() === "2,3");
+    check("the tile list is capped", (await browseCatalog(db, null, "en", 2)).length === 2);
+    check("no categories cached yet", (await loadCategories(db)).length === 0);
+    await saveCategories(db, [{ id: "fruit", nameAr: "فاكهة", nameEn: "Fruit", sortOrder: 1 }]);
+    check("categories are cached for offline", (await loadCategories(db))[0]?.nameEn === "Fruit");
   }
 
   if (failures > 0) {

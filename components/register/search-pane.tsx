@@ -3,13 +3,14 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useQuery } from "@tanstack/react-query";
-import { Camera, CreditCard, Search } from "lucide-react";
+import { Camera, Search, X } from "lucide-react";
 import { searchProducts } from "@/lib/offline/register-data";
 import { formatEgp } from "@/lib/money";
 import type { Tables } from "@/lib/supabase/database.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
+import { ProductTiles } from "./product-tiles";
 import { parseMultiplier } from "@/lib/register/multiplier";
 import { cn } from "@/lib/utils";
 
@@ -20,13 +21,10 @@ type Props = {
   /** "3*" + Enter in the search box: the next item counts this many */
   onMultiplier: (qty: number) => void;
   onOpenCamera: () => void;
-  onOpenCheckout: () => void;
-  hasItems: boolean;
-  total: number;
 };
 
 export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPane(
-  { onAdd, onMultiplier, onOpenCamera, onOpenCheckout, hasItems, total },
+  { onAdd, onMultiplier, onOpenCamera },
   ref
 ) {
   const t = useTranslations("register");
@@ -111,11 +109,11 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
   }
 
   return (
-    // phones and tablets: the scan box comes first, above the cart
-    <div className="order-first flex min-h-0 flex-col gap-3 lg:order-none">
-      <div className="bg-card flex min-h-0 flex-1 flex-col rounded-xl border">
-        <div className="relative border-b p-3">
-          <Search className="text-muted-foreground absolute start-6 top-1/2 size-4 -translate-y-1/2" />
+    // phones and tablets: products come first, the cart below
+    <div className="bg-card order-first flex min-h-0 flex-col rounded-xl border lg:order-none">
+      <div className="flex items-center gap-2 border-b p-2 sm:p-3">
+        <div className="relative min-w-0 flex-1">
+          <Search className="text-muted-foreground absolute start-3 top-1/2 size-5 -translate-y-1/2" />
           <Input
             ref={inputRef}
             data-register-search
@@ -123,19 +121,41 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder={t("searchPlaceholder")}
-            className="ps-9"
+            className="h-12 ps-10 pe-10 text-base"
             aria-label={t("searchPlaceholder")}
           />
+          {query && (
+            <button
+              type="button"
+              aria-label={t("clearSearch")}
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => {
+                setQuery("");
+                setDebounced("");
+              }}
+              className="text-muted-foreground hover:text-foreground absolute end-2 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md"
+            >
+              <X className="size-4" />
+            </button>
+          )}
         </div>
-        {approximate && (
-          <p className="border-b bg-amber-500/10 px-3 py-1.5 text-xs text-amber-700 dark:text-amber-400">
-            {t("offlineCatalog")}
-          </p>
-        )}
-        <div className="min-h-0 flex-1 overflow-y-auto p-1">
-          {debounced.length === 0 ? (
-            <p className="text-muted-foreground p-4 text-center text-sm">{t("searchHint")}</p>
-          ) : results.length === 0 && !isFetching ? (
+        <Button variant="outline" onClick={onOpenCamera} className="h-12 shrink-0 px-3" aria-label={t("cameraScan")}>
+          <Camera className="size-5" />
+          <span className="hidden xl:inline">{t("cameraScan")}</span>
+          <Kbd className="hidden xl:inline-flex">F8</Kbd>
+        </Button>
+      </div>
+      {approximate && debounced.length > 0 && (
+        <p className="border-b bg-amber-500/10 px-3 py-1.5 text-xs text-amber-700 dark:text-amber-400">
+          {t("offlineCatalog")}
+        </p>
+      )}
+      {debounced.length === 0 ? (
+        // nothing typed: browse by category and tap to add
+        <ProductTiles onAdd={onAdd} />
+      ) : (
+        <div className="max-h-[45svh] min-h-0 flex-1 overflow-y-auto p-1 lg:max-h-none">
+          {results.length === 0 && !isFetching ? (
             <p className="text-muted-foreground p-4 text-center text-sm">{t("noResults")}</p>
           ) : (
             results.map((product, index) => {
@@ -148,7 +168,7 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
                   onClick={() => addAndReset(product)}
                   onMouseEnter={() => setHighlight(index)}
                   className={cn(
-                    "flex w-full items-center justify-between gap-2 rounded-md px-3 py-2.5 text-start",
+                    "flex min-h-14 w-full items-center justify-between gap-2 rounded-md px-3 py-2.5 text-start",
                     index === highlight && "bg-accent"
                   )}
                 >
@@ -170,24 +190,7 @@ export const SearchPane = forwardRef<SearchPaneHandle, Props>(function SearchPan
             })
           )}
         </div>
-      </div>
-
-      <Button variant="outline" onClick={onOpenCamera} className="h-11">
-        <Camera className="size-4" />
-        {t("cameraScan")}
-        <Kbd className="ms-auto">F8</Kbd>
-      </Button>
-
-      <Button size="lg" className="h-14 text-base" disabled={!hasItems} onClick={onOpenCheckout}>
-        <CreditCard className="size-5" />
-        {t("checkout")}
-        <span className="ms-auto flex items-center gap-2">
-          <span className="tabular-nums" dir="ltr">
-            {formatEgp(total, locale)}
-          </span>
-          <Kbd>F2</Kbd>
-        </span>
-      </Button>
+      )}
     </div>
   );
 });

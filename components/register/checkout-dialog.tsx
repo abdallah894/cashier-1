@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Banknote, CreditCard, Loader2 } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
@@ -19,7 +19,7 @@ import { isValidPaymentReference } from "@/lib/payments/providers";
 import { useCart, toSaleItems, toQueuedSaleItems, type CartTotals } from "@/lib/store/cart";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Numpad, type NumpadKey } from "@/components/ui/numpad";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -29,8 +29,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-// EGP notes a cashier reaches for
-const QUICK_NOTES = [5000, 10000, 20000] as const; // piasters: 50, 100, 200
+// EGP notes a cashier reaches for (piasters: 50, 100, 200, 500, 1000); only those that cover the total are shown
+const QUICK_NOTES = [5000, 10000, 20000, 50000, 100000] as const;
 
 export function CheckoutDialog({
   open,
@@ -53,6 +53,7 @@ export function CheckoutDialog({
   const t = useTranslations("register.checkoutDialog");
   const tErrors = useTranslations("errors");
   const locale = useLocale();
+  const format = useFormatter();
   const router = useRouter();
   const clearCart = useCart((s) => s.clear);
   const online = useOnline();
@@ -86,6 +87,14 @@ export function CheckoutDialog({
     onOpenChange(next);
   }
 
+  /** On-screen keypad edits the same text the cashier can type. */
+  function onNumpadKey(key: NumpadKey) {
+    setTenderedInput((current) =>
+      key === "backspace" ? current.slice(0, -1) : key === "." && current.includes(".") ? current : current + key
+    );
+  }
+
+  const quickNotes = QUICK_NOTES.filter((note) => note >= totals.total);
   const tendered = parseEgpToPiasters(tenderedInput);
   const change = tendered !== null ? tendered - totals.total : null;
   const tenderedTooLarge = isTenderedTooLarge(tenderedInput);
@@ -190,14 +199,14 @@ export function CheckoutDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex items-baseline justify-between">
-          <span className="text-muted-foreground">{t("amountDue")}</span>
-          <span className="text-3xl font-bold tabular-nums" dir="ltr">
+        <div className="bg-muted/60 flex flex-col items-center gap-1 rounded-xl px-4 py-3">
+          <span className="text-muted-foreground text-sm">{t("amountDue")}</span>
+          <span className="text-4xl font-bold tabular-nums sm:text-5xl" dir="ltr">
             {formatEgp(totals.total, locale)}
           </span>
         </div>
@@ -209,72 +218,81 @@ export function CheckoutDialog({
         )}
 
         <Tabs value={method} onValueChange={(v) => setChosenMethod(v as "cash" | "card")}>
-          <TabsList className="w-full">
-            <TabsTrigger value="cash" className="flex-1 gap-2">
-              <Banknote className="size-4" />
+          <TabsList className="h-12 w-full">
+            <TabsTrigger value="cash" className="flex-1 gap-2 text-base">
+              <Banknote className="size-5" />
               {t("cash")}
             </TabsTrigger>
-            <TabsTrigger value="card" className="flex-1 gap-2" disabled={!online}>
-              <CreditCard className="size-4" />
+            <TabsTrigger value="card" className="flex-1 gap-2 text-base" disabled={!online}>
+              <CreditCard className="size-5" />
               {t("card")}
             </TabsTrigger>
           </TabsList>
         </Tabs>
 
         {method === "cash" ? (
-          <div className="flex flex-col gap-3">
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => setTenderedInput(piastersToEgpInput(totals.total))}
-              >
-                {t("exact")}
-              </Button>
-              {QUICK_NOTES.map((note) => (
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_15rem]">
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <Button
-                  key={note}
                   variant="outline"
-                  size="sm"
-                  className="flex-1 tabular-nums"
-                  onClick={() => setTenderedInput(piastersToEgpInput(note))}
+                  size="lg"
+                  className="col-span-3 sm:col-span-1"
+                  onPointerDown={(e) => e.preventDefault()}
+                  onClick={() => setTenderedInput(piastersToEgpInput(totals.total))}
                 >
-                  {note / 100}
+                  {t("exact")}
                 </Button>
-              ))}
-            </div>
-            <Input
-              dir="ltr"
-              inputMode="decimal"
-              autoFocus
-              value={tenderedInput}
-              onChange={(e) => setTenderedInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && confirm()}
-              placeholder={t("tenderedPlaceholder")}
-              className="h-12 text-center text-xl tabular-nums"
-              aria-label={t("tendered")}
-            />
-            {tenderedTooLarge && (
-              <p className="text-destructive text-sm" role="alert">
-                {t("tenderedTooLarge")}
-              </p>
-            )}
-            <Separator />
-            <div className="flex items-baseline justify-between">
-              <span className="text-muted-foreground">{t("change")}</span>
-              <span
-                className={
-                  "text-2xl font-semibold tabular-nums " +
-                  (change !== null && change < 0
-                    ? "text-destructive"
-                    : "text-green-600 dark:text-green-500")
-                }
+                {quickNotes.map((note) => (
+                  <Button
+                    key={note}
+                    variant="outline"
+                    size="lg"
+                    className="text-base tabular-nums"
+                    onPointerDown={(e) => e.preventDefault()}
+                    onClick={() => setTenderedInput(piastersToEgpInput(note))}
+                  >
+                    {format.number(note / 100)}
+                  </Button>
+                ))}
+              </div>
+              <Input
                 dir="ltr"
+                inputMode="decimal"
+                autoFocus
+                value={tenderedInput}
+                onChange={(e) => setTenderedInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && confirm()}
+                placeholder={t("tenderedPlaceholder")}
+                className="h-14 text-center text-2xl tabular-nums"
+                aria-label={t("tendered")}
+              />
+              {tenderedTooLarge && (
+                <p className="text-destructive text-sm" role="alert">
+                  {t("tenderedTooLarge")}
+                </p>
+              )}
+              <div
+                className={
+                  "flex flex-col items-center gap-1 rounded-xl px-4 py-3 " +
+                  (change !== null && change < 0 ? "bg-destructive/10" : "bg-green-600/10")
+                }
               >
-                {change === null ? "—" : formatEgp(change, locale)}
-              </span>
+                <span className="text-muted-foreground text-sm">{t("change")}</span>
+                <span
+                  className={
+                    "text-4xl font-bold tabular-nums " +
+                    (change !== null && change < 0 ? "text-destructive" : "text-green-700 dark:text-green-500")
+                  }
+                  dir="ltr"
+                  data-testid="checkout-change"
+                >
+                  {change === null ? "—" : formatEgp(change, locale)}
+                </span>
+              </div>
             </div>
+            {/* touch: tap the amount; the typed box keeps focus for keyboards */}
+            <Numpad onKey={onNumpadKey} className="content-start" />
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -288,7 +306,7 @@ export function CheckoutDialog({
               placeholder={t("cardReference")}
               aria-label={t("cardReference")}
               aria-invalid={cardReference !== "" && cardInvalid}
-              className="h-12 text-center text-lg tabular-nums"
+              className="h-14 text-center text-xl tabular-nums"
             />
             <p className="text-muted-foreground text-xs">{t("cardReferenceHint")}</p>
           </div>
@@ -309,10 +327,16 @@ export function CheckoutDialog({
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
+          <Button variant="outline" size="xl" onClick={() => onOpenChange(false)} disabled={submitting}>
             {t("cancel")}
           </Button>
-          <Button onClick={confirm} disabled={submitting || cashInvalid || cardInvalid} className="min-w-32" data-testid="checkout-confirm">
+          <Button
+            size="xl"
+            onClick={confirm}
+            disabled={submitting || cashInvalid || cardInvalid}
+            className="min-w-48 text-lg"
+            data-testid="checkout-confirm"
+          >
             {submitting && <Loader2 className="size-4 animate-spin" />}
             {t("confirm")}
           </Button>
