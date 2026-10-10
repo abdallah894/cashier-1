@@ -83,7 +83,7 @@ export function OfflineSalesList({ userId }: { userId: string }) {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground max-w-prose text-sm">{t("description")}</p>
@@ -105,7 +105,7 @@ export function OfflineSalesList({ userId }: { userId: string }) {
         </p>
       )}
 
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-start">
@@ -142,25 +142,27 @@ export function OfflineSalesList({ userId }: { userId: string }) {
                     <div className="text-muted-foreground max-w-xs text-xs">{row.resolution.note}</div>
                   )}
                 </td>
-                <td className="flex flex-wrap justify-end gap-2 p-3">
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href={`/offline-sales/${row.id}`}>{t("viewReceipt")}</Link>
-                  </Button>
-                  {row.status === "synced" && row.saleId && (
+                <td className="p-3">
+                  <div className="flex flex-wrap justify-end gap-2">
                     <Button asChild variant="ghost" size="sm">
-                      <Link href={`/receipts/${row.saleId}`}>{t("finalReceipt")}</Link>
+                      <Link href={`/offline-sales/${row.id}`}>{t("viewReceipt")}</Link>
                     </Button>
-                  )}
-                  {row.status === "rejected" && row.userId === userId && (
-                    <>
-                      <Button variant="outline" size="sm" onClick={() => void retry(row)} disabled={!online}>
-                        {t("retry")}
+                    {row.status === "synced" && row.saleId && (
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/receipts/${row.saleId}`}>{t("finalReceipt")}</Link>
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => setResolving(row)}>
-                        {t("resolve")}
-                      </Button>
-                    </>
-                  )}
+                    )}
+                    {row.status === "rejected" && row.userId === userId && (
+                      <>
+                        <Button variant="outline" size="sm" onClick={() => void retry(row)} disabled={!online}>
+                          {t("retry")}
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setResolving(row)}>
+                          {t("resolve")}
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

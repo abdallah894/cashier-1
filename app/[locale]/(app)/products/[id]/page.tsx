@@ -30,8 +30,8 @@ export default async function ProductDetailPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>
-        <div className="flex gap-2">
+        <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words">{name}</h1>
+        <div className="flex flex-wrap gap-2">
           <StockAdjustDialog product={product} />
           <DeleteProductButton productId={product.id} name={name} />
         </div>

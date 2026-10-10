@@ -58,7 +58,7 @@ export function ReorderTable({ rows }: { rows: SuggestionRow[] }) {
     <div className="flex flex-col gap-5">
       {[...groups.entries()].map(([supplierId, items]) => (
         <section key={supplierId} className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-semibold">{supplierId === "none" ? t("noSupplier") : items[0].supplier_name}</h3>
             {supplierId !== "none" && (
               <Button size="sm" disabled={pending} onClick={() => createDraft(supplierId, items)}>

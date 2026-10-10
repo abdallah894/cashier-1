@@ -229,7 +229,7 @@ export function Register({
           </button>
         </div>
       )}
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
         <CartPane
           totals={totals}
           selectedIndex={selectedIndex}

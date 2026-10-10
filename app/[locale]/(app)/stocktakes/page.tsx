@@ -26,7 +26,7 @@ export default async function StocktakesPage({ params }: { params: Promise<{ loc
         </div>
         <CreateStocktakeDialog categories={categories} />
       </div>
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">

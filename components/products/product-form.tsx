@@ -127,7 +127,7 @@ export function ProductForm({ categories, product, defaultBarcode }: Props) {
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6 lg:grid-cols-3">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-3">
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle>{t("details")}</CardTitle>

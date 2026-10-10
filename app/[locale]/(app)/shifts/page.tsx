@@ -47,9 +47,9 @@ export default async function ShiftsPage({
       <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
       <Card>
-        <CardHeader className="flex-row items-center justify-between">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle className="text-base">{t("current")}</CardTitle>
-          {active && <div className="flex items-center gap-2"><CashDrawerEventDialog shiftId={active.id} /><CloseShiftDialog shiftId={active.id} /></div>}
+          {active && <div className="flex flex-wrap items-center gap-2"><CashDrawerEventDialog shiftId={active.id} /><CloseShiftDialog shiftId={active.id} /></div>}
         </CardHeader>
         <CardContent>
           {active ? (

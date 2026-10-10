@@ -124,11 +124,11 @@ export function PurchaseOrderForm({ suppliers }: { suppliers: { id: string; name
               <button
                 key={product.id}
                 type="button"
-                className="hover:bg-accent flex w-full items-center justify-between rounded px-3 py-2 text-start text-sm"
+                className="hover:bg-accent flex w-full items-center justify-between gap-3 rounded px-3 py-2 text-start text-sm"
                 onClick={() => addProduct(product)}
               >
-                <span>{locale === "ar" ? product.name_ar : product.name_en}</span>
-                <span className="text-muted-foreground text-xs tabular-nums" dir="ltr">
+                <span className="min-w-0 truncate">{locale === "ar" ? product.name_ar : product.name_en}</span>
+                <span className="text-muted-foreground shrink-0 text-xs tabular-nums" dir="ltr">
                   {product.barcode}
                 </span>
               </button>
@@ -137,7 +137,7 @@ export function PurchaseOrderForm({ suppliers }: { suppliers: { id: string; name
         )}
       </div>
 
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">
@@ -206,7 +206,7 @@ export function PurchaseOrderForm({ suppliers }: { suppliers: { id: string; name
         </table>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-muted-foreground text-sm">
           {t("totalExVat")}: <span className="text-foreground font-semibold tabular-nums" dir="ltr">{formatEgp(total, locale)}</span>
         </span>

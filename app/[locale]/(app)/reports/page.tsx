@@ -82,7 +82,7 @@ export default async function ReportsPage({
     <div className="flex w-full flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+        <p className="text-muted-foreground max-w-prose text-sm">{t("subtitle")}</p>
       </div>
 
       <ReportsNav active="overview" />
@@ -121,7 +121,7 @@ export default async function ReportsPage({
       ) : (
         <>
           {/* Summary cards */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
             <StatCard title={t("grossSales")} value={formatEgp(summary!.revenue, locale)} />
             <StatCard title={t("refunds")} value={`-${formatEgp(summary!.refunds, locale)}`} />
             <StatCard title={t("netSales")} value={formatEgp(summary!.netRevenue, locale)} />
@@ -261,7 +261,7 @@ export default async function ReportsPage({
                 />
               </CardAction>
             </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-4">
+            <CardContent className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <Metric label={t("netRevenue")} value={formatEgp(profit!.netRevenue, locale)} />
               <Metric label={t("cost")} value={formatEgp(profit!.cost, locale)} />
               <Metric label={t("profit")} value={formatEgp(profit!.profit, locale)} />
@@ -286,7 +286,7 @@ function StatCard({ title, value, plain }: { title: string; value: string; plain
     <Card size="sm">
       <CardHeader>
         <CardDescription>{title}</CardDescription>
-        <CardTitle className="text-2xl tabular-nums" dir={plain ? undefined : "ltr"}>
+        <CardTitle className="text-xl tabular-nums break-words sm:text-2xl" dir={plain ? undefined : "ltr"}>
           {value}
         </CardTitle>
       </CardHeader>

@@ -28,7 +28,7 @@ export function ShortcutsBar({ onSwitchCashier }: { onSwitchCashier?: () => void
   return (
     <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs">
       {SHORTCUTS.map((s) => (
-        <span key={s.keys} className="flex items-center gap-1.5">
+        <span key={s.keys} className="hidden items-center gap-1.5 md:flex">
           <Kbd>{s.keys}</Kbd>
           {t(s.label)}
         </span>

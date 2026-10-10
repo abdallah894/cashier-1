@@ -245,9 +245,9 @@ export function DevicesPanel({
       )}
 
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">{t("devicesTitle", { till: tills[0]?.name ?? "" })}</h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {drawerDevice && (
               <Button variant="outline" onClick={() => setDrawerOpen(true)}>
                 {t("openDrawer")}
@@ -259,7 +259,7 @@ export function DevicesPanel({
             </Button>
           </div>
         </div>
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
@@ -344,7 +344,7 @@ export function DevicesPanel({
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{t("jobsTitle")}</h2>
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
@@ -364,7 +364,7 @@ export function DevicesPanel({
                   <td className="p-3">
                     <Badge variant={job.status === "failed" ? "destructive" : "outline"}>{t(`jobStatus.${job.status}`)}</Badge>
                   </td>
-                  <td className="text-muted-foreground p-3 text-xs">{job.error ?? job.reason ?? ""}</td>
+                  <td className="text-muted-foreground max-w-xs p-3 text-xs break-words">{job.error ?? job.reason ?? ""}</td>
                 </tr>
               ))}
               {jobs.length === 0 && (
@@ -379,7 +379,7 @@ export function DevicesPanel({
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{t("profilesTitle")}</h2>
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <tbody>
               {profiles.map((p) => (

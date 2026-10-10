@@ -228,7 +228,7 @@ export function CsvImport({ categories }: { categories: Category[] }) {
                     <TableCell dir="ltr" className="tabular-nums">
                       {row.raw.price_egp}
                     </TableCell>
-                    <TableCell className="max-w-72">
+                    <TableCell className="max-w-72 whitespace-normal">
                       {status.issues.length > 0 && (
                         <ul className="text-destructive space-y-0.5 text-xs">
                           {status.issues.map((issue, i) => (

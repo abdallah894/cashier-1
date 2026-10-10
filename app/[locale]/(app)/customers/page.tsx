@@ -32,7 +32,7 @@ export default async function CustomersPage({
           {t("search")}
         </Button>
       </form>
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b">

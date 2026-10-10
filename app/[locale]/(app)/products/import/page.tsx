@@ -13,7 +13,7 @@ export default async function ImportPage({ params }: { params: Promise<{ locale:
     <div className="flex flex-col gap-4">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
+        <p className="text-muted-foreground max-w-prose text-sm">{t("subtitle")}</p>
       </div>
       <CsvImport categories={categories} />
     </div>
