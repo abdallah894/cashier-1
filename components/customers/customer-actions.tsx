@@ -31,6 +31,7 @@ export function CustomerActions({
 }) {
   const t = useTranslations("customers");
   const tErrors = useTranslations("errors");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -78,7 +79,7 @@ export function CustomerActions({
             <AlertDialogDescription>{t("anonymizeDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{tCommon("keepIt")}</AlertDialogCancel>
             <AlertDialogAction onClick={erase}>{t("anonymizeConfirm")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
