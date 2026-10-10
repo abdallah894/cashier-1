@@ -57,8 +57,11 @@ export default async function SalesHistoryPage({
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground max-w-prose text-sm">{t("pageDescription")}</p>
+        </div>
         <span className="text-muted-foreground text-sm">{t("count", { count: result.total })}</span>
       </div>
 

@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { RotateCcw, ShoppingCart, ReceiptText, TriangleAlert } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { reportClientError } from "@/lib/actions/ops-health";
 
@@ -17,11 +19,32 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
   }, [error]);
 
   return (
-    <div role="alert" className="flex flex-col items-center gap-3 py-16 text-center">
-      <h2 className="text-lg font-semibold">{t("errorTitle")}</h2>
-      <p className="text-muted-foreground max-w-md text-sm">{t("error")}</p>
-      {error.digest ? <p className="text-muted-foreground text-xs">{error.digest}</p> : null}
-      <Button onClick={reset}>{t("retry")}</Button>
+    <div role="alert" className="mx-auto flex max-w-md flex-col items-center gap-4 py-16 text-center">
+      <div className="bg-destructive/10 text-destructive flex size-14 items-center justify-center rounded-full">
+        <TriangleAlert className="size-7" />
+      </div>
+      <h2 className="text-xl font-semibold">{t("errorTitle")}</h2>
+      <p className="text-muted-foreground text-sm">{t("error")}</p>
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button size="lg" onClick={reset}>
+          <RotateCcw className="size-4" />
+          {t("retry")}
+        </Button>
+        <Button size="lg" variant="outline" asChild>
+          <Link href="/register">
+            <ShoppingCart className="size-4" />
+            {t("errorToRegister")}
+          </Link>
+        </Button>
+        <Button size="lg" variant="ghost" asChild>
+          <Link href="/receipts">
+            <ReceiptText className="size-4" />
+            {t("errorToSales")}
+          </Link>
+        </Button>
+      </div>
+      {/* quote this to support: it finds the server log entry */}
+      {error.digest ? <p className="text-muted-foreground text-xs" dir="ltr">{t("errorCode", { code: error.digest })}</p> : null}
     </div>
   );
 }

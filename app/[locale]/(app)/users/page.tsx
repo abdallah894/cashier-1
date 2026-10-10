@@ -33,7 +33,10 @@ export default async function UsersPage({ params }: { params: Promise<{ locale: 
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="text-muted-foreground max-w-prose text-sm">{t("pageDescription")}</p>
+      </div>
       <UsersTable rows={rows} selfId={me.id} />
     </div>
   );
