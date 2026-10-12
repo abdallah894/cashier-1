@@ -316,7 +316,9 @@
       "voidCart": "void cart",
       "showAll": "all shortcuts",
       "title": "Keyboard shortcuts",
-      "description": "Everything at the till works from the keyboard and a barcode scanner."
+      "description": "Everything at the till works from the keyboard and a barcode scanner.",
+      "holdSale": "hold sale",
+      "heldSales": "held sales"
     },
     "approxStock": "approx. stock",
     "offlineCatalog": "Offline: showing the last synced catalog. Stock figures are approximate.",
@@ -358,6 +360,26 @@
       "empty": "No products here yet. Products appear after the till syncs; use search or scan meanwhile.",
       "perKg": "per kg",
       "outOfStock": "Out of stock"
+    },
+    "held": {
+      "hold": "Hold",
+      "open": "Held",
+      "title": "Held sales",
+      "description": "Carts put aside on this till. Any cashier can bring one back; nothing is charged or taken from stock until it is paid.",
+      "empty": "No held sales.",
+      "items": "{count, plural, one {# item} other {# items}}",
+      "heldBy": "held by {name}",
+      "recall": "Recall",
+      "discard": "Discard",
+      "discardTitle": "Discard this held sale?",
+      "discardBody": "The cart is thrown away. Nothing was charged, so nothing else changes.",
+      "heldToast": "Sale held. Bring it back from Held sales (F3).",
+      "recalled": "Held sale is back in the cart.",
+      "swapped": "Held sale is back. The cart you had was held in its place.",
+      "discarded": "Held sale discarded.",
+      "full": "This till already holds {max} sales. Finish or discard one first.",
+      "gone": "That held sale was already recalled on this till.",
+      "failed": "Couldn't update held sales on this device. Nothing was lost — try again."
     }
   },
   "shifts": {
@@ -409,7 +431,8 @@
     "expectedCash": "Expected cash",
     "overShort": "Over / short",
     "shiftStillOpen": "This shift is still open — the Z-report is available after closing.",
-    "pageDescription": "Open and close cash shifts and check the drawer count."
+    "pageDescription": "Open and close cash shifts and check the drawer count.",
+    "heldWarning": "{count, plural, one {# held sale is} other {# held sales are}} still waiting on this till. They are not part of this shift's takings until paid."
   },
   "users": {
     "title": "Users",

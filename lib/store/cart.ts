@@ -66,6 +66,8 @@ type CartState = {
   setSaleDiscount: (discount: Discount | null) => void;
   removeItem: (productId: string) => void;
   clear: () => void;
+  /** Brings back a held cart (replaces whatever is in the cart). */
+  restore: (cart: { items: CartItem[]; saleDiscount: Discount | null; customer: CartCustomer | null; promoCodes: string[] }) => void;
   setSelectedIndex: (index: number) => void;
 };
 
@@ -129,6 +131,9 @@ export const useCart = create<CartState>((set) => ({
 
   clear: () =>
     set({ items: [], saleDiscount: null, selectedIndex: -1, customer: null, promoCodes: [], promo: null }),
+
+  restore: ({ items, saleDiscount, customer, promoCodes }) =>
+    set({ items, saleDiscount, customer, promoCodes, selectedIndex: items.length - 1, promo: null }),
 
   setSelectedIndex: (index) => set({ selectedIndex: index }),
 }));

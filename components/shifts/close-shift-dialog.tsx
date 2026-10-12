@@ -8,6 +8,7 @@ import { useRouter } from "@/i18n/navigation";
 import { closeShift } from "@/lib/actions/shifts";
 import { getOfflineDb } from "@/lib/offline/db";
 import { countUnsettledForShift } from "@/lib/offline/outbox";
+import { useHeldSales } from "@/hooks/use-held-sales";
 import { parseEgpToPiasters } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,8 @@ export function CloseShiftDialog({ shiftId }: { shiftId: string }) {
   const [countedInput, setCountedInput] = useState("");
   const [managerPin, setManagerPin] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // carts put aside on this till are not takings yet: remind before closing
+  const heldCount = useHeldSales().length;
 
   const counted = parseEgpToPiasters(countedInput);
 
@@ -75,6 +78,11 @@ export function CloseShiftDialog({ shiftId }: { shiftId: string }) {
         <DialogHeader>
           <DialogTitle>{t("countedCash")}</DialogTitle>
         </DialogHeader>
+        {heldCount > 0 && (
+          <p role="status" className="rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
+            {t("heldWarning", { count: heldCount })}
+          </p>
+        )}
         <div className="flex flex-col gap-3">
           <Input
             dir="ltr"

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { CreditCard, Minus, Plus, ShoppingCart, Tag, Trash2, TriangleAlert } from "lucide-react";
+import { CreditCard, Minus, PauseCircle, Plus, ShoppingCart, Tag, Trash2, TriangleAlert, History } from "lucide-react";
 import { formatEgp, parseQty } from "@/lib/money";
 import { qtyStep } from "@/lib/register/multiplier";
 import { useCart, type CartTotals, type LineComputed } from "@/lib/store/cart";
@@ -24,9 +24,12 @@ type Props = {
   onQtyChange: (productId: string, qty: number) => void;
   onRemove: (productId: string) => void;
   onOpenCheckout: () => void;
+  heldCount: number;
+  onHold: () => void;
+  onOpenHeld: () => void;
 };
 
-export function CartPane({ totals, selectedIndex, onSelect, onQtyChange, onRemove, onOpenCheckout }: Props) {
+export function CartPane({ totals, selectedIndex, onSelect, onQtyChange, onRemove, onOpenCheckout, heldCount, onHold, onOpenHeld }: Props) {
   const t = useTranslations("register");
   const locale = useLocale();
   const saleDiscount = useCart((s) => s.saleDiscount);
@@ -49,7 +52,22 @@ export function CartPane({ totals, selectedIndex, onSelect, onQtyChange, onRemov
           {t("cartTitle")}
           {totals.itemCount > 0 && <Badge variant="secondary">{totals.itemCount}</Badge>}
         </h2>
-        {totals.itemCount > 0 && <VoidCartDialog totals={totals} />}
+        <div className="flex flex-wrap items-center justify-end gap-1">
+          {heldCount > 0 && (
+            <Button variant="outline" size="sm" onClick={onOpenHeld} data-shortcut="held-sales">
+              <History className="size-4" />
+              {t("held.open")}
+              <Badge className="ms-0.5 tabular-nums">{heldCount}</Badge>
+            </Button>
+          )}
+          {totals.itemCount > 0 && (
+            <Button variant="outline" size="sm" onClick={onHold} data-shortcut="hold-sale">
+              <PauseCircle className="size-4" />
+              {t("held.hold")}
+            </Button>
+          )}
+          {totals.itemCount > 0 && <VoidCartDialog totals={totals} />}
+        </div>
       </div>
 
       <div ref={listRef} className="min-h-40 flex-1 overflow-y-auto lg:min-h-0">
