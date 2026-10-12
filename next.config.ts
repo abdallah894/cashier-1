@@ -10,6 +10,9 @@ const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV === "development",
+  // never reload the page when the connection comes back: it would wipe a cart
+  // in progress. The sync provider resends queued sales on its own.
+  reloadOnOnline: false,
 });
 
 // Baseline hardening. camera and usb are needed for barcode scanning and

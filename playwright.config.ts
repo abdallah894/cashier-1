@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// lets context.route see requests the service worker makes, so offline tests can really cut the network
+process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS ??= "1";
+
 /**
  * Browser tests (Phase 2). Two tiers:
  *  - `public` / `public-enforce`: need only a built app with dummy Supabase

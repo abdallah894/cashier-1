@@ -17,6 +17,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useOutboxCounts } from "@/hooks/use-outbox-counts";
+import { useOnline } from "@/hooks/use-online";
+import { OFFLINE_CAPABLE } from "@/lib/offline/pages";
+import { toast } from "sonner";
+import { CloudOff } from "lucide-react";
 import { matchNav, navGroupsFor } from "./nav-items";
 
 // accent bar on the active entry; taller rows for touch
@@ -45,6 +49,23 @@ export function AppSidebar({
   const format = useFormatter();
   const counts = useOutboxCounts(userId);
   const pending = (counts?.queued ?? 0) + (counts?.syncing ?? 0) + (counts?.rejected ?? 0);
+  const online = useOnline();
+  const tShell = useTranslations("shell");
+
+  /**
+   * Offline, only the register and pending sales can open (they are saved on
+   * the till). They are loaded as full pages so the saved copy is used; the
+   * rest would hit the server, so they say so instead of showing the
+   * browser's "unable to connect".
+   */
+  function onNavClick(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    if (online) return;
+    event.preventDefault();
+    // a full page load on purpose: the service worker answers it from the copy saved on this till
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    if ((OFFLINE_CAPABLE as readonly string[]).includes(href)) window.location.assign(`/${locale}${href}`);
+    else toast.error(tShell("needsConnection"));
+  }
 
   return (
     <Sidebar side={getDirection(locale) === "rtl" ? "right" : "left"} collapsible="icon">
@@ -75,9 +96,16 @@ export function AppSidebar({
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.key}>
                     <SidebarMenuButton asChild isActive={active === item.key} tooltip={t(item.key)} className={ITEM_CLASS}>
-                      <Link href={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={(event) => onNavClick(event, item.href)}
+                        className={!online && !(OFFLINE_CAPABLE as readonly string[]).includes(item.href) ? "opacity-50" : undefined}
+                      >
                         <item.icon />
                         <span>{t(item.key)}</span>
+                        {!online && !(OFFLINE_CAPABLE as readonly string[]).includes(item.href) && (
+                          <CloudOff className="ms-auto opacity-60" />
+                        )}
                       </Link>
                     </SidebarMenuButton>
                     {item.key === "offlineSales" && pending > 0 ? (
