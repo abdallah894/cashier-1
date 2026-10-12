@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useRouter } from "@/i18n/navigation";
 import { getOfflineDb } from "@/lib/offline/db";
 import { recoverStuck } from "@/lib/offline/outbox";
 import { refreshOfflineData } from "@/lib/offline/register-data";
+import { warmOfflinePages } from "@/lib/offline/pages";
 import { submitQueuedSale } from "@/lib/offline/submit";
 import { drainOutboxExclusive } from "@/lib/offline/sync";
 import { reportSyncBacklog } from "@/lib/actions/ops-health";
@@ -22,6 +23,7 @@ const SIGN_IN_TOAST = "offline-needs-sign-in";
 export function SyncProvider({ userId }: { userId: string }) {
   const t = useTranslations("offline");
   const router = useRouter();
+  const locale = useLocale();
 
   useEffect(() => {
     const db = getOfflineDb();
@@ -71,6 +73,8 @@ export function SyncProvider({ userId }: { userId: string }) {
 
     async function refreshCatalog() {
       if (!navigator.onLine) return;
+      // keep the register and pending sales saved on this till, so they open even offline
+      warmOfflinePages(locale);
       try {
         await refreshOfflineData();
       } catch {
@@ -101,7 +105,7 @@ export function SyncProvider({ userId }: { userId: string }) {
       clearInterval(reportTimer);
       clearInterval(catalogTimer);
     };
-  }, [userId, router, t]);
+  }, [userId, router, t, locale]);
 
   return null;
 }

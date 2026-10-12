@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f8a5f">
+<title>غير متصل · Offline</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f6f7f8; --card: #fff; --fg: #1a1d1f; --muted: #5f6b73; --brand: #0f8a5f; --border: #e3e6e8; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #111416; --card: #1a1e21; --fg: #eef1f2; --muted: #a2adb4; --border: #2b3135; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--fg);
+         font-family: "Cairo", "Segoe UI", system-ui, sans-serif; }
+  main { width: 100%; max-width: 30rem; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; text-align: center; }
+  .icon { width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; background: rgba(245,158,11,.15); color: #b45309; font-size: 28px; }
+  h1 { font-size: 1.35rem; margin: 0 0 6px; }
+  p { margin: 0 0 16px; color: var(--muted); line-height: 1.6; }
+  .en { direction: ltr; border-top: 1px solid var(--border); margin-top: 20px; padding-top: 20px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  a, button { font: inherit; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; border-radius: 10px;
+              border: 1px solid var(--border); background: transparent; color: var(--fg); text-decoration: none; cursor: pointer; }
+  .primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+</style>
+</head>
+<body>
+<main>
+  <div class="icon" aria-hidden="true">⚡</div>
+  <h1>لا يوجد اتصال بالإنترنت</h1>
+  <p>هذه الصفحة تحتاج اتصالاً. الكاشير والمبيعات المعلقة يعملان بدون اتصال، وستُرسل المبيعات تلقائياً عند عودة الاتصال.</p>
+  <div class="actions">
+    <a class="primary" href="/ar/register">العودة إلى الكاشير</a>
+    <a href="/ar/offline-sales">المبيعات المعلقة</a>
+  </div>
+  <section class="en" lang="en">
+    <h1>You're offline</h1>
+    <p>This page needs a connection. The register and pending sales keep working offline, and sales are sent automatically when you're back online.</p>
+    <div class="actions">
+      <a class="primary" href="/en/register">Back to register</a>
+      <a href="/en/offline-sales">Pending sales</a>
+      <button type="button" onclick="location.reload()">Try again · حاول مرة أخرى</button>
+    </div>
+  </section>
+</main>
+</body>
+</html>

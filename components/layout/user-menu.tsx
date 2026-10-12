@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { CircleUser, LogOut } from "lucide-react";
 import { signOut } from "@/lib/actions/auth";
+import { clearOfflinePages } from "@/lib/offline/pages";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,7 +37,7 @@ export function UserMenu({ name, role }: { name: string; role: "admin" | "cashie
           <div className="text-muted-foreground text-xs">{t(`roles.${role}`)}</div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => void signOut()}>
+        <DropdownMenuItem onSelect={() => void clearOfflinePages().then(() => signOut())}>
           <LogOut className="size-4" />
           {t("signOut")}
         </DropdownMenuItem>

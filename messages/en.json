@@ -49,7 +49,8 @@
     "arabic": "العربية",
     "english": "English",
     "offline": "Offline",
-    "offlineHint": "No connection — reconnect to sync."
+    "offlineHint": "No connection — reconnect to sync.",
+    "needsConnection": "This page needs an internet connection. The register and pending sales work offline."
   },
   "placeholder": {
     "register": "The register screen will be built in Phase 2.",
