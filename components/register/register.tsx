@@ -20,6 +20,10 @@ import type { OutboxEntry } from "@/lib/offline/types";
 import { CameraScanDialog } from "./camera-scan-dialog";
 import { PinSwitchDialog, type SwitchableCashier } from "./pin-switch-dialog";
 import { ShortcutsBar } from "./shortcuts-bar";
+import { HeldSalesDialog } from "./held-sales-dialog";
+import { useHeldSales } from "@/hooks/use-held-sales";
+import { getOfflineDb } from "@/lib/offline/db";
+import { holdSale, MAX_HELD_SALES, takeHeldSale } from "@/lib/register/held-sales";
 import { UnknownBarcodeDialog } from "./unknown-barcode-dialog";
 
 export function Register({
@@ -62,6 +66,8 @@ export function Register({
   const [cameraOpen, setCameraOpen] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [heldOpen, setHeldOpen] = useState(false);
+  const held = useHeldSales();
   const [unknownBarcode, setUnknownBarcode] = useState<string | null>(null);
   const searchRef = useRef<SearchPaneHandle>(null);
 
@@ -86,7 +92,77 @@ export function Register({
   }
 
   const unknownBarcodeOpen = unknownBarcode !== null;
-  const dialogOpen = checkoutOpen || cameraOpen || switchOpen || shortcutsOpen || unknownBarcodeOpen || provisional !== null;
+  const dialogOpen =
+    checkoutOpen || cameraOpen || switchOpen || shortcutsOpen || heldOpen || unknownBarcodeOpen || provisional !== null;
+
+  /** Puts the current cart aside (F10) so the next customer can be served. */
+  async function holdCurrent() {
+    const state = useCart.getState();
+    if (state.items.length === 0) return;
+    try {
+      const entry = await holdSale(getOfflineDb(), {
+        heldBy: cashierName,
+        items: state.items,
+        saleDiscount: state.saleDiscount,
+        customer: state.customer,
+        promoCodes: state.promoCodes,
+        total: totals.total,
+      });
+      if (!entry) {
+        toast.error(t("held.full", { max: MAX_HELD_SALES }));
+        return;
+      }
+      state.clear();
+      toast.success(t("held.heldToast"));
+      searchRef.current?.focus();
+    } catch {
+      toast.error(t("held.failed"));
+    }
+  }
+
+  /** Brings a held cart back; a cart in progress is held first so nothing is lost. */
+  async function recall(id: string) {
+    const db = getOfflineDb();
+    try {
+      const entry = await takeHeldSale(db, id);
+      if (!entry) {
+        toast.error(t("held.gone"));
+        return;
+      }
+      const current = useCart.getState();
+      if (current.items.length > 0) {
+        // taking one out freed a slot, so this cannot hit the limit
+        await holdSale(db, {
+          heldBy: cashierName,
+          items: current.items,
+          saleDiscount: current.saleDiscount,
+          customer: current.customer,
+          promoCodes: current.promoCodes,
+          total: totals.total,
+        });
+      }
+      current.restore(entry);
+      setHeldOpen(false);
+      toast.success(t(current.items.length > 0 ? "held.swapped" : "held.recalled"));
+    } catch {
+      toast.error(t("held.failed"));
+    }
+  }
+
+  // the key handler below is set up once per dialog state; it calls the latest holdCurrent through this ref
+  const holdRef = useRef(holdCurrent);
+  useEffect(() => {
+    holdRef.current = holdCurrent;
+  });
+
+  async function discardHeld(id: string) {
+    try {
+      await takeHeldSale(getOfflineDb(), id);
+      toast.success(t("held.discarded"));
+    } catch {
+      toast.error(t("held.failed"));
+    }
+  }
 
   async function handleScan(barcode: string) {
     // the burst may have landed in the search box — wipe it
@@ -151,6 +227,16 @@ export function Register({
       if (event.key === "F2") {
         event.preventDefault();
         if (useCart.getState().items.length > 0) setCheckoutOpen(true);
+        return;
+      }
+      if (event.key === "F10") {
+        event.preventDefault();
+        void holdRef.current();
+        return;
+      }
+      if (event.key === "F3") {
+        event.preventDefault(); // also stops the browser's find-next
+        setHeldOpen(true);
         return;
       }
       if (event.key === "F8") {
@@ -251,6 +337,9 @@ export function Register({
           onQtyChange={setQty}
           onRemove={removeItem}
           onOpenCheckout={() => setCheckoutOpen(true)}
+          heldCount={held.length}
+          onHold={() => void holdCurrent()}
+          onOpenHeld={() => setHeldOpen(true)}
         />
       </div>
       <ShortcutsBar
@@ -268,6 +357,13 @@ export function Register({
         shiftId={shiftId}
         cashierName={cashierName}
         onQueued={setProvisional}
+      />
+      <HeldSalesDialog
+        open={heldOpen}
+        onOpenChange={setHeldOpen}
+        held={held}
+        onRecall={(id) => void recall(id)}
+        onDiscard={(id) => void discardHeld(id)}
       />
       <ProvisionalReceiptDialog entry={provisional} onClose={() => setProvisional(null)} />
       <CameraScanDialog open={cameraOpen} onOpenChange={setCameraOpen} onScan={handleScan} />

@@ -17,6 +17,8 @@ const SHORTCUTS = [
   { keys: "Ctrl+Del", label: "voidCart" },
   { keys: "F8", label: "cameraScan" },
   { keys: "F9", label: "switchCashier" },
+  { keys: "F10", label: "holdSale" },
+  { keys: "F3", label: "heldSales" },
   { keys: "↑↓", label: "selectLine" },
   { keys: "+/−", label: "changeQty" },
   { keys: "Del", label: "removeLine" },
